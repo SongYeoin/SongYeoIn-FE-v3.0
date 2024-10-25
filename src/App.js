@@ -25,17 +25,36 @@
 // export default App;
 
 // App.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 function App() {
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/test`);
+        setMessage(response.data);
+      } catch (error) {
+        if (error.response) {
+          console.error("Error fetching data:", error.response.status, error.response.data);
+        } else if (error.request) {
+          console.error("Error with request:", error.request);
+        } else {
+          console.error("Error:", error.message);
+        }
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
-      <div className="App">
-        <header className="App-header">
-          <p>
-            Hello React!!!
-          </p>
-        </header>
-      </div>
+    <div>
+      <h1>Message from Spring Boot:</h1>
+      <p>{message}</p>
+    </div>
   );
 }
 
