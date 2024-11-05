@@ -19,6 +19,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client'; // 'react-dom'이 아닌 'react-dom/client'에서 import
 import App from './App.js';
 import reportWebVitals from './reportWebVitals';
+import './index.css';
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
