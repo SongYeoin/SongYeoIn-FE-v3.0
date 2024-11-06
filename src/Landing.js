@@ -24,7 +24,7 @@ export const Landing = () => {
         className="relative flex flex-row items-center gap-5 mt-12"
       >
         <img
-          src="/src/images/woman_up_logo.jpg"
+          src="/images/woman_up_logo.jpg"
           className="w-[255px] h-[120px] object-cover"
           alt="송파로고"
         />
@@ -95,7 +95,7 @@ export const Landing = () => {
           hover:bg-white/50 hover:scale-105 cursor-pointer"
           onClick={handleClick}>
           <img
-            src="./images/admin_icon.jpg"
+            src="/images/admin_icon.jpg"
             className="w-[200px] h-52 object-cover"
           />
           <p
