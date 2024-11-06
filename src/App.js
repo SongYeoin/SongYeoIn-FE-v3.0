@@ -1,5 +1,5 @@
 // import logo from './logo.svg';
-// import './App.css';
+//import './App.css';
 //
 // function App() {
 //   return (
@@ -27,9 +27,13 @@
 // App.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Login } from './Login';
+import { Landing } from './Landing';
+import { Join } from './Join';
 
 function App() {
-  const [message, setMessage] = useState('');
+  const [setMessage] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,10 +55,24 @@ function App() {
   }, []);
 
   return (
-    <div>
-      <h1>Message from Spring Boot:</h1>
-      <p>{message}</p>
-    </div>
+
+    <Router>
+
+{/*      <div className="App">
+        <div>
+          <h1>Message from Spring Boot:</h1>
+          <p>{message}</p>
+        </div>
+      </div>*/}
+
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login"
+               element={<Login />} />
+        <Route path="/join"
+               element={<Join />} />
+      </Routes>
+    </Router>
   );
 }
 
