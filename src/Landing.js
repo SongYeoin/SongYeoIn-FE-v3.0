@@ -19,13 +19,19 @@ export const Landing = () => {
         className="w-full h-full absolute bg-no-repeat bg-center bg-cover left-0 top-0 object-cover bg-[url('./images/background_jpg.jpg')]"
       />
 
-      {/* 송파 로고와 송여인 로고 담는 div */}
+      {/* 송파 로고, 새일 로고와 송여인 로고 담는 div */}
       <div
         className="relative flex flex-row items-center gap-5 mt-12"
       >
+
+        <img
+          src="/images/saeil_logo.jpg"
+          className="w-[90px] h-[90px]"
+          alt="새일로고"
+        />
         <img
           src="/images/woman_up_logo.jpg"
-          className="w-[255px] h-[120px] object-cover"
+          className="w-[200px] h-[120px] object-cover"
           alt="송파로고"
         />
 
@@ -61,10 +67,10 @@ export const Landing = () => {
           COLLABORATION
         </p>
         <p
-          className="w-[712px] h-[63px] text-[25px] text-center text-white"
+          className="w-[780px] h-[63px] text-[25px] text-center text-white"
         >
-          <span className="w-[712px] h-[63px] text-[25px] text-center text-white"
-          >송파여성인력개발센터와 ‘자바 스프링 백엔드’ 훈련 과정 수료생</span>
+          <span className="w-[780px] h-[63px] text-[25px] text-center text-white"
+          >송파여성인력개발센터와 2024 ‘자바 스프링 백엔드’ 훈련 과정 수료생</span>
           <br />
           <span className="w-[712px] h-[63px] text-[25px] text-center text-white"
           >‘송여인’ 팀 5인이 함께한 학습 관리 시스템입니다.</span>
