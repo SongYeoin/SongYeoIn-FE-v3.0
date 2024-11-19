@@ -1,9 +1,9 @@
 import React from 'react';
-import Header from '../header';
-import Footer from '../Footer';
-import Sidebar from '../Sidebar';
+import Header from '../../header';
+import Footer from '../../Footer';
+import AdminSidebar from '../../AdminSidebar';
 
-const Layout = ({ children }) => {
+const StudentLayout = ({ children }) => {
   return (
     <div
       className="w-full h-full absolute overflow-hidden bg-white flex flex-col">
@@ -13,7 +13,7 @@ const Layout = ({ children }) => {
       {/* 메인 영역 */}
       <div className="flex flex-1">
         {/* 사이드바 */}
-        <Sidebar />
+        <AdminSidebar />
 
         {/* 메인 콘텐츠 */}
         <main
@@ -31,4 +31,4 @@ const Layout = ({ children }) => {
 );
 };
 
-export default Layout;
+export default StudentLayout;
