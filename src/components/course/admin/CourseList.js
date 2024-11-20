@@ -9,20 +9,22 @@ export const CourseList = () => {
   const [courses, setCourses] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
   const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수
+  const [searchTerm, setSearchTerm] = useState(''); // 검색어
 
   // 코스 데이터를 가져오는 함수
-  useEffect(() => {
+
     const fetchCourses = async () => {
       try {
         // axios로 GET 요청
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/course`,
           {
             params: {
+              word: searchTerm,
               page: currentPage -1,
               size: 10
             },
             headers: {
-              Authorization: `Bearer `,
+              Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMTE4NTQ5LCJleHAiOjE3MzIxMjAzNDl9.9XxuM06rK9QZgbmHLcIU6K-tX8A8B19w0RkUWljjHdA`,
             }
           });
         console.log(response.data.content);
@@ -32,8 +34,17 @@ export const CourseList = () => {
         console.error('Error fetching courses:', error);
       }
     };
+
+  useEffect(() => {
     fetchCourses();
-  }, [currentPage]);// currentPage가 변경될 때 데이터 로드
+  }, [currentPage, searchTerm]);// currentPage가 변경될 때 데이터 로드
+
+  // 검색어 업데이트(자식으로부터 받은 검색어 상태 업데이트)
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // 검색 시 페이지를 첫 페이지로 초기화
+  };
+
 
   return(
     <AdminLayout
@@ -41,7 +52,7 @@ export const CourseList = () => {
       totalPages={totalPages}
       onPageChange={(page) => setCurrentPage(page)}
     >
-      <CourseMainHeader />
+      <CourseMainHeader onSearch={handleSearch} />
       <div
         className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
         <div className="grid grid-cols-8 gap-5">
