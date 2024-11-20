@@ -17,7 +17,7 @@ const Footer = ({ currentPage, totalPages, onPageChange }) => {
 
 
   return (
-    <footer className="flex justify-center items-center p-4 bg-white border-t border-gray-200">
+    <footer className="flex justify-center items-center p-4 bg-white">
       {/* 페이징 처리 */}
       <nav className="flex items-center gap-2">
         {/* 이전 페이지 화살표 < */}
