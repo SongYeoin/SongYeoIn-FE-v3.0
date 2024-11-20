@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../common/layout/admin/AdminLayout';
 import CourseMainHeader from '../CourseMainHeader';
 import axios from 'axios';
 //import api from '../../common/api';
+import _ from 'lodash'; // Lodash를 import
 
 
 export const CourseList = () => {
@@ -13,7 +14,7 @@ export const CourseList = () => {
 
   // 코스 데이터를 가져오는 함수
 
-    const fetchCourses = async () => {
+    const fetchCourses = async (searchTerm) => {
       try {
         // axios로 GET 요청
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/course`,
@@ -24,7 +25,7 @@ export const CourseList = () => {
               size: 10
             },
             headers: {
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMTE4NTQ5LCJleHAiOjE3MzIxMjAzNDl9.9XxuM06rK9QZgbmHLcIU6K-tX8A8B19w0RkUWljjHdA`,
+              Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMTIwNDE1LCJleHAiOjE3MzIxMjIyMTV9.nE_MnIhZHw-rLcVA4QToYECRh7Ux6ZOuUv7dONfhJeY`,
             }
           });
         console.log(response.data.content);
@@ -35,9 +36,22 @@ export const CourseList = () => {
       }
     };
 
-  useEffect(() => {
+  // 디바운스된 검색 함수 생성
+  const debouncedFetchCourses = useCallback(
+    _.debounce((search) => {
+      fetchCourses(search);
+    }, 500), // 500ms 대기
+    []
+  );
+
+/*  useEffect(() => {
     fetchCourses();
-  }, [currentPage, searchTerm]);// currentPage가 변경될 때 데이터 로드
+  }, [currentPage, searchTerm]);// currentPage가 변경될 때 데이터 로드*/
+
+  useEffect(() => {
+    debouncedFetchCourses(searchTerm);
+  }, [searchTerm, currentPage]); // 검색어 또는 페이지 변경 시 실행
+
 
   // 검색어 업데이트(자식으로부터 받은 검색어 상태 업데이트)
   const handleSearch = (value) => {
