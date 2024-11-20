@@ -5,7 +5,7 @@ const Footer = ({ currentPage, totalPages, onPageChange }) => {
 
   // 5개 단위로 페이지 그룹 계산
   useEffect(() => {
-    const startPage = Math.floor(currentPage / 5) * 5 + 1;
+    const startPage = Math.floor((currentPage -1 )/ 5) * 5 + 1;
     const endPage = Math.min(startPage + 4, totalPages);
 
     const pages = [];
@@ -21,9 +21,9 @@ const Footer = ({ currentPage, totalPages, onPageChange }) => {
       {/* 페이징 처리 */}
       <nav className="flex items-center gap-2">
         {/* 이전 페이지 화살표 < */}
-        <button className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300"
-                onClick={() => onPageChange(Math.max(currentPage - 5, 1))}
-                disabled={currentPage <= 5}>
+        <button className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 disabled:opacity-50"
+                onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+                disabled={currentPage === 5}>
           <svg width="6" height="10" fill="none" stroke="currentColor">
             <path d="M5 9L1 5L5 1" />
           </svg>
@@ -34,7 +34,7 @@ const Footer = ({ currentPage, totalPages, onPageChange }) => {
             key={page}
             className={`w-8 h-8 flex items-center justify-center rounded-md ${
               currentPage === page
-                ? 'bg-[#225930] text-white'
+                ? 'bg-[#225930] text-white font-bold'
                 : 'border border-gray-300'
             }`}
             onClick={() => onPageChange(page)}
@@ -43,9 +43,9 @@ const Footer = ({ currentPage, totalPages, onPageChange }) => {
           </button>
         ))}
         {/* 다음 페이지 화살표 > */}
-        <button className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300"
-                onClick={() => onPageChange(Math.min(currentPage + 5, totalPages))}
-                disabled={currentPage > totalPages - 5}>
+        <button className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 disabled:opacity-50"
+                onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+                disabled={currentPage === totalPages}>
           <svg width="6" height="10" fill="none" stroke="currentColor">
             <path d="M1 9L5 5L1 1" />
           </svg>

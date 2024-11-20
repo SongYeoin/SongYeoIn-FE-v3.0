@@ -3,7 +3,7 @@ import Header from '../../header';
 import Footer from '../../Footer';
 import AdminSidebar from '../../AdminSidebar';
 
-const AdminLayout = ({ children }) => {
+const AdminLayout = ({ children, currentPage, totalPages, onPageChange }) => {
   return (
     <div
       className="w-full h-full absolute overflow-hidden bg-white flex flex-col">
@@ -24,7 +24,11 @@ const AdminLayout = ({ children }) => {
           </div>
 
             {/* 푸터 */}
-            <Footer />
+            <Footer
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
         </main>
       </div>
     </div>
