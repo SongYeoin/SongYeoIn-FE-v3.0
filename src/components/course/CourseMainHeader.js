@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const CourseMainHeader = () => {
+const CourseMainHeader = ({ onSearch = () => {} }) => {
+  const [searchTerm, setSearchTerm] = useState(''); // 검색어 상태
+
+  // 검색어 변경 이벤트 처리
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value); // 로컬 상태 업데이트
+    onSearch(value); // 상위 컴포넌트에 검색어 전달
+  };
+
+
+
   return (
-    <div className="flex flex-col w-full gap-4 pr-4">
+    <div className="flex flex-col w-full gap-6 pr-4">
       {/* Header Title */}
       <div className="flex justify-between items-center">
         <h1 className="text-xl md:text-2xl lg:text-3xl text-[#16161b]">
@@ -41,30 +52,28 @@ const CourseMainHeader = () => {
         </div>
       </div>
       <div className="flex flex-wrap gap-4 justify-end items-center">
-        {/* 작성자 필터 */}
+        {/* 검색 필터 */}
+
         <div
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300 w-full sm:w-auto">
-          <p className="text-sm text-gray-500">작성자</p>
+          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300 w-64">
           <svg
-            width="14"
-            height="6"
-            viewBox="0 0 14 6"
-            fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="ml-auto"
+            width="16"
+            height="16"
+            fill="#9A97A9"
+            className="bi bi-search"
+            viewBox="0 0 16 16"
           >
             <path
-              d="M8.29897 6L5.70103 6L0 0L3.20232 0L6.96392 4.26316L6.79253 4.21491L7.20747 4.21491L7.03608 4.26316L10.7977 0L14 0L8.29897 6Z"
-              fill="#DADADA"
-            ></path>
+              d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
           </svg>
+          <input className="text-sm text-gray-500 w-full"
+                 placeholder="검색할 과정명을 입력하세요."
+                 value={searchTerm} // 검색어 상태
+                 onChange={handleSearch} // 입력 이벤트 처리
+          />
         </div>
 
-        {/* 검색 필터 */}
-        <div
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
-          <p className="text-sm text-gray-500">검색할 내용을 입력하세요.</p>
-        </div>
       </div>
     </div>
   );
