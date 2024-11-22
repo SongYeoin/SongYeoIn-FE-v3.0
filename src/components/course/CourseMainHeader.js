@@ -1,6 +1,21 @@
 import React, { useState } from 'react';
+import CourseRegistration from './CourseRegistration';
 
-const CourseMainHeader = ({ onSearch = () => {} }) => {
+const CourseMainHeader = ({ onSearch,fetchCourses = () => {} }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
+
+  // 모달 열기
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  // 모달 닫기
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+
+
   const [searchTerm, setSearchTerm] = useState(''); // 검색어 상태
 
   // 검색어 변경 이벤트 처리
@@ -10,8 +25,6 @@ const CourseMainHeader = ({ onSearch = () => {} }) => {
     onSearch(value); // 상위 컴포넌트에 검색어 전달
   };
 
-
-
   return (
     <div className="flex flex-col w-full gap-6 pr-4">
       {/* Header Title */}
@@ -20,7 +33,9 @@ const CourseMainHeader = ({ onSearch = () => {} }) => {
           교육&nbsp;과정&nbsp;관리
         </h1>
         <div
-          className="flex justify-center items-center flex-grow-0 flex-shrink-0 h-10 relative gap-1 px-4 py-2 rounded-lg bg-[#225930]"
+          className="flex justify-center items-center flex-grow-0 flex-shrink-0 h-10 relative gap-1 px-4 py-2 rounded-lg bg-[#225930] hover:cursor-pointer transform transition-transform duration-300 hover:scale-110 will-change-transform"
+          style={{ textRendering: 'optimizeLegibility' }}
+          onClick={openModal}
         >
           <svg
             width="24"
@@ -75,6 +90,8 @@ const CourseMainHeader = ({ onSearch = () => {} }) => {
         </div>
 
       </div>
+      {/* 모달 컴포넌트 */}
+      <CourseRegistration isOpen={isModalOpen} onClose={closeModal} fetchCourses={fetchCourses}/>
     </div>
   );
 };
