@@ -26,7 +26,7 @@ const CourseDetail = ({ courseId, onClose }) => {
           `${process.env.REACT_APP_API_URL}/admin/course/${courseId}`,
           {
             headers: {
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMTk5NzMwLCJleHAiOjE3MzIyMDE1MzB9.RgHUaQZl-fJkKvpercJ8KClG5b_qyE8S1cq5tApF2m4`,
+              Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMzY5ODc4LCJleHAiOjE3MzIzNzE2Nzh9.05Upo70QeCyKH9qY5EEnhS2GIu7-TK1XdzJr4igOwBU`,
             },
           },
         );
@@ -60,7 +60,7 @@ const CourseDetail = ({ courseId, onClose }) => {
             size: 5, // 한 페이지에 5개
           },
           headers: {
-            Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMTk5NzMwLCJleHAiOjE3MzIyMDE1MzB9.RgHUaQZl-fJkKvpercJ8KClG5b_qyE8S1cq5tApF2m4`,
+            Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMzY5ODc4LCJleHAiOjE3MzIzNzE2Nzh9.05Upo70QeCyKH9qY5EEnhS2GIu7-TK1XdzJr4igOwBU`,
           },
         },
       );
@@ -384,7 +384,7 @@ const CourseDetail = ({ courseId, onClose }) => {
         </div>
 
         {/* 저장 버튼 */}
-        <div className="grid grid-col-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
               <button
                 className="bg-[#225930] font-bold text-white px-4 py-2 rounded hover:bg-gray-600"
               >
