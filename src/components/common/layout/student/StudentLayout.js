@@ -1,7 +1,8 @@
 import React from 'react';
 import Header from '../../header';
 import Footer from '../../Footer';
-import AdminSidebar from '../../AdminSidebar';
+import StudentSidebar from '../../StudentSidebar';
+
 
 const StudentLayout = ({ children }) => {
   return (
@@ -13,7 +14,7 @@ const StudentLayout = ({ children }) => {
       {/* 메인 영역 */}
       <div className="flex flex-1">
         {/* 사이드바 */}
-        <AdminSidebar />
+        <StudentSidebar />
 
         {/* 메인 콘텐츠 */}
         <main
