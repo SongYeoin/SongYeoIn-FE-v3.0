@@ -110,6 +110,10 @@ export const CourseList = () => {
         <CourseDetail
           courseId={selectedCourse}
           onClose={() => setSelectedCourse(null)}
+          onDeleteSuccess={() => {
+            setSelectedCourse(null); // 모달 닫기
+            fetchCourses(searchTerm, currentPage); // 전체 목록 새로고침
+          }}
         />)}
     </AdminLayout>
   );
