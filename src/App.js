@@ -31,6 +31,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Login } from './Login';
 import { Landing } from './Landing';
 import { Join } from './Join';
+import MemberList from './components/member/admin/MemberList.js';
 import CourseList from './components/course/admin/CourseList.js';
 
 function App() {
@@ -68,10 +69,10 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/login"
-               element={<Login />} />
+        <Route path="/login/:role" element={<Login />} />
         <Route path="/join"
                element={<Join />} />
+        <Route path="/admin/member" element={<MemberList />} />
         <Route path="/admin/course" element={<CourseList />} />
       </Routes>
     </Router>

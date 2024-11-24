@@ -1,13 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export const Landing = () => {
+/*export const Landing = () => {
 
   const navigate = useNavigate();
 
   const handleClick = () => {
     navigate('/login'); // Navigates to the login page
-  };
+  };*/
+
+  export const Landing = () => {
+    const navigate = useNavigate();
 
   return (
     /* 전체 크기 */
@@ -83,7 +86,8 @@ export const Landing = () => {
         <div
           className="w-[502px] h-[498px] relative rounded-[80px] bg-[#fffcfc]/30 flex flex-col items-center justify-center
           hover:bg-white/50 hover:scale-105 cursor-pointer"
-          onClick={handleClick}>
+          onClick={() => navigate('/login/student')}
+        >
           <img
             src="/images/student_icon.jpg"
             className="w-[225px] h-[242px] object-cover"
@@ -99,7 +103,7 @@ export const Landing = () => {
         <div
           className="w-[502px] h-[500px] relative rounded-[80px] bg-[#fffcfc]/30  flex flex-col items-center justify-center
           hover:bg-white/50 hover:scale-105 cursor-pointer"
-          onClick={handleClick}>
+          onClick={() => navigate('/login/admin')}>
           <img
             src="/images/admin_icon.jpg"
             className="w-[200px] h-52 object-cover"
