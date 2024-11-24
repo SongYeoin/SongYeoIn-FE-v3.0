@@ -1,35 +1,32 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-export const Login = () => {
-  const { role } = useParams(); // 역할 정보 가져오기 (student/admin)
+export const Login = ({ role }) => {
   const navigate = useNavigate();
 
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogin = async () => {
     try {
-      // 역할에 따라 API 경로 설정
+      // 역할에 따라 API 엔드포인트 및 리디렉션 경로 설정
       const endpoint =
         role === 'student'
           ? `${process.env.REACT_APP_API_URL}/login`
           : `${process.env.REACT_APP_API_URL}/admin/member/login`;
-      const redirectPath = role === 'student' ? '/attendance' : '/admin/member';
+      const redirectPath = role === 'student' ? '/main' : '/admin/member';
 
       const response = await axios.post(endpoint, { username: id, password });
-      console.log("응답 데이터:", response.data); // 서버 응답 로그 출력
 
+      // 토큰 가져오기
       const token = response.data.accessToken;
 
-
       if (!token) {
-        alert("로그인 실패: 서버에서 토큰이 반환되지 않았습니다.");
+        setErrorMessage('서버 내부 오류가 발생했습니다.');
         return;
       }
-
-      console.log("토큰 저장:", token); // 저장 전에 확인
 
       // 토큰 저장
       sessionStorage.setItem('token', token);
@@ -37,8 +34,20 @@ export const Login = () => {
       // 페이지 이동
       navigate(redirectPath);
     } catch (error) {
-      console.error('로그인 실패:', error.response || error.message);
-      alert('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
+      if (error.response) {
+        const { code, message } = error.response.data;
+
+        if (code === 'USER_003') {
+          setErrorMessage('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
+        } else if (code === 'COMMON_001') {
+          setErrorMessage('아이디나 비밀번호를 입력해주세요.');
+        } else {
+          // 나머지는 백엔드의 메시지를 그대로 출력
+          setErrorMessage(message);
+        }
+      } else {
+        setErrorMessage('서버와의 통신에 실패했습니다. 다시 시도해주세요.');
+      }
     }
   };
 
@@ -47,28 +56,21 @@ export const Login = () => {
   };
 
   return (
-    /* 전체 크기 */
     <div
-      className="w-full h-full left-0 top-0 absolute overflow-hidden bg-white flex justify-center items-center"
-    >
+      className="w-full h-full left-0 top-0 absolute overflow-hidden bg-white flex justify-center items-center">
       {/* 배경 이미지 */}
       <div
-        className="w-full h-full absolute bg-no-repeat bg-center bg-cover left-0 top-0 object-cover bg-[url('./images/background_jpg.jpg')]"
-      />
+        className="w-full h-full absolute bg-no-repeat bg-center bg-cover left-0 top-0 object-cover bg-[url('./images/background_jpg.jpg')]" />
 
-      {/* content 전체 담는 div */}
+      {/* 로그인 박스 */}
       <div
-        className="w-[690px] h-[858px] relative rounded-[80px] bg-[#fffcfc]/10 flex flex-col items-center gap-11"
-      >
+        className="w-[690px] h-[858px] relative rounded-[80px] bg-[#fffcfc]/10 flex flex-col items-center gap-11">
         <p
-          className="w-[172px] h-[71px] text-[46px] font-bold text-center text-black mt-20 mb-16"
-        >
-          Login
-        </p>
+          className="w-[172px] h-[71px] text-[46px] font-bold text-center text-black mt-20 mb-16">Login</p>
+
         {/* 아이디 입력칸 */}
         <div
-          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-5 p-5"
-        >
+          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-5 p-5">
           <svg
             width="45"
             height="44"
@@ -96,8 +98,7 @@ export const Login = () => {
 
         {/* 비밀번호 입력칸 */}
         <div
-          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-4 p-5"
-        >
+          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-4 p-5">
           <svg
             width="49"
             height="43"
@@ -116,12 +117,18 @@ export const Login = () => {
             ></path>
           </svg>
           <input
+            type="password"
             className="w-[380px] h-9 text-[29px] text-left text-white bg-transparent"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+
+        {/* 에러 메시지 */}
+        {errorMessage && (
+          <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
+        )}
 
         <div className="gap-6 flex flex-col items-center">
           {/* 로그인 버튼 */}
