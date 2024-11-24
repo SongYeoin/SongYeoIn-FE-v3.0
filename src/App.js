@@ -1,77 +1,27 @@
-// import logo from './logo.svg';
-//import './App.css';
-//
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
-//
-// export default App;
-
-// App.js
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Login } from './Login';
 import { Landing } from './Landing';
 import { Join } from './Join';
-import MemberList from './components/member/admin/MemberList.js';
-import CourseList from './components/course/admin/CourseList.js';
+import MemberList from './components/member/admin/MemberList';
+import CourseList from './components/course/admin/CourseList';
 
 function App() {
-  const [setMessage] = useState('');
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/test`);
-        setMessage(response.data);
-      } catch (error) {
-        if (error.response) {
-          console.error("Error fetching data:", error.response.status, error.response.data);
-        } else if (error.request) {
-          console.error("Error with request:", error.request);
-        } else {
-          console.error("Error:", error.message);
-        }
-      }
-    };
-
-    fetchData();
-  }, []);
-
   return (
-
     <Router>
-
-{/*      <div className="App">
-        <div>
-          <h1>Message from Spring Boot:</h1>
-          <p>{message}</p>
-        </div>
-      </div>*/}
-
       <Routes>
+        {/* Landing Page */}
         <Route path="/" element={<Landing />} />
-        <Route path="/login/:role" element={<Login />} />
-        <Route path="/join"
-               element={<Join />} />
+
+        {/* Student Login */}
+        <Route path="/login/student" element={<Login role="student" />} />
+
+        {/* Admin Login */}
+        <Route path="/login/admin" element={<Login role="admin" />} />
+
+        {/* Registration */}
+        <Route path="/join" element={<Join />} />
+
+        {/* Admin Pages */}
         <Route path="/admin/member" element={<MemberList />} />
         <Route path="/admin/course" element={<CourseList />} />
       </Routes>

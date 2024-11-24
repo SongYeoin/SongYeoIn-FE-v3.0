@@ -8,7 +8,6 @@ axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 axios.interceptors.request.use(
   (config) => {
     const token = sessionStorage.getItem('token'); // sessionStorage에서 토큰 가져오기
-    console.log('Token being sent:', token); // 토큰 확인
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
