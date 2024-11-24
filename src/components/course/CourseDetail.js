@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from 'api/axios';
 
 const CourseDetail = ({ courseId, onClose }) => {
   console.log('courseId :' + courseId);
@@ -130,9 +130,6 @@ const CourseDetail = ({ courseId, onClose }) => {
         `${process.env.REACT_APP_API_URL}/admin/course/${courseId}`,
         course,
         {
-          headers: {
-            Authorization: `Bearer YOUR_ACCESS_TOKEN`,
-          },
         },
       );
       setCourse(response.data); // 업데이트된 데이터 반영

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from 'api/axios';
 
 const CourseRegistration = ({ isOpen, onClose,fetchCourses }) => {
   const [formData, setFormData] = useState({
@@ -26,7 +26,7 @@ const CourseRegistration = ({ isOpen, onClose,fetchCourses }) => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/course/modal`, {
         headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMTc4NTk1LCJleHAiOjE3MzIxODAzOTV9.96A8p00SicVvgeaTKKQRCfw8eaMqvda8tRicoNZh-Ws`,
+          Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyNDM0NzExLCJleHAiOjE3MzI0MzY1MTF9.z4ARkm-ozH4dMiLV12su1GEPhLRKMGLFTwmXLd-nb_k`,
         },
       });
       setAdmins(response.data); // 서버에서 가져온 담당자 리스트 설정
