@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'api/axios';
 
-const CourseDetail = ({ courseId, onClose }) => {
+const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
   //console.log('courseId :' + courseId);
 
   const [originalCourse, setOriginalCourse] = useState(null); // 원래 course 데이터
@@ -285,6 +285,7 @@ const CourseDetail = ({ courseId, onClose }) => {
 
       alert("과정이 성공적으로 삭제되었습니다.");
       onClose(); // 삭제 후 모달 닫기
+      if (onDeleteSuccess) onDeleteSuccess(); // 부모 컴포넌트에 성공 알림
     } catch (err) {
       console.error("Error deleting course:", err);
       alert("과정을 삭제하는 중 오류가 발생했습니다.");
