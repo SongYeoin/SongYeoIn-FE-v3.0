@@ -2,11 +2,21 @@ import { useEffect, useState } from 'react';
 import axios from 'api/axios';
 
 const CourseDetail = ({ courseId, onClose }) => {
-  console.log('courseId :' + courseId);
+  //console.log('courseId :' + courseId);
 
+  const [originalCourse, setOriginalCourse] = useState(null); // 원래 course 데이터
+  const [originalSchedule, setOriginalSchedule] = useState([]); // 원래 schedule 데이터
 
   const [course, setCourse] = useState(null); //courseDTO 형태
   const [schedule, setSchedule] = useState([]);   //List 형태
+  const [newPeriod, setNewPeriod] = useState({
+    dayOfWeek: "",
+    name: "",
+    startTime: "",
+    endTime: "",
+  });
+  const [deletedPeriods, setDeletedPeriods] = useState([]);
+
   const [members, setMembers] = useState(null);   // Page<MemberDTO> 형태
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,14 +36,16 @@ const CourseDetail = ({ courseId, onClose }) => {
           `${process.env.REACT_APP_API_URL}/admin/course/${courseId}`,
           {
             headers: {
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMzY5ODc4LCJleHAiOjE3MzIzNzE2Nzh9.05Upo70QeCyKH9qY5EEnhS2GIu7-TK1XdzJr4igOwBU`,
+              Authorization: `Bearer `,
             },
           },
         );
 
         const { course, schedule } = response.data;
         setCourse(course);
+        setOriginalCourse(course); // 원본 데이터 저장
         setSchedule(schedule.periods || []);
+        setOriginalSchedule(schedule.periods || []); // 원본 데이터 저장
       } catch (err) {
         setError(err.message || 'Error fetching course details');
       } finally {
@@ -60,7 +72,7 @@ const CourseDetail = ({ courseId, onClose }) => {
             size: 5, // 한 페이지에 5개
           },
           headers: {
-            Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMzY5ODc4LCJleHAiOjE3MzIzNzE2Nzh9.05Upo70QeCyKH9qY5EEnhS2GIu7-TK1XdzJr4igOwBU`,
+            Authorization: `Bearer `,
           },
         },
       );
@@ -109,32 +121,145 @@ const CourseDetail = ({ courseId, onClose }) => {
   }
 
   if (!course) {
-    return null;
+    return <p>과정 정보를 불러오는 중입니다...</p>;
   }
-  
+
+
 
   const handleCourseChange = (e) => {
     const { name, value } = e.target;
-    setCourse({ ...course, [name]: value });
+    setCourse((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleScheduleChange = (index, field, value) => {
-    const updatedSchedule = [...schedule];
-    updatedSchedule[index][field] = value;
-    setSchedule(updatedSchedule);
+  const handlePeriodChange  = (index, field, value) => {
+    const updatedPeriods = [...schedule];
+    updatedPeriods[index] = { ...updatedPeriods[index], [field]: value };
+    setSchedule(updatedPeriods);
   };
+
+  const getUpdatedFields = (original, updated) => {
+    const updatedFields = {};
+    Object.keys(updated).forEach((key) => {
+      if (original[key] !== updated[key]) {
+        updatedFields[key] = updated[key];
+      }
+    });
+    return updatedFields;
+  };
+
+
+  const handleAddPeriod = () => {
+    if (!newPeriod.dayOfWeek || !newPeriod.name || !newPeriod.startTime || !newPeriod.endTime) {
+      alert('모든 필드를 입력해야 합니다.');
+      return;
+    }
+    /*setSchedule([
+      ...schedule,
+      { ...newPeriod, id: null }, // New periods have no ID
+    ]);*/
+
+    // 새 교시 추가
+    const newSchedule = [
+      ...schedule,
+      { ...newPeriod, id: null }, // New periods have no ID
+    ];
+    setSchedule(newSchedule);
+
+    setNewPeriod({
+      dayOfWeek: "",
+      name: "",
+      startTime: "",
+      endTime: "",
+    });
+  };
+
+  const handleDeletePeriod = (index) => {
+    const period = schedule[index];
+    if (period.id) {
+      setDeletedPeriods([...deletedPeriods, period.id]); // Track deleted periods
+    }
+    setSchedule(schedule.filter((_, i) => i !== index));
+  };
+
 
   const handleSave = async () => {
     try {
-      const response = await axios.put(
+      // schedule이 정의되지 않았거나 빈 배열일 경우 처리
+      if (!schedule || schedule.length === 0) {
+        alert("시간표 데이터가 없습니다.");
+        return;
+      }
+
+
+      // 수정된 Course 필드만 추출
+      const updatedCourse = getUpdatedFields(originalCourse, course);
+
+      // 수정된 Schedule 필드만 추출
+      const updatedPeriods = schedule.filter((period) => {
+        if (period.id) {
+          // 기존 교시와 비교해 변경 사항이 있는 경우만 포함
+          const originalPeriod = originalSchedule.find((p) => p.id === period.id);
+          return originalPeriod && JSON.stringify(originalPeriod) !== JSON.stringify(period);
+        }
+        return false; // 새 교시는 제외
+      });
+
+      // 새로 추가된 Period 추출
+      const newPeriods = schedule.filter((period) => !period.id);
+
+      // payload의 scheduleId 포함 여부 결정
+      const schedulePayload = {
+        updatedPeriods,
+        newPeriods,
+        deletedPeriodIds: deletedPeriods,
+      };
+
+      // 수정사항이 있는 경우에만 scheduleId 추가
+      if (updatedPeriods.length > 0 || newPeriods.length > 0 || deletedPeriods.length > 0) {
+        schedulePayload.scheduleId = schedule[0]?.scheduleId || null;
+      }
+
+      // payload 생성
+      const payload = {
+        course: updatedCourse, // 수정된 course 필드만 포함
+        schedule: schedulePayload, // 조건에 따라 scheduleId 포함
+      };
+
+      const response = await axios.patch(
         `${process.env.REACT_APP_API_URL}/admin/course/${courseId}`,
-        course,
+        payload,
         {
         },
       );
-      setCourse(response.data); // 업데이트된 데이터 반영
+      // 업데이트된 데이터 반영
+      const { course: updatedCourseResponse, updatedPeriods: updatedPeriodsResponse } = response.data;
+
+      // 상태 업데이트
+      if (updatedCourseResponse) {
+        setCourse(updatedCourseResponse);
+        setOriginalCourse(updatedCourseResponse); // 초기 값 갱신
+      }
+
+      // 받아온 schedule이 null일 경우 기존 schedule 유지
+      /*if (updatedPeriodsResponse) {
+        setSchedule(updatedPeriodsResponse);
+        setOriginalSchedule(updatedPeriodsResponse); // 초기 값 갱신
+      } else {
+        setSchedule(originalSchedule); // 수정된 schedule이 없으면 기존 값 유지
+      }*/
+      // 서버에서 반환된 교시와 추가된 교시를 병합
+      const mergedSchedule = [
+        ...(updatedPeriodsResponse || []),
+        ...newPeriods, // 추가된 교시 유지
+      ];
+
+      setSchedule(mergedSchedule);
+      setOriginalSchedule(mergedSchedule);
+
+      alert("저장되었습니다!");
     } catch (err) {
-      console.error(err);
+      console.error("Error saving course details:", err);
+      alert("저장 중 오류가 발생했습니다.");
     }
   };
 
@@ -185,12 +310,12 @@ const CourseDetail = ({ courseId, onClose }) => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-600 font-bold">과정명</p>
-                  <input
-                    name="name"
-                    value={course.name || ""}
-                    onChange={handleCourseChange}
-                    className="text-base font-normal border border-gray-300 rounded-lg p-2">
-                  </input>
+                <input
+                  name="name"
+                  value={course.name || ""}
+                  onChange={handleCourseChange}
+                  className="text-base font-normal border border-gray-300 rounded-lg p-2">
+                </input>
               </div>
               <div>
                 <p className="text-sm text-gray-600 font-bold">강의실</p>
@@ -217,7 +342,7 @@ const CourseDetail = ({ courseId, onClose }) => {
               <div>
                 <p className="text-sm text-gray-600 font-bold">강사명</p>
                 <input
-                  name="description"
+                  name="teacherName"
                   value={course.teacherName || ''}
                   onChange={handleCourseChange}
                   className="text-base font-normal border border-gray-300 rounded-lg p-2 w-full"
@@ -255,8 +380,8 @@ const CourseDetail = ({ courseId, onClose }) => {
                 <p
                   className={`bg-gray-500 text-base font-font-normal border border-gray-300 rounded-lg p-2 ${course.status
                   === 'Y' ? 'text-green-500' : 'text-gray-400'}`}>
-                    {course.status === 'Y' ? '활성' : '종강'}
-                  </p>
+                  {course.status === 'Y' ? '활성' : '종강'}
+                </p>
               </div>
             </div>
           </div>
@@ -269,46 +394,94 @@ const CourseDetail = ({ courseId, onClose }) => {
               className="text-lg font-bold mb-4 border-b border-gray-300 pb-2">시간표</h3>
             <button className="border border-gray-300 font-bold">추가</button>
           </div>
-          {schedule.length > 0 ? (
-            <ul className="list-disc list-inside">
-              {schedule.map((period, index) => (
-                <li key={index} className="flex gap-2 items-center">
-                  <input
-                    value={period.dayOfWeek}
-                    onChange={(e) =>
-                      handleScheduleChange(index, 'dayOfWeek', e.target.value)
-                    }
-                    className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/5"
-                  />
-                  <input
-                    value={period.name}
-                    onChange={(e) =>
-                      handleScheduleChange(index, 'name', e.target.value)
-                    }
-                    className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/5"
-                  />
-                  <input
-                    type="time"
-                    value={period.startTime}
-                    onChange={(e) =>
-                      handleScheduleChange(index, 'startTime', e.target.value)
-                    }
-                    className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/4"
-                  />
-                  <input
-                    type="time"
-                    value={period.endTime}
-                    onChange={(e) =>
-                      handleScheduleChange(index, 'endTime', e.target.value)
-                    }
-                    className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/4"
-                  />
-                </li>
-              ))}
-            </ul>
+          {schedule && schedule.length > 0 ? (
+            schedule.map((period, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={period.dayOfWeek}
+                  onChange={(e) =>
+                    handlePeriodChange(index, 'dayOfWeek', e.target.value)
+                  }
+                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/5"
+                  placeholder="요일"
+                />
+                <input
+                  type="text"
+                  value={period.name}
+                  onChange={(e) =>
+                    handlePeriodChange(index, 'name', e.target.value)
+                  }
+                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/5"
+                  placeholder="교시명"
+                />
+                <input
+                  type="time"
+                  value={period.startTime}
+                  onChange={(e) =>
+                    handlePeriodChange(index, 'startTime', e.target.value)
+                  }
+                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/4"
+                  placeholder="시작시간"
+                />
+                <input
+                  type="time"
+                  value={period.endTime}
+                  onChange={(e) =>
+                    handlePeriodChange(index, 'endTime', e.target.value)
+                  }
+                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/4"
+                  placeholder="종료시간"
+                />
+                <button
+                  className="ml-2 text-red-500"
+                  onClick={() => handleDeletePeriod(index)}
+                >
+                  삭제
+                </button>
+              </div>
+            ))
           ) : (
             <p className="text-gray-500">시간표 정보가 없습니다.</p>
           )}
+        </div>
+        <div className="mt-4">
+          <h4 className="font-bold">새 교시 추가</h4>
+          <input
+            type="text"
+            value={newPeriod.dayOfWeek}
+            onChange={(e) =>
+              setNewPeriod({ ...newPeriod, dayOfWeek: e.target.value })
+            }
+            placeholder="요일"
+          />
+          <input
+            type="text"
+            value={newPeriod.name}
+            onChange={(e) =>
+              setNewPeriod({ ...newPeriod, name: e.target.value })
+            }
+            placeholder="교시명"
+          />
+          <input
+            type="time"
+            value={newPeriod.startTime}
+            onChange={(e) =>
+              setNewPeriod({ ...newPeriod, startTime: e.target.value })
+            }
+            placeholder="시작시간"
+          />
+          <input
+            type="time"
+            value={newPeriod.endTime}
+            onChange={(e) =>
+              setNewPeriod({ ...newPeriod, endTime: e.target.value })
+            }
+            placeholder="종료시간"
+          />
+          <button onClick={handleAddPeriod} className="text-red-500">
+            추가
+          </button>
         </div>
 
         {/* 수강생 목록 */}
@@ -385,16 +558,16 @@ const CourseDetail = ({ courseId, onClose }) => {
 
         {/* 저장 버튼 */}
         <div className="grid grid-cols-2 gap-4">
-              <button
-                className="bg-[#225930] font-bold text-white px-4 py-2 rounded hover:bg-gray-600"
-              >
-                삭제
-              </button>
-              <button
-                onClick={handleSave}
-                className="bg-[#225930] font-bold text-white px-4 py-2 rounded hover:bg-blue-600">
-                저장
-              </button>
+          <button
+            className="bg-[#225930] font-bold text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            삭제
+          </button>
+          <button
+            onClick={handleSave}
+            className="bg-[#225930] font-bold text-white px-4 py-2 rounded hover:bg-blue-600">
+            저장
+          </button>
         </div>
       </div>
     </div>
