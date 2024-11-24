@@ -20,6 +20,7 @@ const CourseDetail = ({ courseId, onClose }) => {
   const [members, setMembers] = useState(null);   // Page<MemberDTO> 형태
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
   
   //const [editedCourse, setEditedCourse] = useState(null); // 수정된 값 관리
 
@@ -266,6 +267,31 @@ const CourseDetail = ({ courseId, onClose }) => {
   if (!course) {
     return <p>Loading...</p>;
   }
+
+  /* courseId를 가지고 가서 교육과정 관련 정보와 시간표, enroll에서 해당 반으로 된 레코드 모두 지우기 */
+  const handleCourseDelete = async () => {
+    const confirmDelete = window.confirm("해당 교육과정과 관련된 정보와 시간표, 수강생 목록이 삭제됩니다. 정말 이 과정을 삭제하시겠습니까?");
+    if (!confirmDelete) {
+      // 사용자가 삭제를 취소한 경우
+      return;
+    }
+
+    try {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/admin/course/${courseId}`, {
+        headers: {
+          Authorization: `Bearer `,
+        },
+      });
+
+      alert("과정이 성공적으로 삭제되었습니다.");
+      onClose(); // 삭제 후 모달 닫기
+    } catch (err) {
+      console.error("Error deleting course:", err);
+      alert("과정을 삭제하는 중 오류가 발생했습니다.");
+    }
+  };
+
+
 
   return (
     <div
@@ -559,6 +585,7 @@ const CourseDetail = ({ courseId, onClose }) => {
         {/* 저장 버튼 */}
         <div className="grid grid-cols-2 gap-4">
           <button
+            onClick={handleCourseDelete}
             className="bg-[#225930] font-bold text-white px-4 py-2 rounded hover:bg-gray-600"
           >
             삭제
