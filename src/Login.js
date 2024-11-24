@@ -1,8 +1,46 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export const Login = () => {
+  const { role } = useParams(); // 역할 정보 가져오기 (student/admin)
   const navigate = useNavigate();
+
+  const [id, setId] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      // 역할에 따라 API 경로 설정
+      const endpoint =
+        role === 'student'
+          ? `${process.env.REACT_APP_API_URL}/login`
+          : `${process.env.REACT_APP_API_URL}/admin/member/login`;
+      const redirectPath = role === 'student' ? '/attendance' : '/admin/member';
+
+      const response = await axios.post(endpoint, { username: id, password });
+      console.log("응답 데이터:", response.data); // 서버 응답 로그 출력
+
+      const token = response.data.accessToken;
+
+
+      if (!token) {
+        alert("로그인 실패: 서버에서 토큰이 반환되지 않았습니다.");
+        return;
+      }
+
+      console.log("토큰 저장:", token); // 저장 전에 확인
+
+      // 토큰 저장
+      sessionStorage.setItem('token', token);
+
+      // 페이지 이동
+      navigate(redirectPath);
+    } catch (error) {
+      console.error('로그인 실패:', error.response || error.message);
+      alert('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
+    }
+  };
 
   const handleClick = () => {
     navigate('/join');
@@ -11,8 +49,8 @@ export const Login = () => {
   return (
     /* 전체 크기 */
     <div
-      className="w-full h-full left-0 top-0 absolute overflow-hidden bg-white flex justify-center items-center">
-
+      className="w-full h-full left-0 top-0 absolute overflow-hidden bg-white flex justify-center items-center"
+    >
       {/* 배경 이미지 */}
       <div
         className="w-full h-full absolute bg-no-repeat bg-center bg-cover left-0 top-0 object-cover bg-[url('./images/background_jpg.jpg')]"
@@ -20,17 +58,17 @@ export const Login = () => {
 
       {/* content 전체 담는 div */}
       <div
-        className="w-[690px] h-[858px] relative rounded-[80px] bg-[#fffcfc]/10 flex flex-col items-center gap-11">
+        className="w-[690px] h-[858px] relative rounded-[80px] bg-[#fffcfc]/10 flex flex-col items-center gap-11"
+      >
         <p
           className="w-[172px] h-[71px] text-[46px] font-bold text-center text-black mt-20 mb-16"
         >
           Login
         </p>
-        {/* 아이디 입력칸*/}
+        {/* 아이디 입력칸 */}
         <div
           className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-5 p-5"
         >
-          {/* 사람 이모티콘 */}
           <svg
             width="45"
             height="44"
@@ -48,19 +86,18 @@ export const Login = () => {
               strokeLinejoin="round"
             ></path>
           </svg>
-          {/* ID 입력하는 input */}
           <input
             className="w-[380px] h-9 text-[29px] text-left text-white bg-transparent"
-            placeholder={'ID'}>
-          </input>
+            placeholder="ID"
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+          />
         </div>
 
-
-        {/*비밀번호 입력칸*/}
+        {/* 비밀번호 입력칸 */}
         <div
           className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-4 p-5"
         >
-          {/* 자물쇠 아이콘 */}
           <svg
             width="49"
             height="43"
@@ -78,67 +115,32 @@ export const Login = () => {
               strokeLinejoin="round"
             ></path>
           </svg>
-
-          {/* PASSWORD 입력하는 input */}
           <input
-            className="w-[380px] h-9 block text-[29px] text-left text-white bg-transparent"
-            placeholder={'Password'}>
-          </input>
+            className="w-[380px] h-9 text-[29px] text-left text-white bg-transparent"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
 
         <div className="gap-6 flex flex-col items-center">
-          <div className="w-[490px] h-11 flex flex-row p-2">
-            {/* 체크박스 아이콘과 텍스트 */}
-            <div className="w-[490px] h-11 flex flex-row gap-2">
-              <svg
-                width="41"
-                height="41"
-                viewBox="0 0 41 41"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-[41px] h-[41px]"
-                preserveAspectRatio="xMidYMid meet"
-              >
-                <path
-                  d="M18.1083 27.675L30.1521 15.6313L27.7604 13.2396L18.1083 22.8917L13.2396 18.0229L10.8479 20.4146L18.1083 27.675ZM8.54167 35.875C7.60208 35.875 6.79774 35.5405 6.12865 34.8714C5.45955 34.2023 5.125 33.3979 5.125 32.4583V8.54167C5.125 7.60208 5.45955 6.79774 6.12865 6.12865C6.79774 5.45955 7.60208 5.125 8.54167 5.125H32.4583C33.3979 5.125 34.2023 5.45955 34.8714 6.12865C35.5405 6.79774 35.875 7.60208 35.875 8.54167V32.4583C35.875 33.3979 35.5405 34.2023 34.8714 34.8714C34.2023 35.5405 33.3979 35.875 32.4583 35.875H8.54167ZM8.54167 32.4583H32.4583V8.54167H8.54167V32.4583Z"
-                  fill="white"
-                ></path>
-              </svg>
-              <p
-                className="w-[253px] h-9 text-[25px] text-left text-white">
-                로그인 정보 기억하기
-              </p>
-            </div>
-
-            <p
-              className="w-36 h-9 text-[25px] text-left text-white hover:bg-white/50 hover:scale-105 cursor-pointer"
-              onClick={handleClick}>
-              회원가입
-            </p>
-          </div>
-
-
           {/* 로그인 버튼 */}
-          <div
-            className="w-[273px] h-[74px] rounded-[20px] bg-[#6a896b]/90 flex justify-center items-center"
+          <button
+            onClick={handleLogin}
+            className="w-[273px] h-[74px] rounded-[20px] bg-[#6a896b]/90 flex justify-center items-center text-[25px] font-bold text-center text-white"
           >
-            <p
-              className="text-[25px] font-bold text-center text-white"
-            >
-              로그인
-            </p>
-          </div>
+            로그인
+          </button>
 
-
+          {/* 회원가입 버튼 */}
           <p
-            className="w-[200px] h-9 text-[25px] text-left text-white">
-            비밀번호 초기화
+            className="w-[100px] h-[30px] text-[25px] text-right text-white cursor-pointer hover:bg-white/50 hover:scale-105 mt-4"
+            onClick={handleClick}
+          >
+            회원가입
           </p>
         </div>
       </div>
-
-
     </div>
-
   );
 };
