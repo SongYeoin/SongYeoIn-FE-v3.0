@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../common/layout/admin/AdminLayout';
 import CourseMainHeader from '../CourseMainHeader';
-import axios from 'axios';
+import axios from 'api/axios';
 //import api from '../../common/api';
 import _ from 'lodash';
 import CourseDetail from '../CourseDetail'; // Lodash를 import
@@ -27,7 +27,7 @@ export const CourseList = () => {
               size: 10
             },
             headers: {
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMTk5NzMwLCJleHAiOjE3MzIyMDE1MzB9.RgHUaQZl-fJkKvpercJ8KClG5b_qyE8S1cq5tApF2m4`,
+              Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyNDMyNTE5LCJleHAiOjE3MzI0MzQzMTl9.dqu7pQaXYeTu0XEWIeokAuzxcIJC8b18oyFAE1JYxLM`,
             }
           });
         console.log(response.data.content);
