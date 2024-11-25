@@ -25,9 +25,6 @@ export const CourseList = () => {
               word: searchTerm,
               page: page -1,
               size: 10
-            },
-            headers: {
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyNDMyNTE5LCJleHAiOjE3MzI0MzQzMTl9.dqu7pQaXYeTu0XEWIeokAuzxcIJC8b18oyFAE1JYxLM`,
             }
           });
         console.log(response.data.content);
@@ -42,7 +39,7 @@ export const CourseList = () => {
   const debouncedFetchCourses = useCallback(
     _.debounce((search,page) => {
       fetchCourses(search,page);
-    }, 500), // 500ms 대기
+    }, 200), // 500ms 대기
     []
   );
 

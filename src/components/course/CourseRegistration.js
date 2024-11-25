@@ -25,9 +25,6 @@ const CourseRegistration = ({ isOpen, onClose,fetchCourses }) => {
   const fetchAdmins = async () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/course/modal`, {
-        headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyNDM0NzExLCJleHAiOjE3MzI0MzY1MTF9.z4ARkm-ozH4dMiLV12su1GEPhLRKMGLFTwmXLd-nb_k`,
-        },
       });
       setAdmins(response.data); // 서버에서 가져온 담당자 리스트 설정
     } catch (error) {
@@ -86,7 +83,6 @@ const CourseRegistration = ({ isOpen, onClose,fetchCourses }) => {
         },
         {
           headers: {
-            Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzMyMTc4NTk1LCJleHAiOjE3MzIxODAzOTV9.96A8p00SicVvgeaTKKQRCfw8eaMqvda8tRicoNZh-Ws`, // 실제 토큰으로 대체
             'Content-Type': 'application/json',
           },
         }

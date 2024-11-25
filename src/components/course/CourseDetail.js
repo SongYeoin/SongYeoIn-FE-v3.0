@@ -36,9 +36,6 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
         const response = await axios.get(
           `${process.env.REACT_APP_API_URL}/admin/course/${courseId}`,
           {
-            headers: {
-              Authorization: `Bearer `,
-            },
           },
         );
 
@@ -71,10 +68,7 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
           params: {
             page: page - 1, // 0-based index
             size: 5, // 한 페이지에 5개
-          },
-          headers: {
-            Authorization: `Bearer `,
-          },
+          }
         },
       );
 
@@ -278,9 +272,6 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
 
     try {
       await axios.delete(`${process.env.REACT_APP_API_URL}/admin/course/${courseId}`, {
-        headers: {
-          Authorization: `Bearer `,
-        },
       });
 
       alert("과정이 성공적으로 삭제되었습니다.");
