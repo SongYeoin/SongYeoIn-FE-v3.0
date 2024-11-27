@@ -3,8 +3,7 @@ import Header from '../../header';
 import Footer from '../../Footer';
 import StudentSidebar from '../../StudentSidebar';
 
-
-const StudentLayout = ({ children }) => {
+const StudentLayout = ({ children, currentPage, totalPages, onPageChange }) => {
   return (
     <div
       className="w-full h-full absolute overflow-hidden bg-white flex flex-col">
@@ -24,12 +23,16 @@ const StudentLayout = ({ children }) => {
             {children}
           </div>
 
-            {/* 푸터 */}
-            <Footer />
+          {/* 푸터 */}
+          <Footer
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
         </main>
       </div>
     </div>
-);
+  );
 };
 
 export default StudentLayout;
