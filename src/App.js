@@ -6,6 +6,7 @@ import MemberList from './components/member/admin/MemberList';
 import CourseList from './components/course/admin/CourseList';
 import AdminNoticeList from './components/notice/admin/AdminNoticeList';
 import StudentNoticeList from './components/notice/student/StudentNoticeList';
+import AttendanceList from './components/attendance/AttendanceList';
 
 function App() {
   return (
@@ -27,6 +28,8 @@ function App() {
         <Route path="/admin/member" element={<MemberList />} />
         <Route path="/admin/course" element={<CourseList />} />
         <Route path="/admin/notice" element={<AdminNoticeList />} />
+        <Route path="/admin/attendance" element={<AttendanceList />} />
+
 
         {/* Student Pages */}
         <Route path="/notice" element={<StudentNoticeList />} />
