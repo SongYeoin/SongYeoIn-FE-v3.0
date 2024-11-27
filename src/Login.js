@@ -14,7 +14,7 @@ export const Login = ({ role }) => {
       // 역할에 따라 API 엔드포인트 및 리디렉션 경로 설정
       const endpoint =
         role === 'student'
-          ? `${process.env.REACT_APP_API_URL}/login`
+          ? `${process.env.REACT_APP_API_URL}/member/login`
           : `${process.env.REACT_APP_API_URL}/admin/member/login`;
       const redirectPath = role === 'student' ? '/main' : '/admin/member';
 
@@ -66,7 +66,11 @@ export const Login = ({ role }) => {
       <div
         className="w-[690px] h-[858px] relative rounded-[80px] bg-[#fffcfc]/10 flex flex-col items-center gap-11">
         <p
-          className="w-[172px] h-[71px] text-[46px] font-bold text-center text-black mt-20 mb-16">Login</p>
+          className="w-[172px] h-[71px] text-[46px] font-bold text-center text-black mt-20 mb-16 cursor-pointer hover:text-gray-600 hover:underline transition-all duration-300"
+          onClick={() => navigate('/')}
+        >
+          Login
+        </p>
 
         {/* 아이디 입력칸 */}
         <div
