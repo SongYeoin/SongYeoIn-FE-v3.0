@@ -1,212 +1,284 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export const Join = () => {
   const navigate = useNavigate();
 
-  const handleClick = () => {
-    navigate('/login');
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    confirmPassword: '',
+    name: '',
+    birthday: '',
+    email: '',
+    role: 'STUDENT',
+  });
+
+  const [errors, setErrors] = useState({});
+
+  // 필드 유효성 검사
+  const validateField = (name, value) => {
+    const newErrors = { ...errors };
+
+    if (!value.trim()) {
+      newErrors[name] = `${name}은(는) 필수 입력 항목입니다.`;
+    } else {
+      // 유효성 검사 제거
+      newErrors[name] = '';
+
+      // 추가 유효성 검사
+      if (name === 'username') {
+        const usernameRegex = /^[a-z0-9_]{6,12}$/;
+        newErrors.username = usernameRegex.test(value)
+          ? ''
+          : '아이디는 6~12자의 영문 소문자, 숫자, 특수기호(_)만 사용 가능합니다.';
+      }
+
+      if (name === 'password') {
+        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,16}$/;
+        newErrors.password = passwordRegex.test(value)
+          ? ''
+          : '비밀번호는 8~16자의 영문자, 숫자, 특수문자(!@#$%^&*)를 포함해야 합니다.';
+      }
+
+      if (name === 'confirmPassword') {
+        newErrors.confirmPassword =
+          value === formData.password ? '' : '비밀번호가 일치하지 않습니다.';
+      }
+
+      if (name === 'email') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        newErrors.email = emailRegex.test(value)
+          ? ''
+          : '유효한 이메일 주소를 입력하세요.';
+      }
+
+      if (name === 'birthday') {
+        const birthdayRegex = /^\d{8}$/;
+        newErrors.birthday = birthdayRegex.test(value)
+          ? ''
+          : '생년월일은 yyyyMMdd 형식으로 입력하세요.';
+      }
+
+      if (name === 'name') {
+        const nameRegex = /^[a-zA-Z가-힣\s-]{2,10}$/;
+        newErrors.name = nameRegex.test(value)
+          ? ''
+          : '이름은 2~10자의 한글, 영문자, 공백, 하이픈(-)만 사용 가능합니다.';
+      }
+    }
+
+    setErrors(newErrors);
+  };
+
+  // 모든 필드 유효성 검사
+  const validateAllFields = () => {
+    const newErrors = {};
+
+    Object.keys(formData).forEach((key) => {
+      const value = formData[key];
+      if (!value.trim()) {
+        if (key === 'username') newErrors[key] = '아이디는 필수입니다';
+        if (key === 'password') newErrors[key] = '비밀번호는 필수입니다';
+        if (key === 'confirmPassword') newErrors[key] = '비밀번호 확인은 필수입니다';
+        if (key === 'name') newErrors[key] = '이름은 필수입니다';
+        if (key === 'birthday') newErrors[key] = '생년월일은 필수입니다';
+        if (key === 'email') newErrors[key] = '이메일은 필수입니다';
+      } else {
+        validateField(key, value);
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).every((key) => !newErrors[key]);
+  };
+
+  // 입력값 변경 핸들러
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    // 실시간 유효성 검사
+    validateField(name, value);
+  };
+
+  // 회원가입 처리
+  const handleSubmit = async () => {
+    if (!validateAllFields()) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+
+      // 중복 체크 API 호출
+      const [usernameCheck, emailCheck] = await Promise.all([
+        axios.get(`${process.env.REACT_APP_API_URL}/member/check-username?username=${formData.username}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${process.env.REACT_APP_API_URL}/member/check-email?email=${formData.email}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      // 중복 체크 결과 처리
+      const newErrors = { ...errors };
+
+      const isUsernameAvailable = usernameCheck.data?.isAvailable;
+      const isEmailAvailable = emailCheck.data?.isAvailable;
+
+      newErrors.username = isUsernameAvailable ? '' : '이미 사용 중인 아이디입니다.';
+      newErrors.email = isEmailAvailable ? '' : '이미 사용 중인 이메일입니다.';
+
+      setErrors(newErrors);
+
+      // 중복 문제가 있으면 회원가입 중단
+      if (!isUsernameAvailable || !isEmailAvailable) {
+        return;
+      }
+
+      // 회원가입 요청
+      await axios.post(`${process.env.REACT_APP_API_URL}/member/register`, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      alert('회원가입이 완료되었습니다.');
+      navigate('/');
+    } catch (error) {
+      console.error('회원가입 실패:', error.response?.data);
+      setErrors((prev) => ({
+        ...prev,
+        apiError: error.response?.data?.message || '회원가입 실패',
+      }));
+    }
   };
 
   return (
-    /* 전체 크기 */
-    <div
-      className="w-full h-full left-0 top-0 absolute overflow-hidden bg-white flex justify-center items-center">
-
-      {/* 배경 이미지 */}
+    <div className="w-full h-full left-0 top-0 absolute overflow-hidden bg-white flex justify-center items-center">
+      <div className="w-full h-full absolute bg-no-repeat bg-center bg-cover left-0 top-0 object-cover bg-[url('./images/background_jpg.jpg')]" />
       <div
-        className="w-full h-full absolute bg-no-repeat bg-center bg-cover left-0 top-0 object-cover bg-[url('./images/background_jpg.jpg')]"
-      />
-
-      {/* content 전체 담는 div */}
-      <div
-        className="w-[690px] h-[858px] relative rounded-[80px] bg-[#fffcfc]/10 flex flex-col items-center gap-5"
-      >
+        className="w-[690px] h-auto relative rounded-[80px] bg-[#fffcfc]/10 flex flex-col items-center gap-5 p-10">
         <p
-          className="w-[200px] h-[71px] text-[46px] font-bold text-center text-black mt-20"
+          className="text-[46px] font-bold text-black mt-10 cursor-pointer hover:text-gray-600 hover:underline transition-all duration-300"
+          onClick={() => navigate('/')}
         >
           회원가입
         </p>
 
-        {/* ID 입력칸*/}
-        <div
-          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-5 p-5"
-        >
-          {/* 사람 이모티콘 */}
-          <svg
-            width="45"
-            height="44"
-            viewBox="0 0 45 44"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-[45px] h-11"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M37.5 38.5V34.8333C37.5 32.8884 36.7098 31.0232 35.3033 29.6479C33.8968 28.2726 31.9891 27.5 30 27.5H15C13.0109 27.5 11.1032 28.2726 9.6967 29.6479C8.29018 31.0232 7.5 32.8884 7.5 34.8333V38.5M30 12.8333C30 16.8834 26.6421 20.1667 22.5 20.1667C18.3579 20.1667 15 16.8834 15 12.8333C15 8.78325 18.3579 5.5 22.5 5.5C26.6421 5.5 30 8.78325 30 12.8333Z"
-              stroke="#757575"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            ></path>
-          </svg>
-
-          {/* ID 입력하는 input */}
+        {/* 아이디 입력 */}
+        <div className="w-[490px]">
           <input
-            className="w-full h-11 text-[29px] text-left text-white bg-transparent"
-            placeholder={'ID'}>
-          </input>
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
+            placeholder="아이디"
+          />
+          {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
         </div>
 
-        {/* 경고문*/}
-        <p
-          className="w-[330px] h-9 text-[25px] text-left text-[#cc3f42]">
-          이미 사용중인 아이디 입니다
-        </p>
-
-        {/* PASSWORD 입력칸*/}
-        <div
-          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-4 p-5"
-        >
-          {/* 자물쇠 아이콘 */}
-          <svg
-            width="49"
-            height="43"
-            viewBox="0 0 49 43"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-[49px] h-[43px]"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M14.2917 19.709V12.5423C14.2917 10.1664 15.3672 7.88783 17.2816 6.20782C19.1961 4.52781 21.7926 3.58398 24.5 3.58398C27.2074 3.58398 29.8039 4.52781 31.7184 6.20782C33.6328 7.88783 34.7083 10.1664 34.7083 12.5423V19.709M10.2083 19.709H38.7917C41.0468 19.709 42.875 21.3133 42.875 23.2923V35.834C42.875 37.813 41.0468 39.4173 38.7917 39.4173H10.2083C7.95317 39.4173 6.125 37.813 6.125 35.834V23.2923C6.125 21.3133 7.95317 19.709 10.2083 19.709Z"
-              stroke="#757575"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            ></path>
-          </svg>
-
-          {/* PASSWORD 입력하는 input */}
+        {/* 비밀번호 입력 */}
+        <div className="w-[490px]">
           <input
-            className="w-full h-11 text-[29px] text-left text-white bg-transparent"
-            placeholder={'Password'}>
-          </input>
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
+            placeholder="비밀번호"
+          />
+          {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
         </div>
 
-        {/* 2번째 PASSWORD 입력칸*/}
-        <div
-          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-4 p-5"
-        >
-          {/* 자물쇠 아이콘 */}
-          <svg
-            width="49"
-            height="43"
-            viewBox="0 0 49 43"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-[49px] h-[43px]"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M14.2917 19.709V12.5423C14.2917 10.1664 15.3672 7.88783 17.2816 6.20782C19.1961 4.52781 21.7926 3.58398 24.5 3.58398C27.2074 3.58398 29.8039 4.52781 31.7184 6.20782C33.6328 7.88783 34.7083 10.1664 34.7083 12.5423V19.709M10.2083 19.709H38.7917C41.0468 19.709 42.875 21.3133 42.875 23.2923V35.834C42.875 37.813 41.0468 39.4173 38.7917 39.4173H10.2083C7.95317 39.4173 6.125 37.813 6.125 35.834V23.2923C6.125 21.3133 7.95317 19.709 10.2083 19.709Z"
-              stroke="#757575"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            ></path>
-          </svg>
-
-          {/* PASSWORD 입력하는 input */}
+        {/* 비밀번호 확인 */}
+        <div className="w-[490px]">
           <input
-            className="w-full h-11 text-[29px] text-left text-white bg-transparent"
-            placeholder={'Password'}>
-          </input>
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
+            placeholder="비밀번호 확인"
+          />
+          {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
         </div>
 
-        {/* 이름 입력칸*/}
-        <div
-          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-5 p-5"
-        >
-          {/* 사람 이모티콘 */}
-          <svg
-            width="45"
-            height="44"
-            viewBox="0 0 45 44"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-[45px] h-11"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M37.5 38.5V34.8333C37.5 32.8884 36.7098 31.0232 35.3033 29.6479C33.8968 28.2726 31.9891 27.5 30 27.5H15C13.0109 27.5 11.1032 28.2726 9.6967 29.6479C8.29018 31.0232 7.5 32.8884 7.5 34.8333V38.5M30 12.8333C30 16.8834 26.6421 20.1667 22.5 20.1667C18.3579 20.1667 15 16.8834 15 12.8333C15 8.78325 18.3579 5.5 22.5 5.5C26.6421 5.5 30 8.78325 30 12.8333Z"
-              stroke="#757575"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            ></path>
-          </svg>
-
-          {/* 이름 입력하는 input */}
+        {/* 이름 입력 */}
+        <div className="w-[490px]">
           <input
-            className="w-full h-11 text-[29px] text-left text-white bg-transparent"
-            placeholder={'이름'}>
-          </input>
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
+            placeholder="이름"
+          />
+          {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
         </div>
 
-        {/* email 입력칸*/}
-        <div
-          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-5 p-5"
-        >
-          {/* 사람 이모티콘 */}
-          <svg
-            width="45"
-            height="44"
-            viewBox="0 0 45 44"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-[45px] h-11"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M37.5 38.5V34.8333C37.5 32.8884 36.7098 31.0232 35.3033 29.6479C33.8968 28.2726 31.9891 27.5 30 27.5H15C13.0109 27.5 11.1032 28.2726 9.6967 29.6479C8.29018 31.0232 7.5 32.8884 7.5 34.8333V38.5M30 12.8333C30 16.8834 26.6421 20.1667 22.5 20.1667C18.3579 20.1667 15 16.8834 15 12.8333C15 8.78325 18.3579 5.5 22.5 5.5C26.6421 5.5 30 8.78325 30 12.8333Z"
-              stroke="#757575"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            ></path>
-          </svg>
-
-          {/* email 입력하는 input */}
+        {/* 생년월일 입력 */}
+        <div className="w-[490px]">
           <input
-            className="w-full h-11 text-[29px] text-left text-white bg-transparent"
-            placeholder={'email'}>
-          </input>
+            type="text"
+            name="birthday"
+            value={formData.birthday}
+            onChange={handleChange}
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
+            placeholder="생년월일 (yyyyMMdd)"
+          />
+          {errors.birthday && <p className="text-red-500 text-sm">{errors.birthday}</p>}
         </div>
 
-        <div className="w-[490px] h-11 flex flex-row p-2 gap-28">
-          <p
-            className="w-[280px] h-9 text-[25px] text-left text-white">
-            이미 계정이 있으신가요?
-          </p>
-
-          <p
-            className="w-25 h-9 text-[25px] text-left text-white hover:bg-white/50 hover:scale-105 cursor-pointer" onClick={handleClick}>로그인
-          </p>
+        {/* 이메일 입력 */}
+        <div className="w-[490px]">
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
+            placeholder="이메일"
+          />
+          {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
         </div>
 
+        {/* 역할 선택 */}
+        <div className="w-[490px] mt-5">
+          <label className="block mb-2 text-[20px] text-white">역할 선택:</label>
+          <div className="flex gap-5">
+            <label className="flex items-center gap-2 text-white">
+              <input
+                type="radio"
+                name="role"
+                value="STUDENT"
+                checked={formData.role === 'STUDENT'}
+                onChange={handleChange}
+              />
+              수강생
+            </label>
+            <label className="flex items-center gap-2 text-white">
+              <input
+                type="radio"
+                name="role"
+                value="ADMIN"
+                checked={formData.role === 'ADMIN'}
+                onChange={handleChange}
+              />
+              관리자
+            </label>
+          </div>
+          {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
+        </div>
 
+        {/* 가입 버튼 */}
         <div
-          className="w-[273px] h-[74px] rounded-[20px] bg-[#6a896b]/90 flex justify-center items-center"
+          onClick={handleSubmit}
+          className="w-[273px] h-[74px] rounded-[20px] bg-[#6a896b]/90 flex justify-center items-center cursor-pointer mt-10"
         >
-          <p
-            className="text-[25px] font-bold text-center text-white"
-          >
-            가입하기
-          </p>
+          <p className="text-[25px] font-bold text-white">가입하기</p>
         </div>
-
-
       </div>
     </div>
   );
