@@ -6,7 +6,6 @@ import axios from 'api/axios';
 import _ from 'lodash';
 import CourseDetail from '../CourseDetail'; // Lodash를 import
 
-
 export const CourseList = () => {
   const [courses, setCourses] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
@@ -77,7 +76,8 @@ export const CourseList = () => {
         </div>
       </div>
       <ul className="space-y-4">
-        {courses.map((course) => (
+        {courses.length > 0 ? (
+          courses.map((course) => (
           <li key={course.id}>
             <div
               className="space-x-1 grid grid-cols-8 items-center text-center cursor-pointer hover:bg-gray-100 transition duration-200 ease-in-out p-2 rounded"
@@ -100,7 +100,11 @@ export const CourseList = () => {
               </p>
             </div>
           </li>
-        ))}
+          ))
+        ) : (
+          <p className="text-xs text-center text-gray-500">교육과정 데이터가
+            없습니다.</p>
+        )}
       </ul>
       {/* 상세보기 모달 */}
       {selectedCourse && (
