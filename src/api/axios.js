@@ -17,17 +17,22 @@ axios.interceptors.request.use(
 );
 
 // 응답 인터셉터: 토큰 만료 처리
+let isRedirecting = false; // 중복 리다이렉션 방지 플래그
+
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // 토큰 만료 처리
-      alert('로그인이 만료되었습니다. 다시 로그인하세요.');
-      sessionStorage.removeItem('token'); // 토큰 삭제
-      window.location.href = '/'; // 로그인 페이지로 리다이렉트
+      if (!isRedirecting) {
+        isRedirecting = true; // 리다이렉션 플래그 설정
+        alert('로그인이 만료되었습니다. 다시 로그인하세요.');
+        sessionStorage.removeItem('token'); // 토큰 삭제
+        window.location.href = '/'; // 로그인 페이지로 리다이렉트
+      }
     }
     return Promise.reject(error);
   }
 );
+
 
 export default axios;
