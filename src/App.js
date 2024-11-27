@@ -1,9 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Login } from './Login';
 import { Landing } from './Landing';
 import { Join } from './Join';
 import MemberList from './components/member/admin/MemberList';
 import CourseList from './components/course/admin/CourseList';
+import AdminNoticeList from './components/notice/admin/AdminNoticeList';
+import StudentNoticeList from './components/notice/student/StudentNoticeList';
 
 function App() {
   return (
@@ -24,6 +26,10 @@ function App() {
         {/* Admin Pages */}
         <Route path="/admin/member" element={<MemberList />} />
         <Route path="/admin/course" element={<CourseList />} />
+        <Route path="/admin/notice" element={<AdminNoticeList />} />
+
+        {/* Student Pages */}
+        <Route path="/notice" element={<StudentNoticeList />} />
       </Routes>
     </Router>
   );
