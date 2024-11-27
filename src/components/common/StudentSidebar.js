@@ -16,7 +16,7 @@ const StudentSidebar = () => {
             d="M13 9V3H21V9H13ZM3 13V3H11V13H3ZM13 21V11H21V21H13ZM3 21V15H11V21H3ZM5 11H9V5H5V11ZM15 19H19V13H15V19ZM15 7H19V5H15V7ZM5 19H9V17H5V19Z"
             fill="black" />
         </svg>
-      ), link: '/',
+      ), link: '/main',
     },
     {
       name: '출석',
@@ -90,7 +90,7 @@ const StudentSidebar = () => {
   ];
   return (
     <aside
-      className="w-64 bg-[#bac8bd] flex flex-col gap-4 p-6 fixed top-16 left-3 bottom-3 rounded-[30px]">
+      className="w-64 bg-[#F9F7F7] flex flex-col gap-4 p-6 fixed top-16 left-3 bottom-3 rounded-[30px]">
       <nav className="flex flex-col gap-4 fs-2">
         {menuItems.map((item, index) => (
           <div
