@@ -6,7 +6,6 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
-  const [error, setError] = useState(null);
 
   // 검색어 변경 처리 (디바운스 적용)
   const debouncedSearch = _.debounce((value) => {
@@ -29,12 +28,15 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
   const fetchCourses = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/admin/course/list`
+        `${process.env.REACT_APP_API_URL}/api/enrollments`
       );
-      setCourses(response.data);
+      if (response.status === 200 && Array.isArray(response.data)) {
+        setCourses(response.data); // 데이터를 설정
+      } else {
+        console.error('Unexpected response format:', response);
+      }
     } catch (error) {
-      setError('교육 과정 데이터를 가져오는 중 오류가 발생했습니다.');
-      console.error('Error fetching courses:', error);
+      console.error('Error fetching courses:', error.message);
     }
   };
 
@@ -61,10 +63,12 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
           className="px-3 py-2 rounded-lg bg-white border border-gray-300 w-64 text-sm text-gray-500"
           value={selectedCourse}
           onChange={handleCourseChange}
-          disabled={courses.length === 0} // 교육 과정이 없으면 비활성화
+          disabled={courses.length === 0} // 데이터가 없으면 비활성화
         >
           <option value="" disabled hidden>
-            {courses.length === 0 ? '교육 과정이 없습니다.' : '교육 과정을 선택하세요'}
+            {courses.length === 0
+              ? '교육 과정이 없습니다.'
+              : '교육 과정을 선택하세요'}
           </option>
           {courses.map((course) => (
             <option key={course.id} value={course.id}>
@@ -95,7 +99,6 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
           />
         </div>
       </div>
-      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
     </div>
   );
 };
