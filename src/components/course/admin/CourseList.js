@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../common/layout/admin/AdminLayout';
 import CourseMainHeader from '../CourseMainHeader';
 import axios from 'api/axios';
-//import api from '../../common/api';
 import _ from 'lodash';
 import CourseDetail from '../CourseDetail'; // Lodash를 import
 
@@ -38,7 +37,7 @@ export const CourseList = () => {
   const debouncedFetchCourses = useCallback(
     _.debounce((search,page) => {
       fetchCourses(search,page);
-    }, 200), // 500ms 대기
+    }, 200), // 200ms 대기
     []
   );
 
