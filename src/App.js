@@ -2,14 +2,17 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Login } from './Login';
 import { Landing } from './Landing';
 import { Join } from './Join';
+import {CourseProvider} from './components/common/CourseContext';
 import MemberList from './components/member/admin/MemberList';
 import CourseList from './components/course/admin/CourseList';
 import AdminNoticeList from './components/notice/admin/AdminNoticeList';
 import StudentNoticeList from './components/notice/student/StudentNoticeList';
 import AttendanceList from './components/attendance/admin/AttendanceList';
+import ClubList from './components/club/ClubList';
 
 function App() {
   return (
+    <CourseProvider>
     <Router>
       <Routes>
         {/* Landing Page */}
@@ -33,8 +36,10 @@ function App() {
 
         {/* Student Pages */}
         <Route path="/notice" element={<StudentNoticeList />} />
+        <Route path="/club" element={<ClubList />} />
       </Routes>
     </Router>
+    </CourseProvider>
   );
 }
 
