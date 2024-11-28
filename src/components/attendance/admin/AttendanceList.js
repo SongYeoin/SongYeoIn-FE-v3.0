@@ -1,7 +1,8 @@
-import AdminLayout from '../common/layout/admin/AdminLayout';
+import AdminLayout from '../../common/layout/admin/AdminLayout';
 import React, { useEffect, useState } from 'react';
 import axios from 'api/axios';
-import AdminAttendMainHeader from './admin/AdminAttendMainHeader';
+import AdminAttendMainHeader from './AdminAttendMainHeader';
+import AttendanceDetail from './AttendanceDetail';
 
 export const AttendanceList = () => {
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
@@ -15,7 +16,8 @@ export const AttendanceList = () => {
     date: new Date().toISOString().split('T')[0],
     status: '',
   });
-  //const [selectedAttendance, setSelectedAttendance] = useState(null); // 선택한 출석
+  const [selectedAttendance, setSelectedAttendance] = useState(null); // 선택한 출석
+  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
 
   useEffect(() => {
     // 초기 코스 데이터 불러오기
@@ -26,14 +28,8 @@ export const AttendanceList = () => {
 
         if (courseList.length > 0) {
           setCourses(courseList);
-          const defaultFilters = {
-            ...filters,
-            courseId: courseList[0].courseId,
-          };
-          setFilters(defaultFilters);
+          setFilters((prev) => ({ ...prev, courseId: courseList[0].courseId }));
         }
-
-
       } catch (error) {
         console.error('Error fetching courses:', error);
       }
@@ -44,50 +40,46 @@ export const AttendanceList = () => {
 
   useEffect(() => {
     // 필터링 값이 변경될 때마다 데이터 가져오기
-    const fetchAttendanceData = async () => {
-      // courseId가 없으면 요청하지 않음
-      if (!filters.courseId) return; // courseId가 없으면 요청하지 않음
-
-      if (!filters.courseId && !filters.date) {
-        return;
-      } // courseId가 없으면 요청하지 않음
-
-      try {
-        const params = {
-          studentName: filters.studentName || undefined,
-          date: filters.date || undefined,
-          status: filters.status || undefined,
-          page: currentPage - 1,
-          size: 10,
-        };
-
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/admin/attendance/course/${filters.courseId}`,
-          { params },
-        );
-
-        const { content, totalPages } = response.data;
-
-        setAttendance(content); // 학생별 데이터 설정
-        setTotalPages(totalPages); // 전체 페이지 수 설정
-
-        // 교시 헤더 추출
-        if (content.length > 0) {
-          const periods = Object.keys(content[0].periods); // periods의 키값 추출
-          setPeriodHeaders(periods); // 교시명 헤더 설정
-        }
-
-      } catch (error) {
-        console.error('Error fetching attendance data:', error);
-      }
-    };
-
-    fetchAttendanceData();
+    if (filters.courseId && filters.date) {
+      fetchAttendanceData();
+    }
   }, [filters, currentPage]);
 
-  if (!courses.length || !filters.courseId) {
+  const fetchAttendanceData = async () => {
+
+    try {
+      const params = {
+        studentName: filters.studentName || undefined,
+        date: filters.date || undefined,
+        status: filters.status || undefined,
+        page: currentPage - 1,
+        size: 10,
+      };
+
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/admin/attendance/course/${filters.courseId}`,
+        { params },
+      );
+
+      const { content, totalPages } = response.data;
+
+      setAttendance(content); // 학생별 데이터 설정
+      setTotalPages(totalPages); // 전체 페이지 수 설정
+
+      // 교시 헤더 추출
+      if (content.length > 0) {
+        const periods = Object.keys(content[0].periods); // periods의 키값 추출
+        setPeriodHeaders(periods); // 교시명 헤더 설정
+      }
+
+    } catch (error) {
+      console.error('Error fetching attendance data:', error);
+    }
+  };
+
+  /*if (!courses.length || !filters.courseId) {
     return <p>Loading courses...</p>;
-  }
+  }*/
 
 
   const handleFilterChange = (updatedFilters) => {
@@ -123,6 +115,17 @@ export const AttendanceList = () => {
     }
   };
 
+  const handleRowClick = (courseId, studentId, date) => {
+    setSelectedAttendance({ courseId, studentId, date });
+    setIsModalOpen(true); // 모달 열기
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedAttendance(null);
+    fetchAttendanceData(); // 모달이 닫힐 때 출석 데이터를 다시 호출
+  };
+
   return (
     <AdminLayout
       currentPage={currentPage}
@@ -151,8 +154,8 @@ export const AttendanceList = () => {
             <li key={row.studentId}>
               <div
                 className="space-x-1 grid grid-cols-8 items-center justify-center text-center cursor-pointer hover:bg-gray-100 transition duration-200 ease-in-out p-2 rounded"
-                /*onClick={() => setSelectedAttendance(courseId, row.studentId,
-                  row.attendanceList.getId())} // 상세보기 클릭*/
+                onClick={() => handleRowClick(filters.courseId, row.studentId,
+                  filters.date)}
               >
                 <h3
                   className="bg-white p-1 rounded shadow font-semibold">{row.studentName}</h3>
@@ -178,6 +181,12 @@ export const AttendanceList = () => {
         )}
       </ul>
       {/* 상세보기 모달 */}
+      {selectedAttendance && isModalOpen && (
+        <AttendanceDetail
+          onClose={handleModalClose}
+          attendance={selectedAttendance}
+        />
+      )}
 
     </AdminLayout>
 );
