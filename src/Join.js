@@ -79,12 +79,24 @@ export const Join = () => {
     Object.keys(formData).forEach((key) => {
       const value = formData[key];
       if (!value.trim()) {
-        if (key === 'username') newErrors[key] = '아이디는 필수입니다';
-        if (key === 'password') newErrors[key] = '비밀번호는 필수입니다';
-        if (key === 'confirmPassword') newErrors[key] = '비밀번호 확인은 필수입니다';
-        if (key === 'name') newErrors[key] = '이름은 필수입니다';
-        if (key === 'birthday') newErrors[key] = '생년월일은 필수입니다';
-        if (key === 'email') newErrors[key] = '이메일은 필수입니다';
+        if (key === 'username') {
+          newErrors[key] = '아이디는 필수입니다';
+        }
+        if (key === 'password') {
+          newErrors[key] = '비밀번호는 필수입니다';
+        }
+        if (key === 'confirmPassword') {
+          newErrors[key] = '비밀번호 확인은 필수입니다';
+        }
+        if (key === 'name') {
+          newErrors[key] = '이름은 필수입니다';
+        }
+        if (key === 'birthday') {
+          newErrors[key] = '생년월일은 필수입니다';
+        }
+        if (key === 'email') {
+          newErrors[key] = '이메일은 필수입니다';
+        }
       } else {
         validateField(key, value);
       }
@@ -114,12 +126,16 @@ export const Join = () => {
 
       // 중복 체크 API 호출
       const [usernameCheck, emailCheck] = await Promise.all([
-        axios.get(`${process.env.REACT_APP_API_URL}/member/check-username?username=${formData.username}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`${process.env.REACT_APP_API_URL}/member/check-email?email=${formData.email}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        axios.get(
+          `${process.env.REACT_APP_API_URL}/member/check-username?username=${formData.username}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        axios.get(
+          `${process.env.REACT_APP_API_URL}/member/check-email?email=${formData.email}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
       ]);
 
       // 중복 체크 결과 처리
@@ -139,9 +155,10 @@ export const Join = () => {
       }
 
       // 회원가입 요청
-      await axios.post(`${process.env.REACT_APP_API_URL}/member/register`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post(`${process.env.REACT_APP_API_URL}/member/register`,
+        formData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
       alert('회원가입이 완료되었습니다.');
       navigate('/');
@@ -155,15 +172,17 @@ export const Join = () => {
   };
 
   return (
-    <div className="w-full h-full left-0 top-0 absolute overflow-hidden bg-white flex justify-center items-center">
-      <div className="w-full h-full absolute bg-no-repeat bg-center bg-cover left-0 top-0 object-cover bg-[url('./images/background_jpg.jpg')]" />
+    <div
+      className="w-full h-full left-0 top-0 absolute overflow-hidden bg-white flex justify-center items-center">
+      <div
+        className="w-full h-full absolute bg-no-repeat bg-center bg-cover left-0 top-0 object-cover bg-[url('./images/background_jpg.jpg')]" />
       <div
         className="w-[690px] h-auto relative rounded-[80px] bg-[#fffcfc]/10 flex flex-col items-center gap-5 p-10">
         <p
           className="text-[46px] font-bold text-black mt-10 cursor-pointer hover:text-gray-600 hover:underline transition-all duration-300"
           onClick={() => navigate('/')}
         >
-          회원가입
+          Sign Up
         </p>
 
         {/* 아이디 입력 */}
@@ -176,7 +195,8 @@ export const Join = () => {
             className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
             placeholder="아이디"
           />
-          {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+          {errors.username && <p
+            className="text-red-500 text-sm">{errors.username}</p>}
         </div>
 
         {/* 비밀번호 입력 */}
@@ -189,7 +209,8 @@ export const Join = () => {
             className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
             placeholder="비밀번호"
           />
-          {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+          {errors.password && <p
+            className="text-red-500 text-sm">{errors.password}</p>}
         </div>
 
         {/* 비밀번호 확인 */}
@@ -202,7 +223,8 @@ export const Join = () => {
             className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
             placeholder="비밀번호 확인"
           />
-          {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+          {errors.confirmPassword && <p
+            className="text-red-500 text-sm">{errors.confirmPassword}</p>}
         </div>
 
         {/* 이름 입력 */}
@@ -228,7 +250,8 @@ export const Join = () => {
             className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
             placeholder="생년월일 (yyyyMMdd)"
           />
-          {errors.birthday && <p className="text-red-500 text-sm">{errors.birthday}</p>}
+          {errors.birthday && <p
+            className="text-red-500 text-sm">{errors.birthday}</p>}
         </div>
 
         {/* 이메일 입력 */}
@@ -241,43 +264,77 @@ export const Join = () => {
             className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
             placeholder="이메일"
           />
-          {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+          {errors.email && <p
+            className="text-red-500 text-sm">{errors.email}</p>}
         </div>
 
         {/* 역할 선택 */}
-        <div className="w-[490px] mt-5">
-          <label className="block mb-2 text-[20px] text-white">역할 선택:</label>
-          <div className="flex gap-5">
-            <label className="flex items-center gap-2 text-white">
+        <div className="w-[490px] mt-4 flex items-center">
+          <label className="text-[16px] text-white font-bold w-[100px]">
+            역할:
+          </label>
+          <div className="flex gap-40 flex-grow">
+            {/* 수강생 라디오 버튼 */}
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
                 name="role"
                 value="STUDENT"
                 checked={formData.role === 'STUDENT'}
                 onChange={handleChange}
+                className="hidden"
               />
-              수강생
+              <div
+                className={`w-[28px] h-[28px] rounded-full border-2 transition-all duration-300 ${
+                  formData.role === 'STUDENT'
+                    ? 'bg-green-500 border-green-500'
+                    : 'bg-white border-gray-300 hover:border-gray-400'
+                }`}
+              />
+              <span
+                className={`text-[18px] font-bold ${
+                  formData.role === 'STUDENT' ? 'text-green-500' : 'text-gray-500'
+                }`}
+              >
+        수강생
+      </span>
             </label>
-            <label className="flex items-center gap-2 text-white">
+
+            {/* 관리자 라디오 버튼 */}
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
                 name="role"
                 value="ADMIN"
                 checked={formData.role === 'ADMIN'}
                 onChange={handleChange}
+                className="hidden"
               />
-              관리자
+              <div
+                className={`w-[28px] h-[28px] rounded-full border-2 transition-all duration-300 ${
+                  formData.role === 'ADMIN'
+                    ? 'bg-blue-500 border-blue-500'
+                    : 'bg-white border-gray-300 hover:border-gray-400'
+                }`}
+              />
+              <span
+                className={`text-[18px] font-bold ${
+                  formData.role === 'ADMIN' ? 'text-blue-500' : 'text-gray-500'
+                }`}
+              >
+        관리자
+      </span>
             </label>
           </div>
-          {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
         </div>
+
 
         {/* 가입 버튼 */}
         <div
           onClick={handleSubmit}
           className="w-[273px] h-[74px] rounded-[20px] bg-[#6a896b]/90 flex justify-center items-center cursor-pointer mt-10"
         >
-          <p className="text-[25px] font-bold text-white">가입하기</p>
+          <p className="text-[25px] font-bold text-white">회원가입</p>
         </div>
       </div>
     </div>
