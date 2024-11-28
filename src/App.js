@@ -6,7 +6,7 @@ import MemberList from './components/member/admin/MemberList';
 import CourseList from './components/course/admin/CourseList';
 import AdminNoticeList from './components/notice/admin/AdminNoticeList';
 import StudentNoticeList from './components/notice/student/StudentNoticeList';
-import AttendanceList from './components/attendance/AttendanceList';
+import AttendanceList from './components/attendance/admin/AttendanceList';
 
 function App() {
   return (
