@@ -28,7 +28,7 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
   const fetchCourses = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/enrollments`
+        `${process.env.REACT_APP_API_URL}/api/enrollments/my`
       );
       if (response.status === 200 && Array.isArray(response.data)) {
         setCourses(response.data); // 데이터를 설정
