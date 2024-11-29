@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
 import axios from 'axios';
 import StudentLayout from '../common/layout/student/StudentLayout';
 import { format } from 'date-fns';
@@ -76,7 +76,7 @@ const ClubList = () => {
   //
   // console.log("Converted courseId (Long type):", courseId);
 
-  const fetchClubList = async () => {
+  const fetchClubList = useCallback (async() => {
     if(!courseId) return; // courseId가 없으면 실행하지 않음
     setLoading(true);
     try {
@@ -90,6 +90,7 @@ const ClubList = () => {
         }
       });
 
+      console.log("Fetched club list:", response.data.list);
       setClubs(response.data.list);
       setTotalPages(response.data.pageInfo.totalPages);
       setLoading(false);
@@ -97,20 +98,22 @@ const ClubList = () => {
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
       setLoading(false);
     }
-  };
+  }, [courseId, currentPage]);
 
   // useEffect에서 fetchClubList 호출
   useEffect(() => {
     fetchClubList();
-  }, [courseId, currentPage]);
+  }, [fetchClubList, courseId, currentPage]);
 
   const fetchClubDetails = async (clubId) => {
     try{
+      console.log("fetchClubDetails 호출 - Club ID: ", clubId);
       const response = await axios.get(`/club/${clubId}/detail`, {
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         }
       });
+      console.log("받은 클럽 상세 데이터: ", response.data);
       setSelectedClub(response.data);
     } catch(err){
       console.error('Error fetching club details', err);
@@ -142,7 +145,12 @@ const ClubList = () => {
 
   // 동아리 상세 정보 (참여자, 내용 포함)
   const openDetailModal = (club) => {
-    fetchClubDetails(club.id);
+    if (!club.clubId) {
+      console.error("club.clubId가 유효하지 않습니다.", club); // club.id가 없으면 에러 로그
+      return;
+    }
+    console.log("Club ID 전달: ", club.clubId);
+    fetchClubDetails(club.clubId);
     setIsDetailModalOpen(true);
   };
 
@@ -254,7 +262,7 @@ const ClubList = () => {
               </tr>
             ) : clubs.length > 0 ? (
               clubs.map((club, index) => (
-                <tr key={club.id} className="border-b border-[#ebebeb]"
+                <tr key={club.clubId} className="border-b border-[#ebebeb]"
                     style={{ cursor: 'pointer' }} onClick={() => openDetailModal(club)}>
                   <td className="py-4 text-center">{index + 1}</td>
                   <td className="py-4 text-center">{club.writer}</td>
