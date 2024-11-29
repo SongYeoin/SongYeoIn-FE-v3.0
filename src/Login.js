@@ -20,16 +20,17 @@ export const Login = ({ role }) => {
 
       const response = await axios.post(endpoint, { username: id, password });
 
-      // 토큰 가져오기
-      const token = response.data.accessToken;
+      // Access Token과 Refresh Token 가져오기
+      const { accessToken, refreshToken } = response.data;
 
-      if (!token) {
+      if (!accessToken || !refreshToken) {
         setErrorMessage('서버 내부 오류가 발생했습니다.');
         return;
       }
 
-      // 토큰 저장
-      sessionStorage.setItem('token', token);
+      // 세션 스토리지에 저장
+      sessionStorage.setItem('token', accessToken); // Access Token
+      sessionStorage.setItem('refreshToken', refreshToken); // Refresh Token
 
       // 페이지 이동
       navigate(redirectPath);
