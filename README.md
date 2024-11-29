@@ -39,7 +39,41 @@ npm install
     - Automatic ESLint configuration: 체크
     - Run eslint --fix on save: 체크
 
----
+### 7. tailwind 설정 (터미널)
+- npm install -D tailwindcss postcss autoprefixer
+- npx tailwindcss init -p
+- 'tailwind.config.js' 파일이 생성
+```js
+// tailwind.config.js 📂
+
+module.exports = {
+  // 템플릿 파일의 경로 설정 👀
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+- Tailwind 지시문 CSS에 추가하기
+```js
+/* index.css 📂 */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+- index.js 파일에 아래 코드 추가
+```js
+import './index.css';
+```
+- css 적용 안되면 캐시 지우기
+```js
+Remove-Item -Recurse -Force node_modules\.cache
+npm start
+```
 
 ## 프로젝트 실행 전 확인사항
 
