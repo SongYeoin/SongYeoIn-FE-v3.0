@@ -42,5 +42,4 @@ function App() {
     </CourseProvider>
   );
 }
-
 export default App;

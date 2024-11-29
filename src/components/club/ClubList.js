@@ -479,7 +479,7 @@ const ClubList = () => {
                       <p className="absolute left-0 top-0 text-sm font-black text-left text-black">번호</p>
                       <div
                         className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      <p className="absolute left-[13px] top-[35px] text-[15px] text-left text-black">{selectedClub.id}</p>
+                      <p className="absolute left-[13px] top-[35px] text-[15px] text-left text-black">{selectedClub.ClubId}</p>
                     </div>
                     <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
                       <p className="absolute left-[406px] top-0 text-sm font-black text-left text-black">
