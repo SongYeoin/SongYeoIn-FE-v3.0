@@ -249,14 +249,14 @@ const ClubList = () => {
           </div>
 
           <div
-            className="flex justify-center items-center flex-grow-0 flex-shrink-0 h-10 relative gap-1 px-4 py-2 rounded-lg bg-[#225930] mr-[20px]">
+            className="flex justify-center items-center flex-grow-0 flex-shrink-0 h-10 relative gap-1 px-4 py-2 rounded-lg bg-[#225930] mr-[20px] cursor-pointer">
             <svg
               width={24}
               height={24}
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="flex-grow-0 flex-shrink-0 w-6 h-6 relative cursor-pointer"
+              className="flex-grow-0 flex-shrink-0 w-6 h-6 relative"
               preserveAspectRatio="none"
             >
               <path

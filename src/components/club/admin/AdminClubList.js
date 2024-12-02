@@ -462,9 +462,14 @@ const AdminClubList = () => {
                               type="radio"
                               value="Y"
                               name="checkStatus"
-                              disabled={!isEditing || selectedClub.checkStatus !== 'W'}
+                              // disabled={!isEditing || selectedClub.checkStatus !== 'W'}
                               checked={selectedClub.checkStatus === 'Y'}
-                              onChange={handleInputChange}
+                              onChange={(e) =>
+                                setSelectedClub((prev) => ({
+                                  ...prev,
+                                  checkStatus: e.target.value,
+                                }))
+                              }
                               className="mr-1 w-4 h-4"
                             />
                             승인
@@ -476,9 +481,14 @@ const AdminClubList = () => {
                               type="radio"
                               value="N"
                               name="checkStatus"
-                              disabled={!isEditing || selectedClub.checkStatus !== 'W'}
+                              // disabled={!isEditing || selectedClub.checkStatus !== 'W'}
                               checked={selectedClub.checkStatus === 'N'}
-                              onChange={handleInputChange}
+                              onChange={(e) =>
+                                setSelectedClub((prev) => ({
+                                  ...prev,
+                                  checkStatus: e.target.value,
+                                }))
+                              }
                               className="mr-1 w-4 h-4"
                             />
                             미승인
@@ -500,7 +510,7 @@ const AdminClubList = () => {
                         value={selectedClub.checkMessage}
                         name="checkMessage"
                         onChange={handleInputChange}
-                        disabled={!isEditing || selectedClub.checkStatus !== 'W'}
+                        disabled={!isEditing}
                         className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
                       />
                     </div>
