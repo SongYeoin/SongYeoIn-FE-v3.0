@@ -1,5 +1,5 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
-import axios from 'axios';
+import axios from 'api/axios';
 import StudentLayout from '../common/layout/student/StudentLayout';
 import { format } from 'date-fns';
 import {CourseContext} from '../common/CourseContext';
@@ -13,6 +13,7 @@ const ClubList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [selectedClub, setSelectedClub] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const initialFormData = {
     participants: '',
@@ -28,17 +29,7 @@ const ClubList = () => {
   const {courseId, setCourseId} = useContext(CourseContext);
 
 
-  // Get courseId from URL or context (adjust as needed)
-  //const courseIdString = new URLSearchParams(window.location.search).get('courseId');
-  //const courseIdString = "1";
-
-  //console.log("courseId: ", courseIdString);
-
-  // courseId를 Long(즉, 숫자) 타입으로 변환
-  //const courseId = Number(courseIdString);
-  //const courseId = courseIdString && !isNaN(Number(courseIdString)) ? Number(courseIdString) : 1;
-
-  // Fetch club list
+  // 프로그램id
   useEffect(() => {
     const fetchCourseId = async () => {
       try {
@@ -46,10 +37,9 @@ const ClubList = () => {
 
         const result = await axios.get('/club');
         console.log(result.data);  // 응답 데이터 확인
+
         const fetchedCourseId = result.data.course?.id;
         console.log(fetchedCourseId);
-
-        //const fetchedCourseId = Number(resultCourseId);
 
         if (fetchedCourseId) {
           setCourseId(fetchedCourseId); // 전역 상태에 저장
@@ -64,18 +54,6 @@ const ClubList = () => {
     fetchCourseId();
   }, [setCourseId]);
 
-  // if (!courseIdString) {
-  //   alert("courseId가 필요합니다.");
-  //   return;
-  // }
-  //
-  // if (isNaN(courseId)) {
-  //   alert("유효하지 않은 courseId입니다.");
-  //   return;
-  // }
-  //
-  // console.log("Converted courseId (Long type):", courseId);
-
   const fetchClubList = useCallback (async() => {
     if(!courseId) return; // courseId가 없으면 실행하지 않음
     setLoading(true);
@@ -84,10 +62,10 @@ const ClubList = () => {
         params: {
           //courseId: courseId,
           pageNum: currentPage
-        },
-        headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         }
+        // headers: {
+        //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        // }
       });
 
       console.log("Fetched club list:", response.data.list);
@@ -98,7 +76,7 @@ const ClubList = () => {
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
       setLoading(false);
     }
-  }, [courseId, currentPage]);
+  }, [setLoading, courseId, currentPage]);
 
   // useEffect에서 fetchClubList 호출
   useEffect(() => {
@@ -109,9 +87,9 @@ const ClubList = () => {
     try{
       console.log("fetchClubDetails 호출 - Club ID: ", clubId);
       const response = await axios.get(`/club/${clubId}/detail`, {
-        headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        }
+        // headers: {
+        //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        // }
       });
       console.log("받은 클럽 상세 데이터: ", response.data);
       setSelectedClub(response.data);
@@ -125,9 +103,9 @@ const ClubList = () => {
   const openApplyModal = () => {
     // Fetch current user's name and set automatically
     axios.get('/club/${courseId}/register', {
-      headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-      }
+      // headers: {
+      //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+      // }
     })
       .then(response => {
         setFormData(prev => ({
@@ -172,7 +150,7 @@ const ClubList = () => {
     }));
   };
 
-  // Submit form
+  // 등록
   const handleSubmit = async () => {
     // 필수 항목 체크
     if (!formData.participants || !formData.studyDate) {
@@ -191,9 +169,9 @@ const ClubList = () => {
 
       const response = await axios.post(`/club/${courseId}`, submitData, {
         //params: { courseId: courseId },  // courseId를 쿼리 파라미터로 전달
-        headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        }
+        // headers: {
+        //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        // }
       });
 
       console.log("Response from server: ", response); // 서버 응답 확인
@@ -211,6 +189,46 @@ const ClubList = () => {
     }
   };
 
+  //삭제
+  const handleDelete = async () => {
+    if (!selectedClub || !selectedClub.clubId) return;
+
+    try {
+      await axios.delete(`/club/${selectedClub.clubId}`, {
+        // headers: {
+        //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        // }
+      });
+      alert('삭제되었습니다.');
+      setIsDetailModalOpen(false); // 모달 닫기
+      fetchClubList(); // 리스트 갱신
+    } catch (err) {
+      console.error('삭제 실패:', err);
+      alert('삭제에 실패했습니다.');
+    }
+  };
+
+  //const isOwner = loggedInUserId === formData.writerId;
+  const isOwner = true;
+
+  // 저장 버튼 클릭 핸들러
+  const handleSaveEdit = async () => {
+    try {
+      await axios.put(`/club/${selectedClub.clubId}`, formData, {
+        // headers: {
+        //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        // }
+      });
+      alert('수정이 완료되었습니다.');
+      setIsEditing(false); // 수정 모드 비활성화
+      setIsDetailModalOpen(false); // 모달 닫기
+      fetchClubList(); // 리스트 갱신
+    } catch (err) {
+      console.error('수정 실패:', err);
+      alert('수정에 실패했습니다.');
+    }
+  };
+
   // Pagination change handler
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -221,16 +239,78 @@ const ClubList = () => {
                    totalPages={totalPages}
                    onPageChange={handlePageChange}
     >
-      <div className="flex flex-col items-center justify-start mx-auto w-[1680px] h-[1000px]">
-        {/* Header Section */}
-        <div className="flex justify-between w-full mt-10 px-6">
-          <h1 className="text-2xl font-bold">동아리</h1>
-          <button
-            onClick={openApplyModal}
-            className="bg-[#225930] text-white flex items-center justify-center p-2 rounded-md"
-          >
-            <span className="mr-2">+</span> 신청
-          </button>
+      <div className="flex flex-col justify-start items-start self-stretch flex-grow-0 flex-shrink-0 relative">
+
+        <div className="flex justify-start items-start self-stretch flex-grow-0 flex-shrink-0 gap-4 py-7">
+          <div className="flex flex-col justify-start items-start flex-grow relative gap-4">
+            <p className="self-stretch flex-grow-0 flex-shrink-0 w-[1498px] text-[28px] text-left text-[#16161b]">
+              동아리
+            </p>
+          </div>
+
+          <div
+            className="flex justify-center items-center flex-grow-0 flex-shrink-0 h-10 relative gap-1 px-4 py-2 rounded-lg bg-[#225930] mr-[20px]">
+            <svg
+              width={24}
+              height={24}
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="flex-grow-0 flex-shrink-0 w-6 h-6 relative cursor-pointer"
+              preserveAspectRatio="none"
+            >
+              <path
+                d="M12 5V19"
+                stroke="white"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M5 12H19"
+                stroke="white"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <p className="flex-grow-0 flex-shrink-0 text-sm text-left text-white" onClick={openApplyModal}>신청</p>
+          </div>
+        </div>
+
+        <div className="self-stretch flex-grow-0 flex-shrink-0 h-10 relative flex justify-end items-center">
+          <div className="w-[100px] h-10">
+            <div
+              className="flex justify-start items-center w-[100px] gap-2 p-3 rounded-lg bg-white border border-[#ebebf0]">
+              <select className="text-sm text-left text-[#9a97a9]" defaultValue="작성자">
+                      <option value="작성자">작성자</option>
+                      <option value="참여자">참여자</option>
+                      <option value="승인상태">승인상태</option>
+              </select>
+            </div>
+            <svg
+              width={14}
+              height={6}
+              viewBox="0 0 14 6"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="absolute left-[1268.5px] top-[22.5px]"
+              preserveAspectRatio="none"
+            >
+              <path
+                d="M8.29897 6L5.70103 6L-2.62268e-07 9.53674e-07L3.20232 8.13697e-07L6.96392 4.26316L6.79253 4.21491L7.20747 4.21491L7.03608 4.26316L10.7977 4.81693e-07L14 3.41715e-07L8.29897 6Z"
+                fill="#DADADA"
+              />
+            </svg>
+          </div>
+          <div
+            className="flex justify-start items-center w-[300px] gap-2 p-3 rounded-lg bg-white border border-[#ebebf0] ml-[10px] mr-[20px]">
+            <input
+              type="text"
+              className="flex-grow-0 flex-shrink-0 w-[270px] text-sm text-left text-[#9a97a9]"
+              placeholder="검색할 내용을 입력하세요."
+            />
+          </div>
         </div>
 
         {/* Data Table Section */}
@@ -263,7 +343,7 @@ const ClubList = () => {
             ) : clubs.length > 0 ? (
               clubs.map((club, index) => (
                 <tr key={club.clubId} className="border-b border-[#ebebeb]"
-                    style={{ cursor: 'pointer' }} onClick={() => openDetailModal(club)}>
+                    style={{cursor: 'pointer'}} onClick={() => openDetailModal(club)}>
                   <td className="py-4 text-center">{index + 1}</td>
                   <td className="py-4 text-center">{club.writer}</td>
                   <td className="py-4 text-center">{club.checker || '-'}</td>
@@ -418,9 +498,11 @@ const ClubList = () => {
 
         {isDetailModalOpen && selectedClub && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="flex flex-col justify-start items-start w-[860px] h-[800px] relative overflow-hidden rounded-[28px] bg-white">
+            <div
+              className="flex flex-col justify-start items-start w-[860px] h-[800px] relative overflow-hidden rounded-[28px] bg-white">
               {/* Modal Header */}
-              <div className="flex flex-col justify-start items-start self-stretch flex-grow-0 flex-shrink-0 h-[76px] gap-1 p-6">
+              <div
+                className="flex flex-col justify-start items-start self-stretch flex-grow-0 flex-shrink-0 h-[76px] gap-1 p-6">
                 <div className="flex justify-between items-center self-stretch flex-grow-0 flex-shrink-0 relative">
                   <p className="flex-grow-0 flex-shrink-0 text-[22px] font-black text-left text-[#101828]">
                     신청내역 상세보기
@@ -455,31 +537,95 @@ const ClubList = () => {
               {/* Modal Content */}
               <div className="flex-grow-0 flex-shrink-0 w-[860px] h-[750px] relative overflow-hidden bg-white">
                 <div className="flex justify-start items-center w-[820px] absolute left-5 top-[616px] gap-5 py-9">
-                  <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
-                       onClick={closeModal}
-                  >
-                    <div className="w-[400px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#d9d9d9]"/>
-                    <p
-                      className="w-[35.93px] absolute left-[182.04px] top-12 text-base font-semibold text-left text-black">
-                      삭제
-                    </p>
-                  </div>
-                  <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
-                       onClick={handleSubmit}
-                  >
-                    <div className="w-[400px] h-12 absolute left-[419.5px] top-[35.5px] rounded-2xl bg-[#225930]"/>
-                    <p className="absolute left-[605px] top-12 text-base font-semibold text-left text-white">
-                      수정
-                    </p>
-                  </div>
+                  {isOwner && (
+                    <>
+                      {!isEditing ? (
+                        <>
+                          {selectedClub.checkStatus === 'W' ? (
+                            <>
+                              {/* 삭제 버튼 */}
+                              <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
+                                   onClick={handleDelete}
+                              >
+                                <div
+                                  className="w-[400px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#d9d9d9]"/>
+                                <p
+                                  className="w-[35.93px] absolute left-[182.04px] top-12 text-base font-semibold text-left text-black">
+                                  삭제
+                                </p>
+                              </div>
+                              {/* 수정 버튼 */}
+                              <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
+                                   onClick={() => setIsEditing(true)}
+                              >
+                                <div
+                                  className="w-[400px] h-12 absolute left-[419.5px] top-[35.5px] rounded-2xl bg-[#225930]"/>
+                                <p
+                                  className="absolute left-[605px] top-12 text-base font-semibold text-left text-white">
+                                  수정
+                                </p>
+                              </div>
+                            </>
+                          ) : selectedClub.checkStatus === 'Y' ? (
+                            <>
+                              {/* 수정 버튼 */}
+                              <div className="flex-grow-0 flex-shrink-0 w-[820px] h-12 cursor-pointer"
+                                   onClick={() => setIsEditing(true)}
+                              >
+                                <div
+                                  className="w-[820px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#225930]"/>
+                                <p
+                                  className="w-[61.5px] absolute left-[379.25px] top-12 text-base font-semibold text-left text-white">
+                                  수정
+                                </p>
+                              </div>
+                            </>
+                          ) : null}
+                        </>
+                      ) : (
+                        <>
+                          {/* 취소 버튼 */}
+                          <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
+                               onClick={() => setIsEditing(false)}
+                          >
+                            <div
+                              className="w-[400px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#d9d9d9]"/>
+                            <p
+                              className="w-[35.93px] absolute left-[182.04px] top-12 text-base font-semibold text-left text-black">
+                              취소
+                            </p>
+                          </div>
+                          {/* 저장 버튼 */}
+                          <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
+                               onClick={handleSaveEdit}
+                          >
+                            <div
+                              className="w-[400px] h-12 absolute left-[419.5px] top-[35.5px] rounded-2xl bg-[#225930]"/>
+                            <p className="absolute left-[605px] top-12 text-base font-semibold text-left text-white">
+                              저장
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
-                <div className="flex flex-col justify-start items-start w-[780px] h-[592px] absolute left-10 top-0 gap-8">
+                <div
+                  className="flex flex-col justify-start items-start w-[780px] h-[592px] absolute left-10 top-0 gap-8">
                   <div className="flex justify-start items-start self-stretch flex-grow-0 flex-shrink-0 relative gap-8">
                     <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
                       <p className="absolute left-0 top-0 text-sm font-black text-left text-black">번호</p>
                       <div
                         className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      <p className="absolute left-[13px] top-[35px] text-[15px] text-left text-black">{selectedClub.ClubId}</p>
+                      {/*<p className="absolute left-[13px] top-[35px] text-[15px] text-left text-black">{selectedClub.ClubId}</p>*/}
+                      <input
+                        type="text"
+                        value={selectedClub.clubId}
+                        name="clubId"
+                        onChange={handleInputChange}
+                        disabled
+                        className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
+                      />
                     </div>
                     <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
                       <p className="absolute left-[406px] top-0 text-sm font-black text-left text-black">
@@ -487,32 +633,63 @@ const ClubList = () => {
                       </p>
                       <div
                         className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      <p className="absolute left-[419px] top-[35px] text-[15px] text-left text-black">
-                        {selectedClub.writer || '-'} / {selectedClub.checker || '-'}
-                      </p>
+                      {/*<p className="absolute left-[419px] top-[35px] text-[15px] text-left text-black">*/}
+                      {/*  {selectedClub.writer || '-'} / {selectedClub.checker || '-'}*/}
+                      {/*</p>*/}
+                      <input
+                        type="text"
+                        value={`${selectedClub.writer || ''} / ${selectedClub.checker || ''}`}
+                        name="writerChecker"
+                        onChange={handleInputChange}
+                        disabled
+                        className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
+                      />
                     </div>
                   </div>
                   <div className="flex-grow-0 flex-shrink-0 w-[780px] h-[67px]">
                     <p className="absolute left-0 top-[99px] text-sm font-black text-left text-black">참여자</p>
                     <div
                       className="w-[780px] h-11 absolute left-[-0.5px] top-[121.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                    <p className="absolute left-[13px] top-[134px] text-[15px] text-left text-black">{selectedClub.participants || '-'}</p>
+                    {/*<p className="absolute left-[13px] top-[134px] text-[15px] text-left text-black">{selectedClub.participants || '-'}</p>*/}
+                    <input
+                      type="text"
+                      value={selectedClub.participants}
+                      name="participants"
+                      onChange={handleInputChange}
+                      disabled={!isEditing || selectedClub.checkStatus !== 'W'}
+                      className="w-[780px] h-11 absolute left-[-0.5px] top-[121.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
+                    />
                   </div>
                   <div className="flex-grow-0 flex-shrink-0 w-[780px] h-[103px]">
                     <p className="absolute left-0 top-[198px] text-sm font-black text-left text-black">내용</p>
                     <div
                       className="w-[780px] h-20 absolute left-[-0.5px] top-[220.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                    <p
-                      className="absolute left-[13px] top-[251px] text-[15px] text-left text-black">{selectedClub.content || '-'}</p>
+                    {/*<p*/}
+                    {/*  className="absolute left-[13px] top-[251px] text-[15px] text-left text-black">{selectedClub.content || '-'}</p>*/}
+                    <textarea
+                      value={selectedClub.content}
+                      name="content"
+                      onChange={handleInputChange}
+                      disabled={!isEditing || selectedClub.checkStatus !== 'W'}
+                      className="w-[780px] h-20 absolute left-[-0.5px] top-[220.5px] rounded-2xl bg-white border border-[#efeff3] px-4 py-2 outline-none resize-none"
+                    />
                   </div>
                   <div className="flex justify-start items-start flex-grow-0 flex-shrink-0 relative gap-8">
-                  <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
+                    <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
                       <p className="absolute left-0 top-0 text-sm font-black text-left text-black">승인상태</p>
                       <div
                         className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      <p className="absolute left-[13px] top-[35px] text-[15px] text-left text-black">
-                        {selectedClub.checkStatus === 'Y' ? '승인' : selectedClub.checkStatus === 'N' ? '미승인' : '대기'}
-                      </p>
+                      {/*<p className="absolute left-[13px] top-[35px] text-[15px] text-left text-black">*/}
+                      {/*  {selectedClub.checkStatus === 'Y' ? '승인' : selectedClub.checkStatus === 'N' ? '미승인' : '대기'}*/}
+                      {/*</p>*/}
+                      <input
+                        type="text"
+                        value={selectedClub.checkStatus === 'Y' ? '승인' : selectedClub.checkStatus === 'N' ? '미승인' : '대기'}
+                        name="checkStatus"
+                        onChange={handleInputChange}
+                        disabled
+                        className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
+                      />
                     </div>
                     <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
                       <p className="absolute left-[406px] top-0 text-sm font-black text-left text-black">
@@ -520,7 +697,15 @@ const ClubList = () => {
                       </p>
                       <div
                         className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      <p className="absolute left-[420px] top-[35px] text-[15px] text-left text-black">{selectedClub.checkMessage || '-'}</p>
+                      {/*<p className="absolute left-[420px] top-[35px] text-[15px] text-left text-black">{selectedClub.checkMessage || '-'}</p>*/}
+                      <input
+                        type="text"
+                        value={selectedClub.checkMessage}
+                        name="checkMessage"
+                        onChange={handleInputChange}
+                        disabled
+                        className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
+                      />
                     </div>
                   </div>
                   <div className="flex justify-start items-start flex-grow-0 flex-shrink-0 relative gap-8">
@@ -528,9 +713,17 @@ const ClubList = () => {
                       <p className="absolute left-0 top-0 text-sm font-black text-left text-black">활동일</p>
                       <div
                         className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      <p className="absolute left-[13px] top-[35px] text-[15px] text-left text-black">
-                        {selectedClub.studyDate}
-                      </p>
+                      {/*<p className="absolute left-[13px] top-[35px] text-[15px] text-left text-black">*/}
+                      {/*  {selectedClub.studyDate}*/}
+                      {/*</p>*/}
+                      <input
+                        type="date"
+                        value={selectedClub.studyDate}
+                        name="studyDate"
+                        onChange={handleInputChange}
+                        disabled={!isEditing || selectedClub.checkStatus !== 'W'}
+                        className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
+                      />
                     </div>
                     <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
                       <p className="absolute left-[406px] top-0 text-sm font-black text-left text-black">
@@ -538,9 +731,17 @@ const ClubList = () => {
                       </p>
                       <div
                         className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      <p className="absolute left-[419px] top-[35px] text-[15px] text-left text-black">
-                        {selectedClub.regDate}
-                      </p>
+                      {/*<p className="absolute left-[419px] top-[35px] text-[15px] text-left text-black">*/}
+                      {/*  {selectedClub.regDate}*/}
+                      {/*</p>*/}
+                      <input
+                        type="date"
+                        value={selectedClub.regDate}
+                        name="regDate"
+                        onChange={handleInputChange}
+                        disabled
+                        className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
+                      />
                     </div>
                   </div>
                   <div className="flex-grow-0 flex-shrink-0 w-[780px] h-[67px]">
@@ -549,9 +750,17 @@ const ClubList = () => {
                     </p>
                     <div
                       className="w-[780px] h-11 absolute left-[-0.5px] top-[553.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                    <p className="absolute left-[13px] top-[565px] text-sm text-left text-black">
-                      {selectedClub.attachment || '-'}
-                    </p>
+                    {/*<p className="absolute left-[13px] top-[565px] text-sm text-left text-black">*/}
+                    {/*  {selectedClub.attachment || '-'}*/}
+                    {/*</p>*/}
+                    <input
+                      type="text"
+                      value={selectedClub.attachment}
+                      name="attachment"
+                      onChange={handleInputChange}
+                      disabled={!isEditing || selectedClub.checkStatus !== 'Y'}
+                      className="w-[780px] h-11 absolute left-[-0.5px] top-[553.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
+                    />
                   </div>
                 </div>
               </div>
