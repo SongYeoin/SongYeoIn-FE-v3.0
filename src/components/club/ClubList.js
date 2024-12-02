@@ -35,7 +35,7 @@ const ClubList = () => {
       try {
         setLoading(true);
 
-        const result = await axios.get('/club');
+        const result = await axios.get(`${process.env.REACT_APP_API_URL}/club`);
         console.log(result.data);  // 응답 데이터 확인
 
         const fetchedCourseId = result.data.course?.id;
@@ -58,7 +58,7 @@ const ClubList = () => {
     if(!courseId) return; // courseId가 없으면 실행하지 않음
     setLoading(true);
     try {
-      const response = await axios.get(`/club/${courseId}/list`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/club/${courseId}/list`, {
         params: {
           //courseId: courseId,
           pageNum: currentPage
@@ -86,7 +86,7 @@ const ClubList = () => {
   const fetchClubDetails = async (clubId) => {
     try{
       console.log("fetchClubDetails 호출 - Club ID: ", clubId);
-      const response = await axios.get(`/club/${clubId}/detail`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/club/${clubId}/detail`, {
         // headers: {
         //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         // }
@@ -102,7 +102,7 @@ const ClubList = () => {
   // 동아리 신청 (작성자, 참여자, 내용, 활동일, 작성일)
   const openApplyModal = () => {
     // Fetch current user's name and set automatically
-    axios.get('/club/${courseId}/register', {
+    axios.get(`${process.env.REACT_APP_API_URL}/club/${courseId}/register`, {
       // headers: {
       //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
       // }
@@ -167,7 +167,7 @@ const ClubList = () => {
 
       console.log("Submitting club data: ", submitData); // 데이터 확인
 
-      const response = await axios.post(`/club/${courseId}`, submitData, {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/club/${courseId}`, submitData, {
         //params: { courseId: courseId },  // courseId를 쿼리 파라미터로 전달
         // headers: {
         //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
@@ -194,7 +194,7 @@ const ClubList = () => {
     if (!selectedClub || !selectedClub.clubId) return;
 
     try {
-      await axios.delete(`/club/${selectedClub.clubId}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/club/${selectedClub.clubId}`, {
         // headers: {
         //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         // }
@@ -214,7 +214,7 @@ const ClubList = () => {
   // 저장 버튼 클릭 핸들러
   const handleSaveEdit = async () => {
     try {
-      await axios.put(`/club/${selectedClub.clubId}`, formData, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/club/${selectedClub.clubId}`, formData, {
         // headers: {
         //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         // }

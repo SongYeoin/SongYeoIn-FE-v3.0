@@ -41,7 +41,7 @@ const AdminClubList = () => {
     if(!selectedCourseId) return; // courseId가 없으면 실행하지 않음
     setLoading(true);
     try {
-      const response = await axios.get(`/admin/club/${selectedCourseId}/list`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/club/${selectedCourseId}/list`, {
         params: {
           //courseId: courseId,
           pageNum: currentPage
@@ -69,7 +69,7 @@ const AdminClubList = () => {
   const fetchClubDetails = async (clubId) => {
     try{
       console.log("fetchClubDetails 호출 - Club ID: ", clubId);
-      const response = await axios.get(`/admin/club/${clubId}/detail`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/club/${clubId}/detail`, {
         // headers: {
         //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         // }
