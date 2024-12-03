@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Axios 기본 설정
-axios.defaults.baseURL = process.env.REACT_APP_API_URL;
+axios.defaults.baseURL = process.env.REACT_APP_API_URL.replace(/\/+$/, "");
 
 // 요청 인터셉터: 요청마다 토큰을 헤더에 추가
 axios.interceptors.request.use(
