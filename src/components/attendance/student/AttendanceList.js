@@ -1,10 +1,10 @@
-import AdminLayout from '../../common/layout/admin/AdminLayout';
-import React, { useEffect, useState } from 'react';
-import axios from 'api/axios';
+import StudentLayout from '../../common/layout/student/StudentLayout';
 import AttendMainHeader from '../AttendMainHeader';
-import AttendanceDetail from './AttendanceDetail';
+import React, { useEffect, useState } from 'react';
+import axios from '../../../api/axios';
+import AttendanceDetail from '../admin/AttendanceDetail';
 
-export const AttendanceList = () => {
+const StudentAttendanceList = () => {
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
   const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수
   const [attendance, setAttendance] = useState([]);
@@ -12,18 +12,28 @@ export const AttendanceList = () => {
   const [courses, setCourses] = useState([]);
   const [filters, setFilters] = useState({
     courseId: '',
-    studentName: '',
     date: new Date().toISOString().split('T')[0],
     status: '',
+    startDate: (() => {
+      const date = new Date();
+      date.setDate(date.getDate() - 7); // 일주일 전
+      return date.toISOString().split('T')[0];
+    })(), // 즉시 실행 함수로 초기화
+    endDate: new Date().toISOString().split('T')[0], // 오늘 날짜를 기본값으로 설정
   });
   const [selectedAttendance, setSelectedAttendance] = useState(null); // 선택한 출석
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
+  const allPeriods = ["1교시", "2교시", "3교시", "4교시", "5교시", "6교시", "7교시"];
+  const filledPeriodHeaders = allPeriods.map((period) =>
+    periodHeaders.includes(period) ? period : null
+  );
 
   useEffect(() => {
     // 초기 코스 데이터 불러오기
     const fetchCourses = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/attendance/courses`); // 담당자가 자기가 맡고 있는 교육과정 전체 조회
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/attendance/courses`); // 수강생이 자기가 맡고 있는 교육과정 전체 조회
         const courseList = response.data;
 
         if (courseList.length > 0) {
@@ -45,42 +55,39 @@ export const AttendanceList = () => {
     }
   }, [filters, currentPage]);
 
+  useEffect(() => {
+    if (attendance.length > 0 && attendance[0].periods.length > 0) {
+      setPeriodHeaders(attendance[0].periods); // periods가 교시 이름을 포함한다고 가정
+    } else {
+      setPeriodHeaders([]);
+    }
+  }, [attendance]); // attendance가 변경될 때 실행
+
   const fetchAttendanceData = async () => {
 
     try {
       const params = {
-        studentName: filters.studentName || undefined,
-        date: filters.date || undefined,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
         status: filters.status || undefined,
         page: currentPage - 1,
         size: 10,
       };
 
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/admin/attendance/course/${filters.courseId}`,
+        `${process.env.REACT_APP_API_URL}/attendance/course/${filters.courseId}`,
         { params },
       );
 
       const { content, totalPages } = response.data;
 
-      setAttendance(content); // 학생별 데이터 설정
+      setAttendance(content); // 날짜별
       setTotalPages(totalPages); // 전체 페이지 수 설정
-
-      // 교시 헤더 추출
-      if (content.length > 0) {
-        const periods = Object.keys(content[0].periods || []); // periods의 키값 추출
-        setPeriodHeaders(periods); // 교시명 헤더 설정
-      }
 
     } catch (error) {
       console.error('Error fetching attendance data:', error);
     }
   };
-
-  /*if (!courses.length || !filters.courseId) {
-    return <p>Loading courses...</p>;
-  }*/
-
 
   const handleFilterChange = (updatedFilters) => {
     setFilters(updatedFilters);
@@ -127,30 +134,33 @@ export const AttendanceList = () => {
   };
 
   return (
-    <AdminLayout
+    <StudentLayout
       currentPage={currentPage}
       totalPages={totalPages}
       onPageChange={(page) => setCurrentPage(page)}
     >
       <AttendMainHeader
-        role="admin"
+        role="student"
         courses={courses}
         onFilterChange={handleFilterChange}
       />
+
       <div
-        className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
-        <div className="grid grid-cols-8 gap-5">
-          <p className="text-xs font-bold text-center text-gray-700">이름</p>
-          <p className="text-xs font-bold text-center text-gray-700">과정</p>
-          <p className="text-xs font-bold text-center text-gray-700">날짜</p>
-          {periodHeaders.length > 0 &&
-            periodHeaders.map((period, index) => (
-              <p key={index} className="text-xs font-bold text-center text-gray-700">
-                {period}
-              </p>
-            ))}
-        </div>
+        className="grid grid-cols-8 gap-5 w-full p-4 bg-white rounded-xl"
+      >
+        <p className="text-xs font-bold text-center text-gray-700">날짜</p>
+        {filledPeriodHeaders.map((period, index) => (
+          <p
+            key={index}
+            className={`text-xs font-bold text-center text-gray-700 ${
+              period ? "" : "text-gray-400"
+            }`}
+          >
+            {period || "-"}
+          </p>
+        ))}
       </div>
+
       <ul className="space-y-4">
         {attendance.length > 0 ? (
           attendance.map((row) => (
@@ -160,19 +170,17 @@ export const AttendanceList = () => {
                 onClick={() => handleRowClick(filters.courseId, row.studentId,
                   filters.date)}
               >
-                <h3
-                  className="bg-white p-1 rounded shadow font-semibold">{row.studentName}</h3>
-                <p
-                  className="text-xs text-center text-gray-700">{row.courseName}</p>
                 <p
                   className="text-xs text-center text-gray-700">
                   {new Date(row.date).toLocaleDateString('ko-KR')}
                 </p>
-                {periodHeaders.map((period, index) => (
+                {filledPeriodHeaders.map((period, index) => (
                   <p
                     key={index}
                     className="flex items-center justify-center">
-                    {getStatusIcon(row.students[period])}
+                    {period
+                      ? getStatusIcon(row.students[period] || "-") // 교시가 있으면 상태 아이콘 렌더링
+                      : "-"}
                   </p>
                 ))}
               </div>
@@ -190,10 +198,8 @@ export const AttendanceList = () => {
           attendance={selectedAttendance}
         />
       )}
-
-    </AdminLayout>
-);
+    </StudentLayout>
+  );
 
 };
-
-export default AttendanceList;
+export default StudentAttendanceList;

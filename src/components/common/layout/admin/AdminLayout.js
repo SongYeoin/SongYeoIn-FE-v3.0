@@ -3,7 +3,7 @@ import Header from '../../header';
 import Footer from '../../Footer';
 import AdminSidebar from '../../AdminSidebar';
 
-const AdminLayout = ({ children, currentPage, totalPages, onPageChange }) => {
+const AdminLayout = ({ children, currentPage, totalPages, onPageChange,hideFooter }) => {
   return (
     <div className="w-full h-screen flex flex-col bg-white">
       {/* 헤더 */}
@@ -22,12 +22,13 @@ const AdminLayout = ({ children, currentPage, totalPages, onPageChange }) => {
             {children}
           </div>
 
-          {/* 푸터 */}
-          <Footer
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
+            {/* 푸터 */}
+          {!hideFooter && (<Footer
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
+            )}
         </main>
       </div>
     </div>
