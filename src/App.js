@@ -15,6 +15,8 @@ import StudentJournalList from './components/journal/StudentJournalList';
 import StudentJournalDetail from './components/journal/StudentJournalDetail';
 import StudentMainPage from './components/member/StudentMainPage';
 import AdminClubList from './components/club/admin/AdminClubList';
+import StudentAttendanceList
+  from './components/attendance/student/AttendanceList';
 
 function App() {
   return (
@@ -49,6 +51,7 @@ function App() {
         <Route path="/club" element={<ClubList />} />
         <Route path="/journal" element={<StudentJournalList />} />
         <Route path="/journal/:journalId" element={<StudentJournalDetail />} />
+        <Route path="/attendance" element={<StudentAttendanceList />} />
       </Routes>
     </Router>
     </CourseProvider>
