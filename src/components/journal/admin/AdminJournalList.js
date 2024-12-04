@@ -9,6 +9,7 @@ const AdminJournalList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedJournal, setSelectedJournal] = useState(null);
+  const [totalElements, setTotalElements] = useState(0);
   const [courses, setCourses] = useState([]);
 
   const [filters, setFilters] = useState({
@@ -42,6 +43,7 @@ const AdminJournalList = () => {
 
       setJournals(response.data.data);
       setTotalPages(response.data.pageInfo.totalPages);
+      setTotalElements(response.data.pageInfo.totalElements); // 추가
     } catch (error) {
       console.error('교육일지 목록 조회 실패:', error);
     }
@@ -92,14 +94,13 @@ const AdminJournalList = () => {
           {/* 스크롤되는 목록 영역 */}
           <div className="flex-1 overflow-y-auto">
             <ul className="space-y-4">
-              {journals.map((journal) => (
+              {journals.map((journal, index) => (
                 <li key={journal.id}>
                   <div
                     className="grid grid-cols-[1fr_3fr_2fr_2fr_2fr] gap-5 items-center text-center cursor-pointer hover:bg-gray-100 p-2 rounded"
                     onClick={() => setSelectedJournal(journal)}
                   >
-                    <p>{journal.id}</p>
-                    <p>{journal.title}</p>
+                    <p>{totalElements - ((currentPage - 1) * 15 + index)}</p>                    <p>{journal.title}</p>
                     <p>{journal.memberName}</p>
                     <p>{new Date(journal.createdAt).toLocaleDateString()}</p>
                     <p>{journal.file ? '첨부됨' : '-'}</p>
