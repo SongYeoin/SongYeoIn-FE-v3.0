@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'api/axios';
 import StudentJournalCreate from './StudentJournalCreate';
 
-const StudentJournalMainHeader = ({ onFilterChange, refreshJournals }) => {
+const StudentJournalHeader = ({ onFilterChange, refreshJournals }) => {
   const [courses, setCourses] = useState([]);
   const [filters, setFilters] = useState({
     courseId: '',
@@ -134,4 +134,4 @@ const StudentJournalMainHeader = ({ onFilterChange, refreshJournals }) => {
   );
 };
 
-export default StudentJournalMainHeader;
+export default StudentJournalHeader;

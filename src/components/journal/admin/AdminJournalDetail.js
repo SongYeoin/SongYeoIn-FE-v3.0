@@ -83,7 +83,7 @@ const AdminJournalDetail = ({ journalId, onClose }) => {
           <div>
             <label className="text-sm text-gray-600 font-bold">내용</label>
             <p
-              className="w-full px-3 py-2 border rounded-lg bg-gray-100">{journal.content}</p>
+              className="w-full h-[42px] px-3 py-2 border rounded-lg bg-gray-100">{journal.content}</p>
           </div>
         </div>
 
