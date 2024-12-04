@@ -5,21 +5,21 @@ import StudentSidebar from '../../StudentSidebar';
 
 const StudentLayout = ({ children, currentPage, totalPages, onPageChange }) => {
   return (
-    <div
-      className="w-full h-full absolute overflow-hidden bg-white flex flex-col">
+    <div className="w-full h-screen flex flex-col bg-white">
+
       {/* 헤더 */}
       <Header />
 
       {/* 메인 영역 */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         {/* 사이드바 */}
         <StudentSidebar />
 
         {/* 메인 콘텐츠 */}
-        <main
-          className="flex flex-grow flex-col pl-72 pt-3">
+        <main className="flex flex-col pl-72 w-full overflow-hidden">
+
           {/*콘텐츠 영역*/}
-          <div className="flex-grow">
+          <div className="flex-1 overflow-y-auto">
             {children}
           </div>
 
