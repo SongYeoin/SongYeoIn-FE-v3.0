@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { studentJournalApi } from '../../api/journalApi';
 import StudentLayout from '../common/layout/student/StudentLayout';
-import StudentJournalMainHeader from './StudentJournalMainHeader';
+import StudentJournalHeader from './StudentJournalHeader';
 import StudentJournalDetail from './StudentJournalDetail';
 
 const StudentJournalList = () => {
@@ -55,7 +55,7 @@ const StudentJournalList = () => {
       totalPages={totalPages}
       onPageChange={(page) => setCurrentPage(page)}
     >
-      <StudentJournalMainHeader
+      <StudentJournalHeader
         onFilterChange={handleFilterChange}
         refreshJournals={fetchJournals}
       />

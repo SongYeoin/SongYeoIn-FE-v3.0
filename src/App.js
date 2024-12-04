@@ -11,9 +11,7 @@ import StudentNoticeList from './components/notice/student/StudentNoticeList';
 import AttendanceList from './components/attendance/admin/AttendanceList';
 import ClubList from './components/club/ClubList';
 import AdminJournalList from './components/journal/admin/AdminJournalList';
-import AdminJournalDetail from './components/journal/admin/AdminJournalDetail';
 import StudentJournalList from './components/journal/StudentJournalList';
-import StudentJournalDetail from './components/journal/StudentJournalDetail';
 import StudentMainPage from './components/member/StudentMainPage';
 import AdminClubList from './components/club/admin/AdminClubList';
 import StudentAttendanceList
@@ -45,14 +43,12 @@ function App() {
         <Route path="/admin/club" element={<AdminClubList />} />
 
         <Route path="/admin/journal" element={<AdminJournalList />} />
-        <Route path="/admin/journal/:journalId" element={<AdminJournalDetail />} />
 
         {/* Student Pages */}
         <Route path="/main" element={<StudentMainPage />} />
         <Route path="/notice" element={<StudentNoticeList />} />
         <Route path="/club" element={<ClubList />} />
         <Route path="/journal" element={<StudentJournalList />} />
-        <Route path="/journal/:journalId" element={<StudentJournalDetail />} />
         <Route path="/attendance" element={<StudentAttendanceList />} />
       </Routes>
     </Router>
