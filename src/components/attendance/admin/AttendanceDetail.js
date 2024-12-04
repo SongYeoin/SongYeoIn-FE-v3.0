@@ -11,6 +11,8 @@ const AttendanceDetail = ({ attendance, onClose }) => {
   // 페이징 관련 상태
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const days = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+  const periods = ['1교시', '2교시', '3교시', '4교시', '5교시', '6교시', '7교시'];
 
   useEffect(() => {
     if (!attendance) {
@@ -49,10 +51,10 @@ const AttendanceDetail = ({ attendance, onClose }) => {
 
   const onPageChange = (page) => {
     setCurrentPage(page);
-    fetchAttendanceDetails(page);
+    //fetchAttendanceDetails(page);
   };
 
-  if (isLoading) {
+  if (!attendanceDetails) {
     return (
       <div
         className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -153,6 +155,41 @@ const AttendanceDetail = ({ attendance, onClose }) => {
     }
   };*/
 
+
+  const formatTime = (time) => {
+    if (!time || typeof time !== "string") return ""; // `time`이 없거나 문자열이 아니면 빈 문자열 반환
+    if (time.includes("T")) {
+      const timePart = time.split("T")[1]; // ISO-8601 형식 처리
+      return timePart.split(":").slice(0, 2).join(":"); // "10:00"
+    }
+    if (time.includes(":")) {
+      return time.split(":").slice(0, 2).join(":"); // 이미 "10:00:00" 형식일 경우 처리
+    }
+    return time; // 다른 형식일 경우 그대로 반환
+  };
+
+
+  // 요일과 교시에 맞는 데이터를 매핑
+  const timetableData = {};
+  days.forEach((day) => {
+    timetableData[day] = {};
+    periods.forEach((period) => {
+      timetableData[day][period] = null; // 초기값 공란
+    });
+  });
+
+  // 데이터 채우기
+  attendanceDetails.periodList.forEach((period) => {
+    if (timetableData[period.dayOfWeek]) {
+      timetableData[period.dayOfWeek][period.name] = `${formatTime(
+        period.startTime
+      )}~${formatTime(period.endTime)}`;
+    }else{
+      timetableData[period.dayOfWeek][period.name] = null;
+    }
+  });
+
+
   return (
     <div
       className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 overflow-auto">
@@ -232,18 +269,41 @@ const AttendanceDetail = ({ attendance, onClose }) => {
         <div className="mb-5 border border-gray-300 rounded-lg p-4">
           <h3
             className="text-lg font-bold mb-4 border-b border-gray-300 pb-2">시간표</h3>
-          <ul>
-            {attendanceDetails.periodList
-            && attendanceDetails.periodList.length > 0 ? (
-              attendanceDetails.periodList.map((period, index) => (
-                <li key={index}>
-                  {period.dayOfWeek} {period.name} ({period.startTime} - {period.endTime})
-                </li>
-              ))
-            ) : (
-              <p className="text-gray-500">시간표 정보가 없습니다.</p>
-            )}
-          </ul>
+
+          {attendanceDetails.periodList
+          && attendanceDetails.periodList.length > 0 ? (
+            <div
+              className="grid grid-cols-8 border bg-white rounded-lg">
+              {/* 헤더 행 */}
+              <div
+                className="font-bold text-center border bg-gray-100">교시/요일
+              </div>
+              {days.map((day) => (
+                <div key={day}
+                     className="font-bold text-center border bg-gray-100">
+                  {day}
+                </div>
+              ))}
+
+              {/* 데이터 행 */}
+              {periods.map((period) => (
+                <React.Fragment key={period}>
+                  {/* 교시 열 */}
+                  <div
+                    className="font-bold text-center border bg-gray-50">{period}</div>
+                  {/* 요일 데이터 */}
+                  {days.map((day) => (
+                    <div key={`${day}-${period}`}
+                         className="text-center border">
+                      {timetableData[day][period] || ''}
+                    </div>
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">시간표 정보가 없습니다.</p>
+          )}
         </div>
 
         {/*출석 상태 목록*/}
