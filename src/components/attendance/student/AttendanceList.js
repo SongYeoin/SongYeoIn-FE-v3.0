@@ -2,7 +2,7 @@ import StudentLayout from '../../common/layout/student/StudentLayout';
 import AttendMainHeader from '../AttendMainHeader';
 import React, { useEffect, useState } from 'react';
 import axios from '../../../api/axios';
-import AttendanceDetail from '../admin/AttendanceDetail';
+import AttendanceDetail from '../student/AttendanceDetail';
 
 const StudentAttendanceList = () => {
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
@@ -168,7 +168,7 @@ const StudentAttendanceList = () => {
               <div
                 className="space-x-1 grid grid-cols-8 items-center justify-center text-center cursor-pointer hover:bg-gray-100 transition duration-200 ease-in-out p-2 rounded"
                 onClick={() => handleRowClick(filters.courseId, row.studentId,
-                  filters.date)}
+                  row.date)}
               >
                 <p
                   className="text-xs text-center text-gray-700">
