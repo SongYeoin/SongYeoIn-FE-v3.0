@@ -153,7 +153,7 @@ const StudentAttendanceList = () => {
           <p
             key={index}
             className={`text-xs font-bold text-center text-gray-700 ${
-              period ? "" : "text-gray-400"
+              period ? "" : "text-gray-700"
             }`}
           >
             {period || "-"}
