@@ -12,7 +12,7 @@ export const CourseProvider = ({ children }) => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get('/admin/club'); // 서버 요청
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/club`); // 서버 요청
         console.log(response.data);  // 응답 데이터 확인
         setCourses(response.data); // 서버 데이터 설정
       } catch (error) {
