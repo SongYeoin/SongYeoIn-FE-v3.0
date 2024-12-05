@@ -249,7 +249,7 @@ const ClubList = () => {
           </div>
 
           <div
-            className="flex justify-center items-center flex-grow-0 flex-shrink-0 h-10 relative gap-1 px-4 py-2 rounded-lg bg-[#225930] cursor-pointer">
+            className="flex justify-center items-center flex-grow-0 flex-shrink-0 h-10 relative gap-1 px-4 py-2 rounded-lg bg-[#225930] cursor-pointer" onClick={openApplyModal}>
             <svg
               width={24}
               height={24}
@@ -274,7 +274,7 @@ const ClubList = () => {
                 strokeLinejoin="round"
               />
             </svg>
-            <p className="flex-grow-0 flex-shrink-0 text-sm text-left text-white" onClick={openApplyModal}>신청</p>
+            <p className="flex-grow-0 flex-shrink-0 text-sm text-left text-white">신청</p>
           </div>
         </div>
 
