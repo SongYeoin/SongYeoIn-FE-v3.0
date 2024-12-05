@@ -16,7 +16,7 @@ const AdminClubList = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [formData, setFormData] = useState();
+  const [setFormData] = useState();
   const [selectedCourseId, setSelectedCourseId] = useState(null); // 선택된 Course ID
   const {courses} = useContext(CourseContext);
 
@@ -118,11 +118,27 @@ const AdminClubList = () => {
 
   // 저장 버튼 클릭 핸들러
   const handleSaveEdit = async () => {
+    // 필수 항목 체크
+    if (selectedClub.checkStatus === 'W' || !selectedClub.checkMessage) {
+      alert('승인 상태와 승인 메시지는 필수 항목입니다. 입력해주세요.');
+      return;
+    }
+
     try {
-      await axios.put(`/admin/club/${selectedClub.clubId}`, formData, {
+      const payload = {
+        checkStatus: selectedClub.checkStatus,
+        checkMessage: selectedClub.checkMessage
+      };
+
+      console.log("수정 데이터 전송:", payload);
+
+      await axios.put(`/admin/club/${selectedClub.clubId}`, payload, {
         // headers: {
         //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         // }
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       alert('수정이 완료되었습니다.');
       setIsEditing(false); // 수정 모드 비활성화
@@ -372,7 +388,8 @@ const AdminClubList = () => {
                   {!isEditing ? (
                     <>
                     {selectedClub.checkStatus === 'W' && (
-
+                      <>
+                        {/* 삭제 버튼 */}
                       <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer" onClick={handleDelete}>
                         <div
                           className="w-[400px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#d9d9d9]"/>
@@ -381,7 +398,7 @@ const AdminClubList = () => {
                           삭제
                         </p>
                       </div>
-                  )}
+
                     {/* 수정 버튼 */}
                     <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
                          onClick={handleEditClick}
@@ -393,6 +410,24 @@ const AdminClubList = () => {
                         수정
                       </p>
                     </div>
+                    </>
+                    )}
+
+                    {(selectedClub.checkStatus === 'Y' || selectedClub.checkStatus === 'N') && (
+                      <>
+                        {/* 수정 버튼 */}
+                        <div className="flex-grow-0 flex-shrink-0 w-[820px] h-12 cursor-pointer"
+                             onClick={handleEditClick}
+                        >
+                          <div
+                            className="w-[820px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#225930]"/>
+                          <p
+                            className="w-[61.5px] absolute left-[379.25px] top-12 text-base font-semibold text-left text-white">
+                            수정
+                          </p>
+                        </div>
+                      </>
+                    )}
                     </>
                   ) : (
                     <>
