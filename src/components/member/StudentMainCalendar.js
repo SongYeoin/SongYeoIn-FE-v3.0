@@ -5,7 +5,7 @@ import 'react-calendar/dist/Calendar.css';
 import './StudentMainCalendar.css';
 import { studentJournalApi } from '../../api/journalApi';
 
-const StudentMainCalendar = ({ courseId }) => {
+const StudentMainCalendar = ({ courseId, onDateChange }) => {
   const [value, setValue] = useState(new Date());
   const [journals, setJournals] = useState([]);
 
@@ -42,10 +42,24 @@ const StudentMainCalendar = ({ courseId }) => {
     }
   };
 
+  const handleDateChange = (date) => {
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const formattedDate = formatDate(date);
+    console.log("선택된 날짜: " + formattedDate);
+    setValue(date);
+    onDateChange(formattedDate); // 부모 컴포넌트에 선택된 날짜 전달
+  };
+
   return (
     <div className="calendar-container">
       <Calendar
-        onChange={setValue}
+        onChange={handleDateChange} // 클릭 시 날짜 변경 핸들러 호출
         value={value}
         locale="ko"
         formatMonth={(locale, date) => date.toLocaleString('ko', { month: 'long' })}
