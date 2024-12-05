@@ -20,10 +20,6 @@ const AdminClubList = () => {
   const [selectedCourseId, setSelectedCourseId] = useState(null); // 선택된 Course ID
   const {courses} = useContext(CourseContext);
 
-  //const token = sessionStorage.getItem('token'); // 세션 스토리지에서 Access Token 가져오기
-  //const refreshToken = sessionStorage.getItem('refreshToken'); // 세션 스토리지에서 Refresh Token 가져오기
-  //const user = token ? parseJwt(token) : {}; // JWT 디코딩하여 사용자 정보 추출
-
   const user = useUser();
 
 
