@@ -20,7 +20,8 @@ const AdminClubList = () => {
   const [selectedCourseId, setSelectedCourseId] = useState(null); // 선택된 Course ID
   const {courses} = useContext(CourseContext);
 
-  const user = useUser();
+  const {user, userLoading} = useUser();
+  const [originalClub, setOriginalClub] = useState(null);
 
 
   // courses가 변경되었을 때 기본값 설정
@@ -28,7 +29,9 @@ const AdminClubList = () => {
     if (courses.length > 0) {
       setSelectedCourseId(courses[0].id); // 첫 번째 코스를 기본값으로 설정
     }
-  }, [courses]);
+    console.log('현재 로그인한 사용자 정보:', user);
+    console.log('현재 로딩상태:', userLoading);
+  }, [courses, user, userLoading]);
 
   const handleChange = (e) => {
     setSelectedCourseId(e.target.value); // 선택된 Course ID 업데이트
@@ -66,8 +69,7 @@ const AdminClubList = () => {
   // useEffect에서 fetchClubList 호출
   useEffect(() => {
     fetchClubList();
-    console.log('현재 로그인한 사용자 정보:', user);
-  }, [fetchClubList, selectedCourseId, currentPage, user]);
+  }, [fetchClubList, selectedCourseId, currentPage]);
 
   const fetchClubDetails = async (clubId) => {
     try{
@@ -117,7 +119,7 @@ const AdminClubList = () => {
   // 저장 버튼 클릭 핸들러
   const handleSaveEdit = async () => {
     try {
-      await axios.put(`/club/${selectedClub.clubId}`, formData, {
+      await axios.put(`/admin/club/${selectedClub.clubId}`, formData, {
         // headers: {
         //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         // }
@@ -129,6 +131,8 @@ const AdminClubList = () => {
     } catch (err) {
       console.error('수정 실패:', err);
       alert('수정에 실패했습니다.');
+      setIsEditing(false); // 수정 모드 비활성화
+      setIsDetailModalOpen(false); // 모달 닫기
     }
   };
 
@@ -138,7 +142,7 @@ const AdminClubList = () => {
     if (!selectedClub || !selectedClub.clubId) return;
 
     try {
-      await axios.delete(`/club/${selectedClub.clubId}`, {
+      await axios.delete(`/admin/club/${selectedClub.clubId}`, {
         // headers: {
         //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         // }
@@ -149,23 +153,34 @@ const AdminClubList = () => {
     } catch (err) {
       console.error('삭제 실패:', err);
       alert('삭제에 실패했습니다.');
+      setIsDetailModalOpen(false); // 모달 닫기
     }
   };
 
+  //수정 버튼 클릭 핸들러
   const handleEditClick = () => {
     if (!user) {
       console.error('사용자 정보가 없습니다. user 객체:', user);
       return;
     }
 
+    setOriginalClub({...selectedClub});
+
     // 승인자 정보 설정
     setSelectedClub((prev) => ({
       ...prev,
-      checker: user.name, // 승인자 정보에 관리자 이름 추가
+      checker: user?.name // 승인자 정보에 관리자 이름 추가
     }));
 
     setIsEditing(true); // 수정 모드 활성화
   };
+
+  //취소 버튼 클릭 핸들러
+  const handleCancelEdit = () => {
+    setSelectedClub(originalClub);
+    setIsEditing(false);
+  };
+
 
   return (
     <AdminLayout currentPage={currentPage}
@@ -383,7 +398,7 @@ const AdminClubList = () => {
                     <>
                       {/* 취소 버튼 */}
                       <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
-                           onClick={() => setIsEditing(false)}
+                           onClick={handleCancelEdit}
                       >
                         <div
                           className="w-[400px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#d9d9d9]"/>
@@ -433,7 +448,7 @@ const AdminClubList = () => {
                       {/*</p>*/}
                       <input
                         type="text"
-                        value={`${selectedClub.writer || ''} / ${selectedClub.checker || ''}`}
+                        value={`${selectedClub.writer || ""} / ${selectedClub.checker || ""}`}
                         name="writerChecker"
                         onChange={handleInputChange}
                         disabled
@@ -537,9 +552,14 @@ const AdminClubList = () => {
                       {/*<p className="absolute left-[420px] top-[35px] text-[15px] text-left text-black">{selectedClub.checkMessage || '-'}</p>*/}
                       <input
                         type="text"
-                        value={selectedClub.checkMessage}
+                        value={selectedClub.checkMessage || ""}
                         name="checkMessage"
-                        onChange={handleInputChange}
+                        onChange={(e) =>
+                          setSelectedClub((prev) => ({
+                            ...prev,
+                            checkMessage: e.target.value,
+                          }))
+                        }
                         disabled={!isEditing}
                         className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
                       />
@@ -592,7 +612,7 @@ const AdminClubList = () => {
                     {/*</p>*/}
                     <input
                       type="text"
-                      value={selectedClub.attachment}
+                      value={selectedClub.attachment || ""}
                       name="attachment"
                       onChange={handleInputChange}
                       disabled
