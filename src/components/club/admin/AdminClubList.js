@@ -2,6 +2,7 @@ import React, {useCallback, useContext, useEffect, useState} from "react";
 import axios from 'api/axios';
 import AdminLayout from '../../common/layout/admin/AdminLayout';
 import {CourseContext} from '../../common/CourseContext';
+import {useUser} from '../../common/UserContext';
 
 
 const AdminClubList = () => {
@@ -19,6 +20,11 @@ const AdminClubList = () => {
   const [selectedCourseId, setSelectedCourseId] = useState(null); // 선택된 Course ID
   const {courses} = useContext(CourseContext);
 
+  //const token = sessionStorage.getItem('token'); // 세션 스토리지에서 Access Token 가져오기
+  //const refreshToken = sessionStorage.getItem('refreshToken'); // 세션 스토리지에서 Refresh Token 가져오기
+  //const user = token ? parseJwt(token) : {}; // JWT 디코딩하여 사용자 정보 추출
+
+  const user = useUser();
 
 
   // courses가 변경되었을 때 기본값 설정
@@ -64,7 +70,8 @@ const AdminClubList = () => {
   // useEffect에서 fetchClubList 호출
   useEffect(() => {
     fetchClubList();
-  }, [fetchClubList, selectedCourseId, currentPage]);
+    console.log('현재 로그인한 사용자 정보:', user);
+  }, [fetchClubList, selectedCourseId, currentPage, user]);
 
   const fetchClubDetails = async (clubId) => {
     try{
@@ -147,6 +154,21 @@ const AdminClubList = () => {
       console.error('삭제 실패:', err);
       alert('삭제에 실패했습니다.');
     }
+  };
+
+  const handleEditClick = () => {
+    if (!user) {
+      console.error('사용자 정보가 없습니다. user 객체:', user);
+      return;
+    }
+
+    // 승인자 정보 설정
+    setSelectedClub((prev) => ({
+      ...prev,
+      checker: user.name, // 승인자 정보에 관리자 이름 추가
+    }));
+
+    setIsEditing(true); // 수정 모드 활성화
   };
 
   return (
@@ -351,7 +373,7 @@ const AdminClubList = () => {
                   )}
                     {/* 수정 버튼 */}
                     <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
-                         onClick={() => setIsEditing(true)}
+                         onClick={handleEditClick}
                     >
                       <div
                         className="w-[400px] h-12 absolute left-[419.5px] top-[35.5px] rounded-2xl bg-[#225930]"/>

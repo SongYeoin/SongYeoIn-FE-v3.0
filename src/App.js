@@ -3,6 +3,7 @@ import { Login } from './Login';
 import { Landing } from './Landing';
 import { Join } from './Join';
 import {CourseProvider} from './components/common/CourseContext';
+import {UserProvider} from './components/common/UserContext';
 import MemberList from './components/member/admin/MemberList';
 import CourseList from './components/course/admin/CourseList';
 import AdminNoticeList from './components/notice/admin/AdminNoticeList';
@@ -20,6 +21,7 @@ import StudentAttendanceList
 
 function App() {
   return (
+    <UserProvider>
     <CourseProvider>
     <Router>
       <Routes>
@@ -55,6 +57,7 @@ function App() {
       </Routes>
     </Router>
     </CourseProvider>
+    </UserProvider>
   );
 }
 export default App;
