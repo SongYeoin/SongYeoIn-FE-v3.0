@@ -144,16 +144,6 @@ const AttendanceDetail = ({ attendance, onClose }) => {
     }
   };
 
-  /*const onPageChange = async (page) => {
-    try {
-      setIsLoading(true); // 로딩 상태 활성화
-      setCurrentPage(page);
-      await fetchAttendanceDetails(page); // 새로운 데이터 로드
-    } catch (error) {
-      console.error('페이지 로드 중 오류 발생:', error);
-      setError('페이지 로드 중 오류가 발생했습니다.');
-    }
-  };*/
 
 
   const formatTime = (time) => {
