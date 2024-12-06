@@ -59,3 +59,13 @@
 .journal-title:hover {
   background-color: #e6f3ff;
 }
+
+/* 토요일 날짜 색상 */
+.react-calendar__month-view__days__day.react-calendar__month-view__days__day--weekend:not(.react-calendar__month-view__days__day--neighboringMonth):nth-child(7n-1) {
+  color: #0066cc;
+}
+
+/* 일요일 날짜 색상 */
+.react-calendar__month-view__days__day.react-calendar__month-view__days__day--weekend:not(.react-calendar__month-view__days__day--neighboringMonth):nth-child(7n) {
+  color: #ff0000;
+}
