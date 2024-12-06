@@ -4,7 +4,6 @@ import AdminLayout from '../../common/layout/admin/AdminLayout';
 import {CourseContext} from '../../common/CourseContext';
 import {useUser} from '../../common/UserContext';
 
-
 const AdminClubList = () => {
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -16,7 +15,7 @@ const AdminClubList = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [setFormData] = useState();
+  const [formData, setFormData] = useState();
   const [selectedCourseId, setSelectedCourseId] = useState(null); // 선택된 Course ID
   const {courses} = useContext(CourseContext);
 
@@ -119,15 +118,15 @@ const AdminClubList = () => {
   // 저장 버튼 클릭 핸들러
   const handleSaveEdit = async () => {
     // 필수 항목 체크
-    if (selectedClub.checkStatus === 'W' || !selectedClub.checkMessage) {
+    if (formData.checkStatus === 'W' || !formData.checkMessage) {
       alert('승인 상태와 승인 메시지는 필수 항목입니다. 입력해주세요.');
       return;
     }
 
     try {
       const payload = {
-        checkStatus: selectedClub.checkStatus,
-        checkMessage: selectedClub.checkMessage
+        checkStatus: formData.checkStatus,
+        checkMessage: formData.checkMessage
       };
 
       console.log("수정 데이터 전송:", payload);
@@ -189,6 +188,7 @@ const AdminClubList = () => {
     }));
 
     setIsEditing(true); // 수정 모드 활성화
+    setFormData(selectedClub);
   };
 
   //취소 버튼 클릭 핸들러
@@ -543,13 +543,8 @@ const AdminClubList = () => {
                               value="Y"
                               name="checkStatus"
                               // disabled={!isEditing || selectedClub.checkStatus !== 'W'}
-                              checked={selectedClub.checkStatus === 'Y'}
-                              onChange={(e) =>
-                                setSelectedClub((prev) => ({
-                                  ...prev,
-                                  checkStatus: e.target.value,
-                                }))
-                              }
+                              checked={formData.checkStatus === 'Y'}
+                              onChange={handleInputChange}
                               className="mr-1 w-4 h-4"
                             />
                             승인
@@ -562,13 +557,8 @@ const AdminClubList = () => {
                               value="N"
                               name="checkStatus"
                               // disabled={!isEditing || selectedClub.checkStatus !== 'W'}
-                              checked={selectedClub.checkStatus === 'N'}
-                              onChange={(e) =>
-                                setSelectedClub((prev) => ({
-                                  ...prev,
-                                  checkStatus: e.target.value,
-                                }))
-                              }
+                              checked={formData.checkStatus === 'N'}
+                              onChange={handleInputChange}
                               className="mr-1 w-4 h-4"
                             />
                             미승인
@@ -587,14 +577,9 @@ const AdminClubList = () => {
                       {/*<p className="absolute left-[420px] top-[35px] text-[15px] text-left text-black">{selectedClub.checkMessage || '-'}</p>*/}
                       <input
                         type="text"
-                        value={selectedClub.checkMessage || ""}
+                        value={isEditing ? formData.checkMessage || "" : selectedClub.checkMessage || ""}
                         name="checkMessage"
-                        onChange={(e) =>
-                          setSelectedClub((prev) => ({
-                            ...prev,
-                            checkMessage: e.target.value,
-                          }))
-                        }
+                        onChange={handleInputChange}
                         disabled={!isEditing}
                         className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
                       />
