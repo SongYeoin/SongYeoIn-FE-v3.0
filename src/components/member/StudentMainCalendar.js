@@ -3,39 +3,38 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './StudentMainCalendar.css';
 import { studentJournalApi } from '../../api/journalApi';
-import StudentJournalDetail from '../journal/StudentJournalDetail';
 
 const StudentMainCalendar = ({ courseId, onDateChange }) => {
   const [value, setValue] = useState(new Date());
-  const [currentMonth, setCurrentMonth] = useState(new Date());  // 현재 보고 있는 월을 추적하기 위한 상태 추가
   const [journals, setJournals] = useState([]);
-  const [selectedJournal, setSelectedJournal] = useState(null);
 
   useEffect(() => {
+    // Ensure that the courseId exists before fetching data
     if (courseId) {
-      fetchJournals(currentMonth);  // currentMonth를 기준으로 데이터 가져오기
+      const fetchJournals = async () => {
+        try {
+          const currentMonth = new Date();
+          const year = currentMonth.getFullYear();
+          const month = currentMonth.getMonth();
+          const startDate = new Date(year, month, 1);
+          const endDate = new Date(year, month + 1, 0);
+
+          const response = await studentJournalApi.getList(courseId, {
+            pageNum: 1,
+            amount: 31,
+            startDate: startDate.toISOString().split('T')[0],
+            endDate: endDate.toISOString().split('T')[0]
+          });
+
+          setJournals(response.data.data);
+        } catch (error) {
+          console.error('교육일지 조회 실패:', error);
+        }
+      };
+
+      fetchJournals();  // Fetch journals if courseId is valid
     }
-  }, [courseId, currentMonth]);  // value 대신 currentMonth를 의존성으로 변경
-
-  const fetchJournals = async () => {
-    try {
-      const year = currentMonth.getFullYear();
-      const month = currentMonth.getMonth();
-      const startDate = new Date(year, month, 1);
-      const endDate = new Date(year, month + 1, 0);
-
-      const response = await studentJournalApi.getList(courseId, {
-        pageNum: 1,
-        amount: 31,
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0]
-      });
-
-      setJournals(response.data.data);
-    } catch (error) {
-      console.error('교육일지 조회 실패:', error);
-    }
-  };
+  }, [courseId]);  // courseId가 변경될 때마다 useEffect가 실행됩니다.
 
   const handleDateChange = (date) => {
     const formatDate = (date) => {
