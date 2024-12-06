@@ -410,7 +410,6 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
           <div>
             <h3
               className="text-lg font-bold mb-4 border-b border-gray-300 pb-2">시간표</h3>
-            <button className="border border-gray-300 font-bold">추가</button>
           </div>
           {schedule && schedule.length > 0 ? (
             schedule.map((period, index) => (
@@ -465,28 +464,51 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
         </div>
         <div className="mt-4">
           <h4 className="font-bold">새 교시 추가</h4>
-          <input
-            type="text"
+          <select
             value={newPeriod.dayOfWeek}
             onChange={(e) =>
               setNewPeriod({ ...newPeriod, dayOfWeek: e.target.value })
             }
-            placeholder="요일"
-          />
-          <input
-            type="text"
+            className="border p-2"
+          >
+            <option value="" disabled>
+              요일 선택
+            </option>
+            <option value="월요일">월요일</option>
+            <option value="화요일">화요일</option>
+            <option value="수요일">수요일</option>
+            <option value="목요일">목요일</option>
+            <option value="금요일">금요일</option>
+            <option value="토요일">토요일</option>
+            <option value="일요일">일요일</option>
+          </select>
+
+          <select
             value={newPeriod.name}
             onChange={(e) =>
               setNewPeriod({ ...newPeriod, name: e.target.value })
             }
-            placeholder="교시명"
-          />
+            className="border p-2"
+          >
+            <option value="" disabled>
+              교시명 선택
+            </option>
+            <option value="1교시">1교시</option>
+            <option value="2교시">2교시</option>
+            <option value="3교시">3교시</option>
+            <option value="4교시">4교시</option>
+            <option value="5교시">5교시</option>
+            <option value="6교시">6교시</option>
+            <option value="7교시">7교시</option>
+          </select>
+
           <input
             type="time"
             value={newPeriod.startTime}
             onChange={(e) =>
               setNewPeriod({ ...newPeriod, startTime: e.target.value })
             }
+            className="border p-2"
             placeholder="시작시간"
           />
           <input
@@ -495,6 +517,7 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
             onChange={(e) =>
               setNewPeriod({ ...newPeriod, endTime: e.target.value })
             }
+            className="border p-2"
             placeholder="종료시간"
           />
           <button onClick={handleAddPeriod} className="text-red-500">
