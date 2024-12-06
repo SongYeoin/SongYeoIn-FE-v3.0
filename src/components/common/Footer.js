@@ -5,16 +5,22 @@ const Footer = ({ currentPage, totalPages, onPageChange }) => {
 
   // 5개 단위로 페이지 그룹 계산
   useEffect(() => {
-    const startPage = Math.floor((currentPage -1 )/ 5) * 5 + 1;
-    const endPage = Math.min(startPage + 4, totalPages);
+    if (currentPage && totalPages && onPageChange) {  // props가 모두 있을 때만 페이지 계산
+      const startPage = Math.floor((currentPage - 1) / 5) * 5 + 1;
+      const endPage = Math.min(startPage + 4, totalPages);
 
-    const pages = [];
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
+      const pages = [];
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+      setVisiblePages(pages);
     }
-    setVisiblePages(pages);
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, onPageChange]);
 
+  // 페이지네이션이 필요 없는 경우 빈 footer 반환
+  if (!currentPage || !totalPages || !onPageChange) {
+    return <footer className="flex justify-center items-center p-4 bg-white" />;
+  }
 
   return (
     <footer className="flex justify-center items-center p-4 bg-white">

@@ -1,36 +1,61 @@
 /* StudentMainCalendar.css */
-.calendar-container {
+.main-container {
   width: 100%;
-  min-height: 600px;
+  padding: 20px;
+  background: #fff;
+}
+
+.content-wrapper {
+  display: flex;
+  gap: 24px;
+}
+
+.calendar-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.attendance-section {
+  width: 300px;
 }
 
 .react-calendar {
-  border: none;
   width: 100%;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .react-calendar__tile {
-  height: 120px;
+  height: 100px;
   display: flex;
   flex-direction: column;
-  justify-content: start;
-  align-items: center;
-  padding: 8px;
+  justify-content: flex-start;
+  align-items: stretch;
+  padding: 4px;
+  font-size: 14px;
 }
 
-.react-calendar__month-view__days__day {
-  color: #333;
+.journal-entry {
+  margin-top: 4px;
+  font-size: 11px;
 }
 
-.react-calendar__month-view__days__day--weekend {
-  color: #d10000;
+.journal-title {
+  background-color: #f0f8ff;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  color: #0066cc;
+  font-size: 11px;
 }
 
-.react-calendar__tile--now {
-  background: #f0f9ff;
-}
-
-.react-calendar__tile:enabled:hover,
-.react-calendar__tile:enabled:focus {
+.journal-title:hover {
   background-color: #e6f3ff;
 }
