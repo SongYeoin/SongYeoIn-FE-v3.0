@@ -1,32 +1,28 @@
-// components/member/StudentMainCalendar.js
 import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './StudentMainCalendar.css';
 import { studentJournalApi } from '../../api/journalApi';
+import StudentJournalDetail from '../journal/StudentJournalDetail';
 
 const StudentMainCalendar = ({ courseId, onDateChange }) => {
   const [value, setValue] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());  // 현재 보고 있는 월을 추적하기 위한 상태 추가
   const [journals, setJournals] = useState([]);
+  const [selectedJournal, setSelectedJournal] = useState(null);
 
   useEffect(() => {
     if (courseId) {
-      fetchJournals();
+      fetchJournals(currentMonth);  // currentMonth를 기준으로 데이터 가져오기
     }
-  }, [courseId, value]);
+  }, [courseId, currentMonth]);  // value 대신 currentMonth를 의존성으로 변경
 
   const fetchJournals = async () => {
     try {
-      // 선택된 월의 첫날과 마지막날 계산
-      const year = value.getFullYear();
-      const month = value.getMonth();
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
       const startDate = new Date(year, month, 1);
       const endDate = new Date(year, month + 1, 0);
-
-      console.log('Fetching journals for period:', {
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0]
-      });
 
       const response = await studentJournalApi.getList(courseId, {
         pageNum: 1,
@@ -35,7 +31,6 @@ const StudentMainCalendar = ({ courseId, onDateChange }) => {
         endDate: endDate.toISOString().split('T')[0]
       });
 
-      console.log('Fetched journals:', response.data);
       setJournals(response.data.data);
     } catch (error) {
       console.error('교육일지 조회 실패:', error);

@@ -24,26 +24,22 @@ const StudentMainPage = () => {
     const fetchCurrentCourse = async () => {
       try {
         const response = await studentJournalApi.getCurrentEnrollment();
-        console.log("API 응답:", response.data);  // API 응답 확인
+        console.log("API 응답:", response.data);
 
         const currentEnrollment = response.data.find(enrollment => {
-          console.log("각 enrollment 데이터:", enrollment); // 각 enrollment 데이터 확인
           const enrollDate = new Date(enrollment.enrollDate);
           const endDate = new Date(enrollment.endDate);
           const now = new Date();
-          console.log("날짜 비교:", {
-            enrollDate,
-            endDate,
-            now,
-            isCurrentlyCourse: now >= enrollDate && now <= endDate
-          }); // 날짜 비교 결과 확인
           return now >= enrollDate && now <= endDate;
         });
 
         if (currentEnrollment) {
           setCurrentCourse({
             id: currentEnrollment.courseId,
-            name: currentEnrollment.courseName
+            name: currentEnrollment.courseName,
+            adminName: currentEnrollment.adminName,
+            enrollDate: currentEnrollment.enrollDate,
+            endDate: currentEnrollment.endDate
           });
         } else {
           setError('현재 수강 중인 과정이 없습니다.');
