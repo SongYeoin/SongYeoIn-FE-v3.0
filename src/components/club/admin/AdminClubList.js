@@ -20,7 +20,7 @@ const AdminClubList = () => {
   const [selectedCourseId, setSelectedCourseId] = useState(null); // 선택된 Course ID
   const {courses} = useContext(CourseContext);
 
-  const {user, userLoading} = useUser();
+  const {user, loading:userLoading} = useUser();
   const [originalClub, setOriginalClub] = useState(null);
 
 
@@ -647,7 +647,7 @@ const AdminClubList = () => {
                     {/*</p>*/}
                     <input
                       type="text"
-                      value={selectedClub.attachment || ""}
+                      value={selectedClub.attachment}
                       name="attachment"
                       onChange={handleInputChange}
                       disabled
