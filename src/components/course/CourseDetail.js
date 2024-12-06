@@ -243,9 +243,13 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
         setSchedule(originalSchedule); // 수정된 schedule이 없으면 기존 값 유지
       }*/
       // 서버에서 반환된 교시와 추가된 교시를 병합
+      // 병합된 시간표
       const mergedSchedule = [
-        ...(updatedPeriodsResponse || []),
-        ...newPeriods, // 추가된 교시 유지
+        ...originalSchedule.filter((period) =>
+          !deletedPeriods.includes(period.id)
+        ), // 삭제되지 않은 기존 교시 유지
+        ...(updatedPeriodsResponse || []), // 백엔드에서 반환된 수정된 교시
+        ...newPeriods, // 새로 추가된 교시
       ];
 
       setSchedule(mergedSchedule);
