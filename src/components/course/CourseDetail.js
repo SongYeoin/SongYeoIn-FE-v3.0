@@ -235,13 +235,6 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
         setOriginalCourse(updatedCourseResponse); // 초기 값 갱신
       }
 
-      // 받아온 schedule이 null일 경우 기존 schedule 유지
-      /*if (updatedPeriodsResponse) {
-        setSchedule(updatedPeriodsResponse);
-        setOriginalSchedule(updatedPeriodsResponse); // 초기 값 갱신
-      } else {
-        setSchedule(originalSchedule); // 수정된 schedule이 없으면 기존 값 유지
-      }*/
       // 서버에서 반환된 교시와 추가된 교시를 병합
       // 병합된 시간표
       const mergedSchedule = [
@@ -415,6 +408,7 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
             <h3
               className="text-lg font-bold mb-4 border-b border-gray-300 pb-2">시간표</h3>
           </div>
+          <div className="max-h-64 overflow-y-auto">
           {schedule && schedule.length > 0 ? (
             schedule.map((period, index) => (
               <div key={index} className="flex gap-2 items-center">
@@ -466,6 +460,7 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
             <p className="text-gray-500">시간표 정보가 없습니다.</p>
           )}
         </div>
+        </div>
         <div className="mt-4">
           <h4 className="font-bold">새 교시 추가</h4>
           <select
@@ -485,6 +480,9 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
             <option value="금요일">금요일</option>
             <option value="토요일">토요일</option>
             <option value="일요일">일요일</option>
+            <option value="월~금">월~금</option>
+            <option value="월~일">월~일</option>
+            <option value="주말">주말</option>
           </select>
 
           <select
