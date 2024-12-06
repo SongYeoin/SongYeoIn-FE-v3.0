@@ -42,21 +42,47 @@ const ClubList = () => {
         setLoading(true);
 
         const result = await axios.get(`${process.env.REACT_APP_API_URL}/club`);
-        console.log(result.data);  // 응답 데이터 확인
+        console.log("Fetched course list:", result.data);  // 응답 데이터 확인
 
-        const fetchedCourseId = result.data.course?.id;
-        console.log(fetchedCourseId);
+        // 필터링: deletedBy가 null인 항목만 추출
+        const validCourses = result.data.filter(course => course.deletedBy === null);
+        console.log("Valid courses:", validCourses);
 
-        if (fetchedCourseId) {
-          setCourseId(fetchedCourseId); // 전역 상태에 저장
+        //const fetchedCourseId = result.data.course?.id;
+        //console.log(fetchedCourseId);
+
+        // if (fetchedCourseId) {
+        //   setCourseId(fetchedCourseId); // 전역 상태에 저장
+        //   console.log(`Fetched and set Course ID: ${fetchedCourseId}`);
+        if (validCourses.length > 0) {
+          // 가장 최근 개강일을 가진 courseId를 추출
+          const mostRecentCourse = validCourses.sort(
+            (a, b) => new Date(b.enrollDate) - new Date(a.enrollDate)
+          )[0];
+          console.log("Most recent course:", mostRecentCourse);
+
+          // 유효한 courseId 설정
+          const fetchedCourseId = mostRecentCourse.courseId;
+          setCourseId(fetchedCourseId);
           console.log(`Fetched and set Course ID: ${fetchedCourseId}`);
         } else {
           console.error('유효한 Course ID를 가져오지 못했습니다.');
+          setCourseId(null); // 유효한 데이터가 없을 경우 null로 초기화
         }
       } catch (err) {
         console.error('Error fetching Course ID', err);
+        setCourseId(null); // 실패 시 초기화
+      }finally {
+        setLoading(false);
       }
     };
+
+    // if (user) {
+    //   fetchCourseId(); // 사용자 로그인 상태에서만 호출
+    // } else {
+    //   setCourseId(null); // 로그아웃 상태에서 초기화
+    // }
+
     fetchCourseId();
     console.log('현재 로그인한 사용자 정보:', user);
     console.log('현재 로딩상태:', userLoading);
@@ -144,7 +170,10 @@ const ClubList = () => {
     console.log("Club ID 전달: ", club.clubId);
 
     // 작성자와 로그인 사용자 비교
-    const isOwnerCheck = user?.id === club.writerId;
+    console.log("현재 로그인한 사용자 이름:", user?.name);
+    console.log("클럽 작성자 이름:", club.writer);
+
+    const isOwnerCheck = user?.name === club.writer;
     console.log("사용자와 작성자 동일 여부 (상세보기):", isOwnerCheck);
     setIsOwner(isOwnerCheck); // 로컬 상태로 관리
 
@@ -617,9 +646,8 @@ const ClubList = () => {
               </div>
               {/* Modal Content */}
               <div className="flex-grow-0 flex-shrink-0 w-[860px] h-[750px] relative overflow-hidden bg-white">
-                <div className="flex justify-start items-center w-[820px] absolute left-5 top-[616px] gap-5 py-9">
-                  {isOwner && (
-                    <>
+                {isOwner && (
+                  <div className="flex justify-start items-center w-[820px] absolute left-5 top-[616px] gap-5 py-9">
                       {!isEditing ? (
                         <>
                           {selectedClub.checkStatus === 'W' ? (
@@ -688,9 +716,8 @@ const ClubList = () => {
                           </div>
                         </>
                       )}
-                    </>
-                  )}
-                </div>
+                  </div>
+                )}
                 <div
                   className="flex flex-col justify-start items-start w-[780px] h-[592px] absolute left-10 top-0 gap-8">
                   <div className="flex justify-start items-start self-stretch flex-grow-0 flex-shrink-0 relative gap-8">
