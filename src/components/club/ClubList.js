@@ -3,6 +3,7 @@ import axios from 'api/axios';
 import StudentLayout from '../common/layout/student/StudentLayout';
 import { format } from 'date-fns';
 import {CourseContext} from '../common/CourseContext';
+import {useUser} from '../common/UserContext';
 
 const ClubList = () => {
   const [clubs, setClubs] = useState([]);
@@ -14,6 +15,11 @@ const ClubList = () => {
   const [selectedClub, setSelectedClub] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+
+  const {user, loading:userLoading} = useUser();
+  const [originalClub, setOriginalClub] = useState(null);
+  //const [file, setFile] = useState(null);
 
   const initialFormData = {
     participants: '',
@@ -52,7 +58,14 @@ const ClubList = () => {
       }
     };
     fetchCourseId();
-  }, [setCourseId]);
+    console.log('현재 로그인한 사용자 정보:', user);
+    console.log('현재 로딩상태:', userLoading);
+  }, [setCourseId, user, userLoading]);
+
+  // Pagination change handler
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   const fetchClubList = useCallback (async() => {
     if(!courseId) return; // courseId가 없으면 실행하지 않음
@@ -123,11 +136,18 @@ const ClubList = () => {
 
   // 동아리 상세 정보 (참여자, 내용 포함)
   const openDetailModal = (club) => {
+
     if (!club.clubId) {
       console.error("club.clubId가 유효하지 않습니다.", club); // club.id가 없으면 에러 로그
       return;
     }
     console.log("Club ID 전달: ", club.clubId);
+
+    // 작성자와 로그인 사용자 비교
+    const isOwnerCheck = user?.id === club.writerId;
+    console.log("사용자와 작성자 동일 여부 (상세보기):", isOwnerCheck);
+    setIsOwner(isOwnerCheck); // 로컬 상태로 관리
+
     fetchClubDetails(club.clubId);
     setIsDetailModalOpen(true);
   };
@@ -189,6 +209,52 @@ const ClubList = () => {
     }
   };
 
+  // 저장 버튼 클릭 핸들러
+  const handleSaveEdit = async () => {
+    // 필수 항목 체크
+    if (!formData.participants || !formData.studyDate) {
+      alert('참여자와 활동일은 필수 항목입니다. 입력해주세요.');
+      return;
+    }
+
+    try {
+      const newFormData = new FormData();
+
+      // JSON 데이터 추가
+      const clubData = {
+        participants: formData.participants,
+        content: formData.content,
+        studyDate: formData.studyDate,
+      };
+      newFormData.append("club", new Blob([JSON.stringify(clubData)], { type: "application/json" }));
+
+      // 파일 추가 (선택적으로)
+      // if (file) {
+      //   formData.append("file", file);
+      // }
+      console.log("수정데이터:", clubData);
+      console.log("FormData payload:", newFormData);
+
+      await axios.put(`${process.env.REACT_APP_API_URL}/club/${selectedClub.clubId}`, newFormData, {
+        // headers: {
+        //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        // }
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      alert('수정이 완료되었습니다.');
+      setIsEditing(false); // 수정 모드 비활성화
+      setIsDetailModalOpen(false); // 모달 닫기
+      fetchClubList(); // 리스트 갱신
+    } catch (err) {
+      console.error('수정 실패:', err);
+      alert('수정에 실패했습니다.');
+      setIsEditing(false); // 수정 모드 비활성화
+      setIsDetailModalOpen(false); // 모달 닫기
+    }
+  };
+
   //삭제
   const handleDelete = async () => {
     if (!selectedClub || !selectedClub.clubId) return;
@@ -208,31 +274,34 @@ const ClubList = () => {
     }
   };
 
-  //const isOwner = loggedInUserId === formData.writerId;
-  const isOwner = true;
-
-  // 저장 버튼 클릭 핸들러
-  const handleSaveEdit = async () => {
-    try {
-      await axios.put(`${process.env.REACT_APP_API_URL}/club/${selectedClub.clubId}`, formData, {
-        // headers: {
-        //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        // }
-      });
-      alert('수정이 완료되었습니다.');
-      setIsEditing(false); // 수정 모드 비활성화
-      setIsDetailModalOpen(false); // 모달 닫기
-      fetchClubList(); // 리스트 갱신
-    } catch (err) {
-      console.error('수정 실패:', err);
-      alert('수정에 실패했습니다.');
+  //수정 버튼 클릭 핸들러
+  const handleEditClick = () => {
+    if (!user) {
+      console.error('사용자 정보가 없습니다. user 객체:', user);
+      return;
     }
+
+    setOriginalClub({...selectedClub});
+
+    // 승인자 정보 설정
+    // setSelectedClub((prev) => ({
+    //   ...prev,
+    //   checker: user?.name // 승인자 정보에 관리자 이름 추가
+    // }));
+
+    setIsEditing(true); // 수정 모드 활성화
+    setFormData(selectedClub);
   };
 
-  // Pagination change handler
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+  //취소 버튼 클릭 핸들러
+  const handleCancelEdit = () => {
+    setSelectedClub(originalClub);
+    setIsEditing(false);
   };
+
+  // const handleFileChange = (event) => {
+  //   setFile(event.target.files[0]);
+  // };
 
   return (
     <StudentLayout currentPage={currentPage}
@@ -568,7 +637,7 @@ const ClubList = () => {
                               </div>
                               {/* 수정 버튼 */}
                               <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
-                                   onClick={() => setIsEditing(true)}
+                                   onClick={handleEditClick}
                               >
                                 <div
                                   className="w-[400px] h-12 absolute left-[419.5px] top-[35.5px] rounded-2xl bg-[#225930]"/>
@@ -582,7 +651,7 @@ const ClubList = () => {
                             <>
                               {/* 수정 버튼 */}
                               <div className="flex-grow-0 flex-shrink-0 w-[820px] h-12 cursor-pointer"
-                                   onClick={() => setIsEditing(true)}
+                                   onClick={handleEditClick}
                               >
                                 <div
                                   className="w-[820px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#225930]"/>
@@ -598,7 +667,7 @@ const ClubList = () => {
                         <>
                           {/* 취소 버튼 */}
                           <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
-                               onClick={() => setIsEditing(false)}
+                               onClick={handleCancelEdit}
                           >
                             <div
                               className="w-[400px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#d9d9d9]"/>
@@ -650,7 +719,7 @@ const ClubList = () => {
                       {/*</p>*/}
                       <input
                         type="text"
-                        value={`${selectedClub.writer || ''} / ${selectedClub.checker || ''}`}
+                        value={`${selectedClub.writer || ""} / ${selectedClub.checker || ""}`}
                         name="writerChecker"
                         onChange={handleInputChange}
                         disabled
@@ -665,7 +734,7 @@ const ClubList = () => {
                     {/*<p className="absolute left-[13px] top-[134px] text-[15px] text-left text-black">{selectedClub.participants || '-'}</p>*/}
                     <input
                       type="text"
-                      value={selectedClub.participants}
+                      value={isEditing ? formData.participants : selectedClub.participants}
                       name="participants"
                       onChange={handleInputChange}
                       disabled={!isEditing || selectedClub.checkStatus !== 'W'}
@@ -679,7 +748,7 @@ const ClubList = () => {
                     {/*<p*/}
                     {/*  className="absolute left-[13px] top-[251px] text-[15px] text-left text-black">{selectedClub.content || '-'}</p>*/}
                     <textarea
-                      value={selectedClub.content}
+                      value={isEditing ? formData.content : selectedClub.content}
                       name="content"
                       onChange={handleInputChange}
                       disabled={!isEditing || selectedClub.checkStatus !== 'W'}
@@ -712,7 +781,7 @@ const ClubList = () => {
                       {/*<p className="absolute left-[420px] top-[35px] text-[15px] text-left text-black">{selectedClub.checkMessage || '-'}</p>*/}
                       <input
                         type="text"
-                        value={selectedClub.checkMessage}
+                        value={selectedClub.checkMessage || ""}
                         name="checkMessage"
                         onChange={handleInputChange}
                         disabled
@@ -730,7 +799,7 @@ const ClubList = () => {
                       {/*</p>*/}
                       <input
                         type="date"
-                        value={selectedClub.studyDate}
+                        value={isEditing ? formData.studyDate : selectedClub.studyDate}
                         name="studyDate"
                         onChange={handleInputChange}
                         disabled={!isEditing || selectedClub.checkStatus !== 'W'}
@@ -748,7 +817,13 @@ const ClubList = () => {
                       {/*</p>*/}
                       <input
                         type="date"
-                        value={selectedClub.regDate}
+                        value={
+                          isEditing
+                            ? selectedClub.checkStatus === 'W'
+                              ? new Date().toLocaleDateString('en-CA') // 승인 대기 상태일 때, 현재 날짜
+                              : selectedClub.regDate // 승인 상태일 때, 저장된 값
+                            : selectedClub.regDate // 수정 비활성화 상태일 때, 저장된 값
+                        }
                         name="regDate"
                         onChange={handleInputChange}
                         disabled
@@ -767,7 +842,7 @@ const ClubList = () => {
                     {/*</p>*/}
                     <input
                       type="text"
-                      value={selectedClub.attachment}
+                      value={isEditing ? formData.attachment : selectedClub.attachment}
                       name="attachment"
                       onChange={handleInputChange}
                       disabled={!isEditing || selectedClub.checkStatus !== 'Y'}
