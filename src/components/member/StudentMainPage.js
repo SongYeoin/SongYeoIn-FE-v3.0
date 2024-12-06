@@ -112,7 +112,8 @@ const StudentMainPage = () => {
       } catch (error) {
         // 에러 응답에서 메시지를 가져옴
         if (error.response && error.response.data) {
-          alert(error.response.data); // 백엔드에서 보낸 메시지를 경고창에 표시
+          const errorMessage = error.response.data.message; // JSON 형식에서 메시지 가져오기
+          alert(errorMessage); // 경고창에 표시
         } else {
           alert("출석 처리 중 문제가 발생했습니다."); // 예상치 못한 에러 처리
         }
