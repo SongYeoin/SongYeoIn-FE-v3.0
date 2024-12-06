@@ -1,13 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { studentJournalApi } from '../../api/journalApi';
+import { useUser } from '../common/UserContext';
+import { parseJwt } from '../common/JwtDecoding';  // UserContext import 추가
 
 const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
+  const { user, loading } = useUser();  // loading 상태도 가져옴
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     file: null,
-    memberName: ''  // memberName 추가
+    memberName: ''  // 초기값은 빈 문자열로
   });
+
+  // 컴포넌트가 마운트될 때 한번만 실행
+  useEffect(() => {
+    // 세션 스토리지에서 직접 토큰을 가져와서 파싱
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedUser = parseJwt(token);
+        setFormData(prev => ({
+          ...prev,
+          memberName: decodedUser.name || ''
+        }));
+      } catch (error) {
+        console.error('사용자 정보 파싱 오류:', error);
+      }
+    }
+  }, []);
+
+  // UserContext의 user 정보가 변경될 때도 업데이트
+  useEffect(() => {
+    if (user?.name) {
+      setFormData(prev => ({
+        ...prev,
+        memberName: user.name
+      }));
+    }
+  }, [user]);
+
+  // loading 중이면 로딩 표시
+  if (loading) {
+    return <div>로딩 중 ...</div>;
+  }
+
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
