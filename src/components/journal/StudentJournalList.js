@@ -61,9 +61,10 @@ const StudentJournalList = () => {
       />
 
       <div className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
-        <div className="grid grid-cols-[1fr_4fr_2fr_2fr] gap-5">
+        <div className="grid grid-cols-[1fr_4fr_2fr_2fr_2fr] gap-5">
           <p className="text-xs font-bold text-center text-gray-700">번호</p>
           <p className="text-xs font-bold text-center text-gray-700">제목</p>
+          <p className="text-xs font-bold text-center text-gray-700">교육일자</p>
           <p className="text-xs font-bold text-center text-gray-700">작성일</p>
           <p className="text-xs font-bold text-center text-gray-700">첨부파일</p>
         </div>
@@ -73,11 +74,12 @@ const StudentJournalList = () => {
         {journals.map((journal, index) => (
           <li key={journal.id}>
             <div
-              className="grid grid-cols-[1fr_4fr_2fr_2fr] gap-5 items-center text-center cursor-pointer hover:bg-gray-100 p-2 rounded"
+              className="grid grid-cols-[1fr_4fr_2fr_2fr_2fr] gap-5 items-center text-center cursor-pointer hover:bg-gray-100 p-2 rounded"
               onClick={() => setSelectedJournal(journal)}
             >
               <p>{totalElements - ((currentPage - 1) * 15 + index)}</p>
               <p>{journal.title}</p>
+              <p>{new Date(journal.educationDate).toLocaleDateString()}</p>
               <p>{new Date(journal.createdAt).toLocaleDateString()}</p>
               <p>{journal.file ? '첨부됨' : '-'}</p>
             </div>
