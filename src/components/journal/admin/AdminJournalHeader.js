@@ -85,7 +85,7 @@ const AdminJournalHeader = ({ courses, onFilterChange }) => {
             />
           </div>
 
-          {/* 날짜 범위 선택 */}
+          {/* 교육일자 범위 선택 */}
           <div className="flex items-center gap-2">
             <input
               type="date"
@@ -93,6 +93,8 @@ const AdminJournalHeader = ({ courses, onFilterChange }) => {
               value={filters.startDate}
               onChange={handleInputChange}
               className="border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="교육 시작일"
+              title="교육 시작일"
             />
             <span className="text-gray-500">~</span>
             <input
@@ -101,6 +103,8 @@ const AdminJournalHeader = ({ courses, onFilterChange }) => {
               value={filters.endDate}
               onChange={handleInputChange}
               className="border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="교육 종료일"
+              title="교육 종료일"
             />
           </div>
         </div>

@@ -55,23 +55,18 @@ const AdminJournalDetail = ({ journalId, onClose }) => {
       <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">교육일지 상세보기</h2>
-          <button onClick={onClose}
-                  className="text-gray-500 hover:text-gray-700 text-xl font-medium transition-colors duration-200">✕
-          </button>
-
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-xl font-medium transition-colors duration-200">✕</button>
         </div>
 
         <div className="mb-6 border border-gray-300 rounded-lg p-4">
           <div>
             <label className="text-sm text-gray-600 font-bold">제목</label>
-            <p
-              className="w-full px-3 py-2 border rounded-lg bg-gray-100 mb-4">{journal.title}</p>
+            <p className="w-full px-3 py-2 border rounded-lg bg-gray-100 mb-4">{journal.title}</p>
           </div>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="text-sm text-gray-600 font-bold">작성자</label>
-              <p
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100">{journal.memberName}</p>
+              <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">{journal.memberName}</p>
             </div>
             <div>
               <label className="text-sm text-gray-600 font-bold">작성일</label>
@@ -80,20 +75,23 @@ const AdminJournalDetail = ({ journalId, onClose }) => {
               </p>
             </div>
           </div>
+          {/* 교육일자 추가 */}
+          <div className="mb-4">
+            <label className="text-sm text-gray-600 font-bold">교육일자</label>
+            <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
+              {new Date(journal.educationDate).toLocaleDateString()}
+            </p>
+          </div>
           <div>
             <label className="text-sm text-gray-600 font-bold">내용</label>
-            <p
-              className="w-full h-[42px] px-3 py-2 border rounded-lg bg-gray-100">{journal.content}</p>
+            <p className="w-full h-[42px] px-3 py-2 border rounded-lg bg-gray-100">{journal.content}</p>
           </div>
         </div>
 
         {journal.file && (
-          <div
-            className="mt-4 p-4 bg-gray-50 rounded cursor-pointer hover:bg-gray-100"
-            onClick={handleDownload}>
+          <div className="mt-4 p-4 bg-gray-50 rounded cursor-pointer hover:bg-gray-100" onClick={handleDownload}>
             <p className="font-medium">첨부파일</p>
-            <p
-              className="text-blue-500 hover:text-blue-700">{journal.file.originalName}</p>
+            <p className="text-blue-500 hover:text-blue-700">{journal.file.originalName}</p>
           </div>
         )}
       </div>

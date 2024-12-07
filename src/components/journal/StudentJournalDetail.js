@@ -28,6 +28,7 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
         formData.append('courseId', courseId);  // 전달받은 courseId 사용
         formData.append('title', editedData.title);
         formData.append('content', editedData.content);
+        formData.append('educationDate', editedData.educationDate); // 교육일자 추가
 
         if (editedData.newFile) {
           formData.append('file', editedData.newFile);
@@ -98,14 +99,18 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
         <div className="mb-6 border border-gray-300 rounded-lg p-4">
           <div>
             <label className="text-sm text-gray-600 font-bold">제목</label>
-            <p className="w-full px-3 py-2 border rounded-lg bg-gray-100 mb-4">{isEditing ?
-              <input type="text" name="title" value={editedData.title} onChange={handleChange} className="w-full bg-white px-2" />
+            <p
+              className="w-full px-3 py-2 border rounded-lg bg-gray-100 mb-4">{isEditing
+              ?
+              <input type="text" name="title" value={editedData.title}
+                     onChange={handleChange} className="w-full bg-white px-2" />
               : journal.title}</p>
           </div>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="text-sm text-gray-600 font-bold">작성자</label>
-              <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">{journal.memberName}</p>
+              <p
+                className="w-full px-3 py-2 border rounded-lg bg-gray-100">{journal.memberName}</p>
             </div>
             <div>
               <label className="text-sm text-gray-600 font-bold">작성일</label>
@@ -114,6 +119,26 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
               </p>
             </div>
           </div>
+
+          {/* 교육일자 필드 추가 */}
+          <div className="mb-4">
+            <label className="text-sm text-gray-600 font-bold">교육일자</label>
+            {isEditing ? (
+              <input
+                type="date"
+                name="educationDate"
+                value={editedData.educationDate}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-lg bg-white"
+                max={new Date().toISOString().split('T')[0]}
+              />
+            ) : (
+              <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
+                {new Date(journal.educationDate).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+
           <div>
             <label className="text-sm text-gray-600 font-bold">내용</label>
             {isEditing ? (
@@ -124,7 +149,8 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
                 className="w-full h-[42px] px-3 py-2 border rounded-lg bg-white"
               />
             ) : (
-              <p className="w-full h-[42px] px-3 py-2 border rounded-lg bg-gray-100">
+              <p
+                className="w-full h-[42px] px-3 py-2 border rounded-lg bg-gray-100">
                 {journal.content}
               </p>
             )}
@@ -132,11 +158,14 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
         </div>
 
         {journal.file && (
-          <div className="mt-4 p-4 bg-gray-50 rounded cursor-pointer hover:bg-gray-200 transition-colors duration-200">
+          <div
+            className="mt-4 p-4 bg-gray-50 rounded cursor-pointer hover:bg-gray-200 transition-colors duration-200">
             <p className="font-medium">첨부파일</p>
-            <p className="text-blue-500 hover:text-blue-700">{journal.file.originalName}</p>
+            <p
+              className="text-blue-500 hover:text-blue-700">{journal.file.originalName}</p>
             {isEditing &&
-              <input type="file" name="file" onChange={handleChange} className="mt-2" />}
+              <input type="file" name="file" onChange={handleChange}
+                     className="mt-2" />}
           </div>
         )}
 
