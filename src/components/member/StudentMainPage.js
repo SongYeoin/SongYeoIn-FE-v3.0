@@ -152,7 +152,7 @@ const StudentMainPage = () => {
 
   return (
     <StudentLayout>
-      <StudentMainHeader courseName={currentCourse?.name} />
+      <StudentMainHeader courseInfo={currentCourse} />
       <div className="flex flex-row w-full gap-2">
         <div className="px-6 py-4">
           {currentCourse &&
