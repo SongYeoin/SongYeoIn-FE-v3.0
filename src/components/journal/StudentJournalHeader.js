@@ -47,13 +47,14 @@ const StudentJournalHeader = ({ onFilterChange, refreshJournals }) => {
   }, [filters, onFilterChange]);
 
   return (
-    <div className="flex flex-col w-full gap-6 pr-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl md:text-2xl lg:text-3xl text-[#16161b]">교육일지</h1>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="flex justify-center items-center h-10 gap-1 px-4 py-2 rounded-lg bg-[#225930]"
-        >
+    <div className="bg-white">
+      <div className="flex flex-col w-full gap-6 p-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-xl md:text-2xl lg:text-3xl text-[#16161b]">교육일지</h1>
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex justify-center items-center h-10 gap-1 px-4 py-2 rounded-lg bg-[#225930]"
+          >
           <svg
             width={24}
             height={24}
@@ -79,8 +80,8 @@ const StudentJournalHeader = ({ onFilterChange, refreshJournals }) => {
           </svg>
           <p className="text-sm text-white">등록</p>
         </button>
-      </div>
-      <div className="flex flex-wrap gap-4 justify-between items-center">
+        </div>
+        <div className="flex flex-wrap gap-4 justify-between items-center">
         <select
           name="courseId"
           value={filters.courseId}
@@ -130,6 +131,7 @@ const StudentJournalHeader = ({ onFilterChange, refreshJournals }) => {
           }}
         />
       )}
+    </div>
     </div>
   );
 };
