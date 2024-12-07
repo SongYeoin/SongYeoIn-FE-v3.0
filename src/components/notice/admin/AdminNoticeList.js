@@ -1,19 +1,17 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import AdminLayout from '../../common/layout/admin/AdminLayout';
-import NoticeMainHeader from './NoticeMainHeader';
-import NoticeDetail from './NoticeDetail';
-import NoticeEdit from './NoticeEdit';
-import axios from 'api/axios';
-import _ from 'lodash';
+import React, { useCallback, useEffect, useState } from "react";
+import AdminLayout from "../../common/layout/admin/AdminLayout";
+import NoticeMainHeader from "./NoticeMainHeader";
+import NoticeDetail from "./NoticeDetail";
+import axios from "api/axios";
+import _ from "lodash";
 
 const AdminNoticeList = () => {
   const [notices, setNotices] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [selectedNotice, setSelectedNotice] = useState(null); // 현재 선택된 공지사항
-  const [isEditing, setIsEditing] = useState(false); // 수정 모달 활성화 여부
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedNotice, setSelectedNotice] = useState(null);
 
   // 공지사항 데이터 가져오기
   const fetchNotices = async (searchTerm, page, courseId) => {
@@ -21,13 +19,13 @@ const AdminNoticeList = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/admin/notice`,
         {
-          params: { titleKeyword: searchTerm, page: page - 1, size: 10, courseId },
+          params: { titleKeyword: searchTerm, page: page - 1, size: 15, courseId },
         }
       );
       setNotices(response.data.content);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      console.error('Error fetching notices:', error);
+      console.error("Error fetching notices:", error);
     }
   };
 
@@ -98,30 +96,18 @@ const AdminNoticeList = () => {
           </div>
 
           {/* Notice Detail Modal */}
-          {selectedNotice && !isEditing && (
-            <NoticeDetail
-              noticeId={selectedNotice.id}
-              onClose={() => setSelectedNotice(null)}
-              onEdit={() => setIsEditing(true)} // 수정 버튼 클릭 시 수정 모달 활성화
+          {selectedNotice && (
+        <NoticeDetail
+          noticeId={selectedNotice.id}
+          onClose={() => setSelectedNotice(null)}
               onDelete={() => {
-                // 삭제 후 상태 업데이트
-                setSelectedNotice(null); // 모달 닫기
-                fetchNotices(searchTerm, currentPage, selectedCourse); // 목록 갱신
+                setSelectedNotice(null);
+                if (notices.length === 1 && currentPage > 1) {
+              setCurrentPage((prev) => prev - 1);
+            }
+            fetchNotices(searchTerm, currentPage, selectedCourse);
               }}
-            />
-          )}
-
-          {/* Notice Edit Modal */}
-          {selectedNotice && isEditing && (
-            <NoticeEdit
-              notice={selectedNotice}
-              onClose={() => {
-                setIsEditing(false); // 수정 모달 닫기
-              }}
-              onSave={() => {
-                setIsEditing(false); // 저장 후 수정 모달 닫기
-                fetchNotices(searchTerm, currentPage, selectedCourse); // 데이터 갱신
-              }}
+              onSave={() => fetchNotices(searchTerm, currentPage, selectedCourse)}
             />
           )}
         </div>
