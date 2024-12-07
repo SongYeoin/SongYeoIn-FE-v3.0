@@ -19,7 +19,7 @@ const StudentNoticeList = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/notice`,
         {
-          params: { titleKeyword: searchTerm, page: page - 1, size: 10, courseId },
+          params: { titleKeyword: searchTerm, page: page - 1, size: 15, courseId },
         }
       );
       setNotices(response.data.content);
