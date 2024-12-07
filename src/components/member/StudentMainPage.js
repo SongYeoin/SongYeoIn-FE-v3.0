@@ -6,10 +6,9 @@ import StudentMainHeader from './StudentMainHeader';
 import { studentJournalApi } from '../../api/journalApi';
 import axios from 'axios';
 
-// components/member/StudentMainPage.js
 const StudentMainPage = () => {
   const [currentCourse, setCurrentCourse] = useState(null);
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
   const [selectedDate, setSelectedDate] = useState(() => {
     const today = new Date();
     const year = today.getFullYear();
@@ -38,20 +37,18 @@ const StudentMainPage = () => {
             id: currentEnrollment.courseId,
             name: currentEnrollment.courseName,
             adminName: currentEnrollment.adminName,
+            teacherName: currentEnrollment.teacherName,  // 백엔드에서 받아온 값 사용
             enrollDate: currentEnrollment.enrollDate,
             endDate: currentEnrollment.endDate
           });
-        } else {
-          setError('현재 수강 중인 과정이 없습니다.');
         }
       } catch (error) {
         console.error('현재 수강 과정 조회 실패:', error);
-        setError('현재 수강 중인 과정 정보를 불러올 수 없습니다.');
       }
     };
 
     fetchCurrentCourse();
-  }, []);
+  }, []); // courses dependency 제거
 
   if (error) {
     return (
