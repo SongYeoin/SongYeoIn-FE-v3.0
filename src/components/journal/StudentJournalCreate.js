@@ -4,12 +4,13 @@ import { useUser } from '../common/UserContext';
 import { parseJwt } from '../common/JwtDecoding';  // UserContext import 추가
 
 const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
-  const { user, loading } = useUser();  // loading 상태도 가져옴
+  const { user, loading } = useUser();  // useUser hook 사용
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     file: null,
-    memberName: ''  // 초기값은 빈 문자열로
+    memberName: '',
+    educationDate: new Date().toISOString().split('T')[0] // 오늘 날짜를 기본값으로
   });
 
   // 컴포넌트가 마운트될 때 한번만 실행
@@ -67,6 +68,7 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
       submitData.append('title', formData.title);
       submitData.append('content', formData.content);
       submitData.append('file', formData.file);
+      submitData.append('educationDate', formData.educationDate); // 교육일자 추가
 
       await studentJournalApi.create(submitData);
       onSuccess();
@@ -111,6 +113,19 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
             </div>
           </div>
 
+          {/* 교육일자 입력 필드 추가 */}
+          <div className="mb-4">
+            <label className="text-sm text-gray-600 font-bold">교육일자</label>
+            <input
+              type="date"
+              name="educationDate"
+              value={formData.educationDate}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-lg bg-white"
+              max={new Date().toISOString().split('T')[0]} // 오늘 날짜까지만 선택 가능
+            />
+          </div>
+
           <div>
             <label className="text-sm text-gray-600 font-bold">내용</label>
             <textarea
@@ -133,7 +148,9 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">취소</button>
+          <button onClick={onClose}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">취소
+          </button>
           <button onClick={handleSubmit} className="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">등록</button>
         </div>
       </div>
