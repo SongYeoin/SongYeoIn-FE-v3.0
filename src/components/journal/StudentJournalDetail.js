@@ -93,7 +93,9 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
       <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">교육일지 상세보기</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-xl font-medium transition-colors duration-200">✕</button>
+          <button onClick={onClose}
+                  className="text-gray-500 hover:text-gray-700 text-xl font-medium transition-colors duration-200">✕
+          </button>
         </div>
 
         <div className="mb-6 border border-gray-300 rounded-lg p-4">
@@ -172,13 +174,34 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
         <div className="flex justify-end gap-2 mt-4">
           {isEditing ? (
             <>
-              <button onClick={handleCancel} className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">취소</button>
-              <button onClick={handleEdit} className="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">저장</button>
+              <button
+                onClick={handleCancel}
+                className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleEdit}
+                className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
+              >
+                저장
+              </button>
             </>
           ) : (
             <>
-              <button onClick={handleEdit} className="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">수정</button>
-              <button onClick={handleDelete} className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">삭제</button>
+              <button
+                onClick={handleDelete}
+                className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
+              >
+                삭제
+              </button>
+              <button
+                onClick={handleEdit}
+                className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
+              >
+                수정
+              </button>
+
             </>
           )}
         </div>

@@ -148,10 +148,18 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onClose}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">취소
+          <button
+            onClick={onClose}
+            className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
+          >
+            취소
           </button>
-          <button onClick={handleSubmit} className="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">등록</button>
+          <button
+            onClick={handleSubmit}
+            className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
+          >
+            저장
+          </button>
         </div>
       </div>
     </div>
