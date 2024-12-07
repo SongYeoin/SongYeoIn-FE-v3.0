@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "api/axios";
 
 const NoticeDetail = ({ noticeId, onClose }) => {
@@ -7,6 +7,7 @@ const NoticeDetail = ({ noticeId, onClose }) => {
 
   useEffect(() => {
     const fetchNoticeDetail = async () => {
+      setIsLoading(true);
       try {
         const response = await axios.get(
           `${process.env.REACT_APP_API_URL}/notice/${noticeId}`
@@ -20,8 +21,7 @@ const NoticeDetail = ({ noticeId, onClose }) => {
     };
 
     fetchNoticeDetail();
-  }, [noticeId]); // `noticeId` 변경 시에만 요청 실행
-
+  }, [noticeId]);
 
   if (isLoading) {
     return (
@@ -46,59 +46,42 @@ const NoticeDetail = ({ noticeId, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 overflow-auto">
       <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg">
+        {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">공지사항 상세보기</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
-            X
+          <h2 className="text-2xl font-bold">{notice.title}</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            ✕
           </button>
         </div>
 
-        <div className="mb-6 border border-gray-300 rounded-lg p-4">
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="text-sm text-gray-600 font-bold">제목</label>
-              <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
-                {notice.title}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-600 font-bold">작성자</label>
-              <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
-                {notice.memberName}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-600 font-bold">등록일</label>
-              <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
-                {notice.regDate}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-600 font-bold">조회수</label>
-              <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
-                {notice.viewCount}
-              </p>
-            </div>
-          </div>
-          <div>
-            <label className="text-sm text-gray-600 font-bold">내용</label>
-            <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
-              {notice.content}
-            </p>
+        {/* Metadata */}
+        <div className="mb-4">
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>작성자: {notice.memberName}</span>
+            <span>작성일: {notice.regDate}</span>
+            <span>조회수: {notice.viewCount}</span>
           </div>
         </div>
 
+        {/* Content */}
+        <div className="mb-4">
+          <div className="whitespace-pre-wrap border p-4 rounded min-h-[200px]">
+            {notice.content}
+          </div>
+        </div>
+
+        {/* Files */}
         {notice.files && notice.files.length > 0 && (
-          <div className="mb-6 border border-gray-300 rounded-lg p-4">
-            <h3 className="text-lg font-bold mb-4">첨부파일</h3>
-            <ul className="list-disc pl-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-bold mb-2">첨부파일</h3>
+            <ul className="space-y-2">
               {notice.files.map((file) => (
-                <li key={file.id}>
+                <li key={file.id} className="flex items-center">
                   <a
                     href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
+                    className="text-blue-500 hover:underline flex-1"
                   >
                     {file.originalName}
                   </a>
@@ -107,7 +90,6 @@ const NoticeDetail = ({ noticeId, onClose }) => {
             </ul>
           </div>
         )}
-
       </div>
     </div>
   );
