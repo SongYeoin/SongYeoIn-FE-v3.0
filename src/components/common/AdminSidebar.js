@@ -1,7 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const AdminSidebar = () => {
+  const location = useLocation();
+
   const menuItems = [
     {
       name: '수강생',
@@ -107,16 +109,17 @@ const AdminSidebar = () => {
     },
   ];
   return (
-    <aside
-      className="w-64 bg-[#bac8bd] flex flex-col gap-4 p-6 fixed top-16 left-3 bottom-3 rounded-[30px]">
+    <aside className="w-64 bg-[#bac8bd] flex flex-col gap-4 p-6 fixed top-16 left-3 bottom-3 rounded-[30px]">
       <nav className="flex flex-col gap-4 fs-2">
         {menuItems.map((item, index) => (
           <div
             key={index}
-            className="gap-3 p-3 rounded-[10px] hover:bg-white hover:shadow-md transition-all duration-200"
+            className={`gap-3 p-3 rounded-[10px] transition-all duration-200 
+              ${location.pathname === item.link
+              ? 'bg-white shadow-md'
+              : 'hover:bg-white hover:shadow-md'}`}
           >
             <Link
-              key={index}
               to={item.link}
               className="flex items-center justify-start gap-5 opacity-75 hover:opacity-100 ml-4"
             >
@@ -125,9 +128,10 @@ const AdminSidebar = () => {
             </Link>
           </div>
         ))}
-          </nav>
-          </aside>
-          );
-        };
+      </nav>
+    </aside>
+  );
+};
+
 
 export default AdminSidebar;
