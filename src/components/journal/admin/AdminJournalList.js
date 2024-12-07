@@ -71,59 +71,57 @@ const AdminJournalList = () => {
       onPageChange={(page) => setCurrentPage(page)}
     >
       <div className="flex flex-col h-full">
-        {/* 고정된 헤더 영역 */}
         <div className="flex-shrink-0">
           <AdminJournalHeader
             courses={courses}
             onFilterChange={handleFilterChange}
           />
 
-          {/* 고정된 테이블 헤더 */}
           <div className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
-            <div className="grid grid-cols-[1fr_3fr_2fr_2fr_2fr_2fr] gap-5">
-              <p className="text-xs font-bold text-center text-gray-700">번호</p>
-              <p className="text-xs font-bold text-center text-gray-700">제목</p>
-              <p className="text-xs font-bold text-center text-gray-700">작성자</p>
-              <p
-                className="text-xs font-bold text-center text-gray-700">교육일자</p>
-              <p className="text-xs font-bold text-center text-gray-700">작성일</p>
-              <p
-                className="text-xs font-bold text-center text-gray-700">첨부파일</p>
+            <div>
+              <div className="grid grid-cols-[1fr_3fr_2fr_2fr_2fr_2fr] gap-5">
+                <p className="text-sm font-bold text-center text-gray-700">번호</p>
+                <p className="text-sm font-bold text-center text-gray-700">제목</p>
+                <p className="text-sm font-bold text-center text-gray-700">작성자</p>
+                <p className="text-sm font-bold text-center text-gray-700">교육일자</p>
+                <p className="text-sm font-bold text-center text-gray-700">작성일</p>
+                <p className="text-sm font-bold text-center text-gray-700">첨부파일</p>
+              </div>
+              <div className="border-b border-gray-200 mt-4"></div>
             </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            <ul className="space-y-4">
+              {journals.map((journal, index) => (
+                <li key={journal.id}>
+                  <div
+                    className="grid grid-cols-[1fr_3fr_2fr_2fr_2fr_2fr] gap-5 items-center text-center cursor-pointer hover:bg-gray-100 p-2 rounded text-sm"
+                    onClick={() => setSelectedJournal(journal)}
+                  >
+                    <p>{totalElements - ((currentPage - 1) * 15 + index)}</p>
+                    <p>{journal.title}</p>
+                    <p>{journal.memberName}</p>
+                    <p>{new Date(journal.educationDate).toLocaleDateString()}</p>
+                    <p>{new Date(journal.createdAt).toLocaleDateString()}</p>
+                    <p>{journal.file ? '첨부됨' : '-'}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        {/* 스크롤되는 목록 영역 */}
-        <div className="flex-1 overflow-y-auto">
-          <ul className="space-y-4">
-            {journals.map((journal, index) => (
-              <li key={journal.id}>
-                <div
-                  className="grid grid-cols-[1fr_3fr_2fr_2fr_2fr_2fr] gap-5 items-center text-center cursor-pointer hover:bg-gray-100 p-2 rounded"
-                  onClick={() => setSelectedJournal(journal)}
-                >
-                  <p>{totalElements - ((currentPage - 1) * 15 + index)}</p>
-                  <p>{journal.title}</p>
-                  <p>{journal.memberName}</p>
-                  <p>{new Date(journal.educationDate).toLocaleDateString()}</p>
-                  <p>{new Date(journal.createdAt).toLocaleDateString()}</p>
-                  <p>{journal.file ? '첨부됨' : '-'}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {selectedJournal && (
+          <AdminJournalDetail
+            journalId={selectedJournal.id}
+            onClose={() => {
+              setSelectedJournal(null);
+              fetchJournals();
+            }}
+          />
+        )}
       </div>
-
-      {selectedJournal && (
-        <AdminJournalDetail
-          journalId={selectedJournal.id}
-          onClose={() => {
-            setSelectedJournal(null);
-            fetchJournals();
-          }}
-        />
-      )}
     </AdminLayout>
   );
 };
