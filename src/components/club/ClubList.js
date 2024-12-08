@@ -258,9 +258,9 @@ const ClubList = () => {
       newFormData.append("club", new Blob([JSON.stringify(clubData)], { type: "application/json" }));
 
       // 파일 추가 (선택적으로)
-      // if (file) {
-      //   formData.append("file", file);
-      // }
+      if (formData.file && formData.file.size > 0) {
+        newFormData.append("file", formData.file);
+      }
       console.log("수정데이터:", clubData);
       console.log("FormData payload:", newFormData);
 
@@ -328,9 +328,16 @@ const ClubList = () => {
     setIsEditing(false);
   };
 
-  // const handleFileChange = (event) => {
-  //   setFile(event.target.files[0]);
-  // };
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        file, // 파일 객체를 상태에 저장
+      }));
+      console.log("선택된 파일:", file.name); // 디버깅용
+    }
+  };
 
   return (
     <StudentLayout currentPage={currentPage}
@@ -867,11 +874,13 @@ const ClubList = () => {
                     {/*<p className="absolute left-[13px] top-[565px] text-sm text-left text-black">*/}
                     {/*  {selectedClub.attachment || '-'}*/}
                     {/*</p>*/}
+                    <p className="absolute left-[13px] top-[565px] text-sm text-left text-black">
+                      {formData.file ? formData.file.name : "첨부된 파일 없음"}
+                    </p>
                     <input
                       type={isEditing && selectedClub.checkStatus === 'Y' ? "file" : "text"}
-                      value={isEditing ? formData.file : selectedClub.file}
                       name="file"
-                      onChange={handleInputChange}
+                      onChange={handleFileChange}
                       disabled={!isEditing || selectedClub.checkStatus !== 'Y'}
                       className="w-[780px] h-11 absolute left-[-0.5px] top-[553.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
                     />
