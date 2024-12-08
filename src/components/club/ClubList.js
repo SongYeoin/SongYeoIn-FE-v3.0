@@ -4,6 +4,7 @@ import StudentLayout from '../common/layout/student/StudentLayout';
 import { format } from 'date-fns';
 import {CourseContext} from '../common/CourseContext';
 import {useUser} from '../common/UserContext';
+import { PaperClipIcon } from '@heroicons/react/20/solid';
 
 const ClubList = () => {
   const [clubs, setClubs] = useState([]);
@@ -185,6 +186,7 @@ const ClubList = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setFormData(initialFormData);
+    setIsDetailModalOpen(false);
   };
 
   // Handle form input changes
@@ -471,7 +473,25 @@ const ClubList = () => {
                   <td className="py-4 text-center">{club.checkMessage || '-'}</td>
                   <td className="py-4 text-center">{club.studyDate}</td>
                   <td className="py-4 text-center">{club.regDate}</td>
-                  <td className="py-4 text-center">{club.attachmentFileName || '-'}</td>
+                  <td className="py-4 text-center">{club.file ? (
+                                                       <a
+                                                         href={club.file.url}
+                                                         target="_blank"
+                                                         rel="noopener noreferrer"
+                                                         download={club.file.originalName}
+                                                         onClick={(e) => {
+                                                                 // 파일 다운로드 클릭 시, 모달이 열리지 않도록 preventDefault() 호출
+                                                                 e.stopPropagation(); // 모달 열기 이벤트 전파를 막음
+                                                                 // 다운로드 링크를 새 창에서 열도록 함
+                                                                 window.open(club.file.url, "_blank");
+                                                               }}
+                                                         style={{ color: 'blue', textDecoration: 'underline', display: 'inline-block'}}
+                                                       >
+                                                         <PaperClipIcon className="h-6 w-6 rotate-0" />
+                                                       </a>
+                                                     ) : (
+                                                       '-'
+                                                     )}</td>
                 </tr>
               ))
             ) : (
@@ -871,18 +891,15 @@ const ClubList = () => {
                     </p>
                     <div
                       className="w-[780px] h-11 absolute left-[-0.5px] top-[553.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                    {/*<p className="absolute left-[13px] top-[565px] text-sm text-left text-black">*/}
-                    {/*  {selectedClub.attachment || '-'}*/}
-                    {/*</p>*/}
-                    <p className="absolute left-[13px] top-[565px] text-sm text-left text-black">
-                      {formData.file ? formData.file.name : "첨부된 파일 없음"}
+                    <p className={`absolute left-[13px] top-[565px] text-sm text-left text-black ${isEditing && selectedClub.checkStatus === 'Y' ? 'hidden' : ''}`}>
+                      {selectedClub.file ? selectedClub.file.originalName : "첨부된 파일 없음"}
                     </p>
                     <input
                       type={isEditing && selectedClub.checkStatus === 'Y' ? "file" : "text"}
                       name="file"
                       onChange={handleFileChange}
                       disabled={!isEditing || selectedClub.checkStatus !== 'Y'}
-                      className="w-[780px] h-11 absolute left-[-0.5px] top-[553.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
+                      className={`w-[780px] h-11 absolute left-[-0.5px] top-[553.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none ${isEditing && selectedClub.checkStatus === 'Y' ? '' : 'hidden'}`}
                     />
                   </div>
                 </div>
