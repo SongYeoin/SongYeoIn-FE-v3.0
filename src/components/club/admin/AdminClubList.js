@@ -623,7 +623,7 @@ const AdminClubList = () => {
                   </div>
                   <div className="flex-grow-0 flex-shrink-0 w-[780px] h-[67px]">
                     <p className="absolute left-0 top-[531px] text-sm font-black text-left text-black">
-                      동아리 일지 첨부
+                      첨부파일
                     </p>
                     <div
                       className="w-[780px] h-11 absolute left-[-0.5px] top-[553.5px] rounded-2xl bg-white border border-[#efeff3]"/>
