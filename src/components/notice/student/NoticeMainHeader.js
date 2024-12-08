@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'api/axios';
 import _ from 'lodash';
 
 const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState('');
+  const [searchTerm, setSearchTerm] = useState(''); // 검색어 상태
+  const [courses, setCourses] = useState([]); // 교육 과정 목록
+  const [selectedCourse, setSelectedCourse] = useState(''); // 선택된 교육 과정
 
   // 검색어 변경 처리 (디바운스 적용)
   const debouncedSearch = _.debounce((value) => {
@@ -21,58 +21,48 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
   const handleCourseChange = (e) => {
     const value = e.target.value;
     setSelectedCourse(value);
-    onCourseChange(value); // 부모 컴포넌트로 전달
+    onCourseChange(value); // 부모 컴포넌트로 선택된 값 전달
   };
 
-  // 서버에서 교육 과정 목록 가져오기
-  const fetchCourses = async () => {
+  // 교육 과정 목록 가져오기
+  const fetchCourses = useCallback(async () => {
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/enrollments/my`
-      );
-      if (response.status === 200 && Array.isArray(response.data)) {
-        setCourses(response.data); // 데이터를 설정
-      } else {
-        console.error('Unexpected response format:', response);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/enrollments/my`);
+      if (response.status === 200) {
+        setCourses(response.data); // 응답 데이터를 상태로 설정
+        if (response.data.length > 0) {
+          // 첫 번째 항목을 기본값으로 설정
+          setSelectedCourse(response.data[0].courseId);
+          onCourseChange(response.data[0].courseId);
+        }
       }
     } catch (error) {
-      console.error('Error fetching courses:', error.message);
+      console.error('Error fetching courses:', error);
     }
-  };
+  }, [onCourseChange]);
 
   // 컴포넌트 마운트 시 교육 과정 가져오기
   useEffect(() => {
     fetchCourses();
-  }, []);
-
-  // 교육 과정 데이터를 가져온 후 첫 번째 항목을 기본값으로 설정
-  useEffect(() => {
-    if (courses.length > 0) {
-      // 첫 번째 교육 과정을 기본값으로 설정
-      setSelectedCourse(courses[0].id);
-      onCourseChange(courses[0].id); // 부모에게 기본값 전달
-    }
-  }, [courses, onCourseChange]);
+  }, [fetchCourses]);
 
   return (
     <div className="flex flex-col w-full gap-6 pr-4">
       <h1 className="text-xl md:text-2xl lg:text-3xl text-[#16161b]">공지사항</h1>
       <div className="flex flex-wrap gap-4 justify-between items-center">
-        {/* 교육 과정 셀렉트 박스 */}
+        {/* 교육 과정 셀렉트박스 */}
         <select
-          className="px-3 py-2 rounded-lg bg-white border border-gray-300 w-64 text-sm text-gray-500"
+          className="w-80 text-center px-4 py-2 text-sm text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           value={selectedCourse}
           onChange={handleCourseChange}
           disabled={courses.length === 0} // 데이터가 없으면 비활성화
         >
           <option value="" disabled hidden>
-            {courses.length === 0
-              ? '교육 과정이 없습니다.'
-              : '교육 과정을 선택하세요'}
+            {courses.length === 0 ? '교육 과정이 없습니다.' : '교육 과정을 선택하세요'}
           </option>
           {courses.map((course) => (
-            <option key={course.id} value={course.id}>
-              {course.name}
+            <option key={course.courseId} value={course.courseId}>
+              {course.courseName}
             </option>
           ))}
         </select>
