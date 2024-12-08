@@ -860,7 +860,7 @@ const ClubList = () => {
                   </div>
                   <div className="flex-grow-0 flex-shrink-0 w-[780px] h-[67px]">
                     <p className="absolute left-0 top-[531px] text-sm font-black text-left text-black">
-                      동아리 일지 첨부
+                      첨부파일
                     </p>
                     <div
                       className="w-[780px] h-11 absolute left-[-0.5px] top-[553.5px] rounded-2xl bg-white border border-[#efeff3]"/>
@@ -868,9 +868,9 @@ const ClubList = () => {
                     {/*  {selectedClub.attachment || '-'}*/}
                     {/*</p>*/}
                     <input
-                      type="text"
-                      value={isEditing ? formData.attachment : selectedClub.attachment}
-                      name="attachment"
+                      type={isEditing && selectedClub.checkStatus === 'Y' ? "file" : "text"}
+                      value={isEditing ? formData.file : selectedClub.file}
+                      name="file"
                       onChange={handleInputChange}
                       disabled={!isEditing || selectedClub.checkStatus !== 'Y'}
                       className="w-[780px] h-11 absolute left-[-0.5px] top-[553.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
