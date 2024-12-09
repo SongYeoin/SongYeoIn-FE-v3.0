@@ -64,8 +64,8 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
                 : '교육 과정을 선택하세요'}
             </option>
             {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.name}
+              <option key={course.courseId} value={course.courseId}>
+                {course.courseName}
               </option>
             ))}
           </select>
