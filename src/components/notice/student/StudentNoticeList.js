@@ -6,29 +6,29 @@ import axios from 'api/axios';
 import _ from 'lodash';
 
 const StudentNoticeList = () => {
-  const [notices, setNotices] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [selectedNotice, setSelectedNotice] = useState(null); // 현재 선택된 공지사항
+  const [notices, setNotices] = useState([]); // 공지사항 리스트
+  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
+  const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수
+  const [searchTerm, setSearchTerm] = useState(''); // 검색어
+  const [selectedCourse, setSelectedCourse] = useState(''); // 선택된 교육 과정
+  const [selectedNotice, setSelectedNotice] = useState(null); // 선택된 공지사항
 
-  // 공지사항 데이터 가져오기
-  const fetchNotices = async (searchTerm, page, courseId) => {
+  // 공지사항 데이터를 가져오는 함수
+  const fetchNotices = async (search, page, courseId) => {
     try {
       const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/notice`,
         {
           params: {
-            titleKeyword: searchTerm,
-            page: page - 1,
+            titleKeyword: search,
+            page: page - 1, // 0-based 페이지 번호 사용
             size: 15,
             courseId,
           },
         },
       );
-      setNotices(response.data.content);
-      setTotalPages(response.data.totalPages);
+      setNotices(response.data.content); // 데이터를 상태에 저장
+      setTotalPages(response.data.totalPages); // 전체 페이지 수 설정
     } catch (error) {
       console.error('Error fetching notices:', error);
     }
@@ -42,6 +42,13 @@ const StudentNoticeList = () => {
     [],
   );
 
+  // 검색어가 변경되면 페이지를 1로 초기화
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // 검색 시 페이지 초기화
+  };
+
+  // useEffect로 공지사항 데이터 가져오기
   useEffect(() => {
     debouncedFetchNotices(searchTerm, currentPage, selectedCourse);
   }, [searchTerm, currentPage, selectedCourse, debouncedFetchNotices]);
@@ -56,9 +63,8 @@ const StudentNoticeList = () => {
         <div className="flex-shrink-0">
           {/* Header Component */}
           <NoticeMainHeader
-            onSearch={(value) => setSearchTerm(value)}
+            onSearch={handleSearch}
             onCourseChange={(value) => setSelectedCourse(value)}
-            fetchNotices={fetchNotices}
           />
 
           {/* Notices Table */}

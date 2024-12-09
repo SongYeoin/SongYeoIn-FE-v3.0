@@ -2,22 +2,23 @@ import React, { useState, useEffect } from "react";
 import axios from "api/axios";
 
 const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
-  const [notice, setNotice] = useState(null);
-  const [editedNotice, setEditedNotice] = useState(null);
-  const [newFiles, setNewFiles] = useState([]);
-  const [filesToDelete, setFilesToDelete] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [fileErrors, setFileErrors] = useState("");
+  const [notice, setNotice] = useState(null); // 공지사항 상세 정보
+  const [editedNotice, setEditedNotice] = useState(null); // 수정된 공지사항 정보
+  const [newFiles, setNewFiles] = useState([]); // 새로 추가된 파일
+  const [filesToDelete, setFilesToDelete] = useState([]); // 삭제할 파일 ID
+  const [isEditing, setIsEditing] = useState(false); // 수정 모드 여부
+  const [fileErrors, setFileErrors] = useState(""); // 파일 오류 메시지
   const [titleError, setTitleError] = useState(""); // 제목 오류 메시지
   const [contentError, setContentError] = useState(""); // 내용 오류 메시지
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태
 
-  const MAX_FILE_COUNT = 5;
+  const MAX_FILE_COUNT = 5; // 최대 파일 업로드 개수
   const ALLOWED_EXTENSIONS = [
     "hwp", "hwpx", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "pdf",
     "jpeg", "jpg", "png", "gif", "bmp", "tiff", "tif", "webp", "svg",
   ];
 
+  // 공지사항 상세 조회
   useEffect(() => {
     fetchNoticeDetail();
   }, [noticeId]);
@@ -100,42 +101,60 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append(
-      "request",
-      new Blob(
-        [
-          JSON.stringify({
-            title: editedNotice.title,
-            content: editedNotice.content,
-            isGlobal: editedNotice.isGlobal,
-          }),
-        ],
-        { type: "application/json" }
-      )
-    );
-
-    newFiles.forEach((file) => formData.append("newFiles", file));
-    filesToDelete.forEach((fileId) => formData.append("deleteFileIds", fileId));
-
     try {
+      const formData = new FormData();
+
+      formData.append(
+        "request",
+        new Blob(
+          [
+            JSON.stringify({
+              title: editedNotice.title,
+              content: editedNotice.content,
+              isGlobal: editedNotice.isGlobal,
+            }),
+          ],
+          { type: "application/json" }
+        )
+      );
+
+      newFiles.forEach((file) => formData.append("newFiles", file));
+      filesToDelete.forEach((fileId) => formData.append("deleteFileIds", fileId));
+
       await axios.put(
         `${process.env.REACT_APP_API_URL}/admin/notice/${editedNotice.id}`,
         formData,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "multipart/form-data",
           },
         }
       );
 
       alert("공지사항이 수정되었습니다.");
-      await fetchNoticeDetail(); // 수정 완료 후 최신 데이터를 다시 로드
-      setIsEditing(false); // 상세조회 모드로 전환
+      await fetchNoticeDetail(); // 수정된 데이터를 다시 조회
+      setIsEditing(false); // 수정 모드 해제
+      setNewFiles([]);
+      setFilesToDelete([]);
     } catch (error) {
       console.error("Error saving notice:", error);
-      alert("수정에 실패했습니다.");
+      alert("공지사항 수정 중 오류가 발생했습니다.");
     }
+  };
+
+  const handleCancelEdit = () => {
+    setEditedNotice({
+      ...notice,
+      isGlobal: notice.global ?? false,
+      files: notice.files || [],
+    });
+    setNewFiles([]);
+    setFilesToDelete([]);
+    setTitleError("");
+    setContentError("");
+    setFileErrors("");
+    setIsEditing(false);
   };
 
   const handleDelete = async () => {
@@ -151,7 +170,6 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
         );
         alert("공지사항이 삭제되었습니다.");
         onDelete();
-        onClose();
       } catch (error) {
         console.error("Error deleting notice:", error);
         alert("삭제에 실패했습니다.");
@@ -204,12 +222,14 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
           ) : (
             <h2 className="text-2xl font-bold">{notice.title}</h2>
           )}
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={() => onClose(false)}
+            className="text-gray-500 hover:text-gray-700"
+          >
             ✕
           </button>
         </div>
 
-        {/* Metadata */}
         <div className="mb-4">
           <div className="flex justify-between text-sm text-gray-600">
             <span>작성자: {notice.memberName}</span>
@@ -218,28 +238,24 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
           </div>
         </div>
 
-        {/* Content */}
         <div className="mb-4">
           {isEditing ? (
-            <div>
-              <textarea
-                name="content"
-                value={editedNotice.content}
-                onChange={handleChange}
-                className="w-full h-[200px] border rounded p-4"
-              />
-              {contentError && (
-                <p className="text-red-500 text-sm mt-1">{contentError}</p>
-              )}
-            </div>
+            <textarea
+              name="content"
+              value={editedNotice.content}
+              onChange={handleChange}
+              className="w-full h-[200px] border rounded p-4"
+            />
           ) : (
             <div className="whitespace-pre-wrap border p-4 rounded min-h-[200px]">
               {notice.content}
             </div>
           )}
+          {contentError && (
+            <p className="text-red-500 text-sm mt-1">{contentError}</p>
+          )}
         </div>
 
-        {/* Files */}
         {editedNotice.files.length > 0 && (
           <div className="mb-4">
             <h3 className="text-lg font-bold mb-2">첨부파일</h3>
@@ -282,7 +298,6 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
           </div>
         )}
 
-        {/* IsGlobal */}
         {isEditing && (
           <div className="mb-4">
             <label className="inline-flex items-center">
@@ -298,13 +313,12 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
           </div>
         )}
 
-        {/* Actions */}
         <div className="flex justify-end gap-2 mt-4">
           {isEditing ? (
             <>
               <button
                 type="button"
-                onClick={() => setIsEditing(false)}
+                onClick={handleCancelEdit}
                 className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
               >
                 취소

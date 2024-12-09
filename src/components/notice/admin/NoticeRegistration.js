@@ -6,27 +6,35 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
     title: '',
     content: '',
     files: [],
-    isGlobal: false, // 전체 공지 여부
-    courseId: selectedCourse || '', // 초기값은 선택된 반의 ID
+    isGlobal: false,
+    courseId: selectedCourse || '',
   });
   const [errors, setErrors] = useState({});
   const [fileErrors, setFileErrors] = useState('');
 
-  const MAX_FILE_COUNT = 5; // 첨부파일 최대 개수
+  const MAX_FILE_COUNT = 5;
   const ALLOWED_EXTENSIONS = [
     'hwp', 'hwpx', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf',
     'jpeg', 'jpg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'webp', 'svg',
-  ]; // 허용된 파일 확장자
+  ];
 
   useEffect(() => {
     if (isOpen) {
-      setFormData((prev) => ({
-        ...prev,
-        courseId: selectedCourse || '',
-        isGlobal: false,
-      }));
+      resetForm();
     }
   }, [isOpen, selectedCourse]);
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      content: '',
+      files: [],
+      isGlobal: false,
+      courseId: selectedCourse || '',
+    });
+    setErrors({});
+    setFileErrors('');
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -34,7 +42,7 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
       setFormData({
         ...formData,
         isGlobal: checked,
-        courseId: checked ? null : selectedCourse,
+        courseId: checked ? selectedCourse : selectedCourse, // 전체 공지여도 selectedCourse 유지
       });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -44,13 +52,11 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
 
-    // 파일 갯수 제한 검증
     if (files.length > MAX_FILE_COUNT) {
       setFileErrors(`파일은 최대 ${MAX_FILE_COUNT}개까지 업로드할 수 있습니다.`);
       return;
     }
 
-    // 파일 확장자 검증
     const invalidFiles = files.filter((file) => {
       const fileExtension = file.name.split('.').pop().toLowerCase();
       return !ALLOWED_EXTENSIONS.includes(fileExtension);
@@ -73,20 +79,17 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
     e.preventDefault();
 
     const newErrors = {};
-    if (!formData.title) newErrors.title = '제목은 필수 입력 사항입니다.';
-    if (!formData.content) newErrors.content = '내용은 필수 입력 사항입니다.';
+    if (!formData.title) newErrors.title = '제목을 입력해주세요.';
+    if (!formData.content) newErrors.content = '내용을 입력해주세요.';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
-    } else {
-      setErrors({});
     }
 
     try {
       const data = new FormData();
 
-      // JSON 데이터를 Blob으로 추가
       data.append(
         'request',
         new Blob(
@@ -96,27 +99,33 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
             isGlobal: formData.isGlobal,
             courseId: formData.courseId,
           })],
-          { type: 'application/json' } // JSON 형식 명시
+          { type: 'application/json' }
         )
       );
 
-      // 파일 추가
       formData.files.forEach((file) => data.append('files', file));
 
-      // Axios 요청
       await axios.post(`${process.env.REACT_APP_API_URL}/admin/notice`, data, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 토큰
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
 
       alert('공지사항이 성공적으로 등록되었습니다.');
-      fetchNotices();
-      onClose();
+
+      // 선택된 과정의 공지사항을 다시 불러옴
+      fetchNotices('', 1, formData.courseId);
+
+      handleClose();
     } catch (error) {
       console.error('Error submitting notice:', error);
       alert('공지사항 등록 중 오류가 발생했습니다.');
     }
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -182,7 +191,7 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
           <div className="flex justify-end space-x-3">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
             >
               취소
