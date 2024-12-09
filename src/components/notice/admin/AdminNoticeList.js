@@ -49,69 +49,84 @@ const AdminNoticeList = () => {
       totalPages={totalPages}
       onPageChange={(page) => setCurrentPage(page)}
     >
-      {/* Header Component */}
-      <NoticeMainHeader
-        onSearch={(value) => setSearchTerm(value)}
-        onCourseChange={(value) => setSelectedCourse(value)}
-        fetchNotices={fetchNotices}
-      />
+      <div className="flex flex-col h-full">
+        <div className="flex-shrink-0">
+          {/* Header Component */}
+          <NoticeMainHeader
+            onSearch={(value) => setSearchTerm(value)}
+            onCourseChange={(value) => setSelectedCourse(value)}
+            fetchNotices={fetchNotices}
+          />
 
-      {/* Notices Table */}
-      <div className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
-        <div className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr] gap-5">
-          <p className="text-xs font-bold text-center text-gray-700">번호</p>
-          <p className="text-xs font-bold text-center text-gray-700">제목</p>
-          <p className="text-xs font-bold text-center text-gray-700">작성자</p>
-          <p className="text-xs font-bold text-center text-gray-700">작성일</p>
-          <p className="text-xs font-bold text-center text-gray-700">조회수</p>
-        </div>
-      </div>
-      <ul className="space-y-4">
-        {notices.map((notice) => (
-          <li key={notice.id}>
-            <div
-              className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr] gap-5 items-center text-center cursor-pointer hover:bg-gray-100 p-2 rounded"
-              onClick={() => setSelectedNotice(notice)}
-            >
-              <p>{notice.postNumber}</p>
-              <p>{notice.title}</p>
-              <p>{notice.memberName}</p>
-              <p>{notice.regDate}</p>
-              <p>{notice.viewCount}</p>
+          {/* Notices Table */}
+          <div className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
+            <div>
+              <div className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr] gap-5">
+                <p
+                  className="text-sm font-bold text-center text-gray-700">번호</p>
+                <p
+                  className="text-sm font-bold text-center text-gray-700">제목</p>
+                <p
+                  className="text-sm font-bold text-center text-gray-700">작성자</p>
+                <p
+                  className="text-sm font-bold text-center text-gray-700">작성일</p>
+                <p
+                  className="text-sm font-bold text-center text-gray-700">조회수</p>
+              </div>
+              <div className="border-b border-gray-200 mt-4"></div>
             </div>
-          </li>
-        ))}
-      </ul>
+          </div>
 
-      {/* Notice Detail Modal */}
-      {selectedNotice && !isEditing && (
-        <NoticeDetail
-          noticeId={selectedNotice.id}
-          onClose={() => setSelectedNotice(null)}
-          onEdit={() => setIsEditing(true)} // 수정 버튼 클릭 시 수정 모달 활성화
-          onDelete={() => {
-            // 삭제 후 상태 업데이트
-            setSelectedNotice(null); // 모달 닫기
-            fetchNotices(searchTerm, currentPage, selectedCourse); // 목록 갱신
-          }}
-        />
-      )}
+          <div className="flex-1 overflow-y-auto">
+            <ul className="space-y-4">
+              {notices.map((notice) => (
+                <li key={notice.id}>
+                  <div
+                    className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr] gap-5 items-center text-center cursor-pointer hover:bg-gray-100 p-2 rounded text-sm"
+                    onClick={() => setSelectedNotice(notice)}
+                  >
+                    <p>{notice.postNumber}</p>
+                    <p>{notice.title}</p>
+                    <p>{notice.memberName}</p>
+                    <p>{notice.regDate}</p>
+                    <p>{notice.viewCount}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          </div>
 
-      {/* Notice Edit Modal */}
-      {selectedNotice && isEditing && (
-        <NoticeEdit
-          notice={selectedNotice}
-          onClose={() => {
-            setIsEditing(false); // 수정 모달 닫기
-          }}
-          onSave={() => {
-            setIsEditing(false); // 저장 후 수정 모달 닫기
-            fetchNotices(searchTerm, currentPage, selectedCourse); // 데이터 갱신
-          }}
-        />
-      )}
+          {/* Notice Detail Modal */}
+          {selectedNotice && !isEditing && (
+            <NoticeDetail
+              noticeId={selectedNotice.id}
+              onClose={() => setSelectedNotice(null)}
+              onEdit={() => setIsEditing(true)} // 수정 버튼 클릭 시 수정 모달 활성화
+              onDelete={() => {
+                // 삭제 후 상태 업데이트
+                setSelectedNotice(null); // 모달 닫기
+                fetchNotices(searchTerm, currentPage, selectedCourse); // 목록 갱신
+              }}
+            />
+          )}
+
+          {/* Notice Edit Modal */}
+          {selectedNotice && isEditing && (
+            <NoticeEdit
+              notice={selectedNotice}
+              onClose={() => {
+                setIsEditing(false); // 수정 모달 닫기
+              }}
+              onSave={() => {
+                setIsEditing(false); // 저장 후 수정 모달 닫기
+                fetchNotices(searchTerm, currentPage, selectedCourse); // 데이터 갱신
+              }}
+            />
+          )}
+        </div>
     </AdminLayout>
-  );
+);
 };
 
 export default AdminNoticeList;

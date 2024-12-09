@@ -9,8 +9,8 @@ import { useNavigate } from 'react-router-dom';
     navigate('/login'); // Navigates to the login page
   };*/
 
-  export const Landing = () => {
-    const navigate = useNavigate();
+export const Landing = () => {
+  const navigate = useNavigate();
 
   return (
     /* 전체 크기 */
@@ -57,7 +57,7 @@ import { useNavigate } from 'react-router-dom';
         </svg>
         <p
           className="w-[260px] h-[81px] text-[50px] text-center text-[#1e2d1f] font-normal "
-          style={{ fontFamily: 'Dokdo' }}>
+          style={{ fontFamily: 'LOTTERIACHAB' }}>
           SONGYEOIN
         </p>
       </div>
@@ -65,17 +65,17 @@ import { useNavigate } from 'react-router-dom';
       {/* 소개 글 */}
       <div className="relative flex flex-col items-center gap-5 mb-14">
         <p
-          className="w-[567px] h-[71px] text-[39px] font-bold text-center text-[#fef5f5]"
+          className="w-[567px] h-[71px] text-[39px] font-bold text-center text-[#1e2d1f]"
         >
           COLLABORATION
         </p>
         <p
           className="w-[780px] h-[63px] text-[25px] text-center text-white"
         >
-          <span className="w-[780px] h-[63px] text-[25px] text-center text-white"
+          <span className="w-[780px] h-[63px] text-[25px] text-center text-[#2d3436]"
           >송파여성인력개발센터와 2024 ‘자바 스프링 백엔드’ 훈련 과정 수료생</span>
           <br />
-          <span className="w-[712px] h-[63px] text-[25px] text-center text-white"
+          <span className="w-[712px] h-[63px] text-[25px] text-center text-[#2d3436]"
           >‘송여인’ 팀 5인이 함께한 학습 관리 시스템입니다.</span>
         </p>
       </div>
