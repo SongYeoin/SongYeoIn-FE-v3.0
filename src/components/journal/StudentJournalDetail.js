@@ -25,16 +25,13 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
     if (isEditing) {
       try {
         const formData = new FormData();
-        formData.append('courseId', courseId);  // 전달받은 courseId 사용
+        formData.append('courseId', courseId);
         formData.append('title', editedData.title);
         formData.append('content', editedData.content);
-        formData.append('educationDate', editedData.educationDate); // 교육일자 추가
+        formData.append('educationDate', editedData.educationDate);
 
         if (editedData.newFile) {
           formData.append('file', editedData.newFile);
-        } else {
-          // 기존 파일 정보가 있고 새 파일이 없는 경우
-          // 백엔드에서 기존 파일을 유지하도록 처리
         }
 
         await studentJournalApi.update(journalId, formData);
@@ -46,8 +43,7 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
         setIsEditing(false);
 
       } catch (error) {
-        console.error('교육일지 수정 실패:', error);
-        alert('수정에 실패했습니다.');
+        alert(error.message);
       }
     } else {
       setIsEditing(true);

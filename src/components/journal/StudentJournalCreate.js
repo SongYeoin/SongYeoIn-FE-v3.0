@@ -49,10 +49,21 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'file') {
-      setFormData({
-        ...formData,
-        file: files[0]
-      });
+      const file = files[0];
+      if (file) {
+        const extension = file.name.split('.').pop().toLowerCase();
+        const allowedExtensions = ['hwp', 'docx', 'doc'];
+
+        if (!allowedExtensions.includes(extension)) {
+          alert('교육일지는 HWP, DOCX, DOC 형식만 첨부 가능합니다.');
+          e.target.value = '';
+          return;
+        }
+        setFormData({
+          ...formData,
+          file: file
+        });
+      }
     } else {
       setFormData({
         ...formData,
@@ -61,21 +72,28 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();  // form submit 기본 동작 방지
+
     try {
+      // 파일 체크
+      if (!formData.file) {
+        alert('교육일지 파일 첨부는 필수입니다.');
+        return;
+      }
+
       const submitData = new FormData();
       submitData.append('courseId', courseId);
       submitData.append('title', formData.title);
       submitData.append('content', formData.content);
       submitData.append('file', formData.file);
-      submitData.append('educationDate', formData.educationDate); // 교육일자 추가
+      submitData.append('educationDate', formData.educationDate);
 
       await studentJournalApi.create(submitData);
       onSuccess();
       onClose();
     } catch (error) {
-      console.error('교육일지 등록 실패:', error);
-      alert('교육일지 등록에 실패했습니다.');
+      alert(error.message);
     }
   };
 
@@ -144,6 +162,7 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
             name="file"
             onChange={handleChange}
             className="mt-2"
+            noValidate  // HTML5 기본 validation 비활성화
           />
         </div>
 
