@@ -27,7 +27,8 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
   // 교육 과정 목록 가져오기
   const fetchCourses = useCallback(async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/enrollments/my`);
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/enrollments/my`);
       if (response.status === 200) {
         setCourses(response.data); // 응답 데이터를 상태로 설정
         if (response.data.length > 0) {
@@ -48,7 +49,7 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
 
   return (
     <div className="bg-white">
-      <div className="flex flex-col w-full gap-9 p-6">
+      <div className="flex flex-col w-full gap-6 p-6">
         <h1 className="text-xl md:text-2xl lg:text-3xl text-[#16161b]">공지사항</h1>
         <div className="flex flex-wrap gap-4 justify-between items-center">
           {/* 교육 과정 셀렉트 박스 */}
@@ -95,7 +96,7 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
         </div>
       </div>
     </div>
-      );
-      };
+  );
+};
 
-      export default NoticeMainHeader;
+export default NoticeMainHeader;

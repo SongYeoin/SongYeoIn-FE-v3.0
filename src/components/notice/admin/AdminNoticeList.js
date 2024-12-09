@@ -1,16 +1,16 @@
-import React, { useCallback, useEffect, useState } from "react";
-import AdminLayout from "../../common/layout/admin/AdminLayout";
-import NoticeMainHeader from "./NoticeMainHeader";
-import NoticeDetail from "./NoticeDetail";
-import axios from "api/axios";
-import _ from "lodash";
+import React, { useCallback, useEffect, useState } from 'react';
+import AdminLayout from '../../common/layout/admin/AdminLayout';
+import NoticeMainHeader from './NoticeMainHeader';
+import NoticeDetail from './NoticeDetail';
+import axios from 'api/axios';
+import _ from 'lodash';
 
 const AdminNoticeList = () => {
   const [notices, setNotices] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCourse, setSelectedCourse] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState('');
   const [selectedNotice, setSelectedNotice] = useState(null);
 
   // 공지사항 데이터 가져오기
@@ -19,13 +19,18 @@ const AdminNoticeList = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/admin/notice`,
         {
-          params: { titleKeyword: searchTerm, page: page - 1, size: 15, courseId },
-        }
+          params: {
+            titleKeyword: searchTerm,
+            page: page - 1,
+            size: 15,
+            courseId,
+          },
+        },
       );
       setNotices(response.data.content);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      console.error("Error fetching notices:", error);
+      console.error('Error fetching notices:', error);
     }
   };
 
@@ -34,7 +39,7 @@ const AdminNoticeList = () => {
     _.debounce((search, page, courseId) => {
       fetchNotices(search, page, courseId);
     }, 500),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -93,26 +98,26 @@ const AdminNoticeList = () => {
               ))}
             </ul>
           </div>
-          </div>
-
-          {/* Notice Detail Modal */}
-          {selectedNotice && (
-        <NoticeDetail
-          noticeId={selectedNotice.id}
-          onClose={() => setSelectedNotice(null)}
-              onDelete={() => {
-                setSelectedNotice(null);
-                if (notices.length === 1 && currentPage > 1) {
-              setCurrentPage((prev) => prev - 1);
-            }
-            fetchNotices(searchTerm, currentPage, selectedCourse);
-              }}
-              onSave={() => fetchNotices(searchTerm, currentPage, selectedCourse)}
-            />
-          )}
         </div>
+
+        {/* Notice Detail Modal */}
+        {selectedNotice && (
+          <NoticeDetail
+            noticeId={selectedNotice.id}
+            onClose={() => setSelectedNotice(null)}
+            onDelete={() => {
+              setSelectedNotice(null);
+              if (notices.length === 1 && currentPage > 1) {
+                setCurrentPage((prev) => prev - 1);
+              }
+              fetchNotices(searchTerm, currentPage, selectedCourse);
+            }}
+            onSave={() => fetchNotices(searchTerm, currentPage, selectedCourse)}
+          />
+        )}
+      </div>
     </AdminLayout>
-);
+  );
 };
 
 export default AdminNoticeList;
