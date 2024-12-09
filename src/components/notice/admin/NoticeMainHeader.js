@@ -3,7 +3,7 @@ import NoticeRegistration from './NoticeRegistration';
 import axios from 'api/axios';
 import _ from 'lodash';
 
-const NoticeMainHeader = ({ onSearch, onCourseChange, fetchNotices = () => {} }) => {
+const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [courses, setCourses] = useState([]);
@@ -50,32 +50,24 @@ const NoticeMainHeader = ({ onSearch, onCourseChange, fetchNotices = () => {} })
     fetchCourses();
   }, []);
 
-  // 교육 과정 데이터를 가져온 후 첫 번째 항목을 기본값으로 설정
+  // 기본값 설정
   useEffect(() => {
-    if (courses.length > 0) {
-      // 첫 번째 교육 과정을 기본값으로 설정
+    if (courses.length > 0 && !selectedCourse) {
       setSelectedCourse(courses[0].id);
-      onCourseChange(courses[0].id); // 부모에게 기본값 전달
+      onCourseChange(courses[0].id);
     }
-  }, [courses, onCourseChange]);
+  }, [courses, selectedCourse, onCourseChange]);
 
   return (
     <div className="bg-white">
       <div className="flex flex-col w-full gap-6 p-6">
         <div className="flex justify-between items-center">
-          <h1
-            className="text-xl md:text-2xl lg:text-3xl text-[#16161b]">공지사항</h1>
+          <h1 className="text-xl md:text-2xl lg:text-3xl text-[#16161b]">공지사항</h1>
           <div
             className="flex justify-center items-center px-4 py-2 rounded-lg bg-[#225930] hover:cursor-pointer transform transition-transform duration-300"
             onClick={openModal}
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
+            <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M12 5V19"
                 stroke="white"
@@ -100,7 +92,7 @@ const NoticeMainHeader = ({ onSearch, onCourseChange, fetchNotices = () => {} })
             className="w-80 text-center px-4 py-2 text-sm text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             value={selectedCourse}
             onChange={handleCourseChange}
-            disabled={courses.length === 0} // 교육 과정이 없으면 비활성화
+            disabled={courses.length === 0}
           >
             <option value="" disabled hidden>
               {courses.length === 0 ? '교육 과정이 없습니다.' : '교육 과정을 선택하세요'}
@@ -112,42 +104,37 @@ const NoticeMainHeader = ({ onSearch, onCourseChange, fetchNotices = () => {} })
             ))}
           </select>
 
-          <div className="flex items-center gap-4">
-
-            {/* 검색창 */}
-            <div
-              className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="#9A97A9"
-                className="bi bi-search"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"
-                />
-              </svg>
-              <input
-                className="text-gray-500 w-full"
-                placeholder="검색할 제목을 입력하세요."
-                value={searchTerm}
-                onChange={handleSearch}
-              />
-            </div>
+          {/* 검색창 */}
+          <div
+            className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="#9A97A9"
+              className="bi bi-search"
+              viewBox="0 0 16 16"
+            >
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+            </svg>
+            <input
+              className="text-gray-500 w-full"
+              placeholder="검색할 제목을 입력하세요."
+              value={searchTerm}
+              onChange={handleSearch}
+            />
           </div>
           {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           <NoticeRegistration
             isOpen={isModalOpen}
             onClose={closeModal}
-            fetchNotices={fetchNotices}
-            selectedCourse={selectedCourse} // 선택된 교육 과정 전달
+            selectedCourse={selectedCourse}
           />
         </div>
       </div>
     </div>
-      );
-      };
+  );
+};
 
-      export default NoticeMainHeader;
+export default NoticeMainHeader;
