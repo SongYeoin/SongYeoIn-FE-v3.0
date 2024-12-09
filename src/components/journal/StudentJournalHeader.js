@@ -78,7 +78,7 @@ const StudentJournalHeader = ({ onFilterChange, refreshJournals }) => {
               strokeLinejoin="round"
             />
           </svg>
-          <p className="text-sm text-white">등록</p>
+          <p className="text-sm text-white">교육일지 등록</p>
         </button>
         </div>
         <div className="flex flex-wrap gap-4 justify-between items-center">

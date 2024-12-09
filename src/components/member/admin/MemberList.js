@@ -81,67 +81,82 @@ export const MemberList = () => {
       totalPages={totalPages}
       onPageChange={(page) => setCurrentPage(page)}
     >
-      {/* Header */}
-      <MemberMainHeader onSearch={handleSearch} />
-      <div className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
-        {/* Table Header */}
-        <div className="grid grid-cols-7 gap-5">
-          <p className="text-xs font-bold text-center text-gray-700">이름</p>
-          <p className="text-xs font-bold text-center text-gray-700">생년월일</p>
-          <p className="text-xs font-bold text-center text-gray-700">이메일</p>
-          <p className="text-xs font-bold text-center text-gray-700">가입일</p>
-          <p className="text-xs font-bold text-center text-gray-700">역할</p>
-          <p className="text-xs font-bold text-center text-gray-700">승인 상태</p>
-        </div>
-        {/* Table Rows */}
-        <ul className="space-y-4">
-          {members.map((member) => (
-            <li key={member.id}>
-              <div
-                className="grid grid-cols-7 items-center text-center cursor-pointer hover:bg-gray-100 transition duration-200 ease-in-out p-2 rounded"
-                onClick={() => setSelectedMember(member)} // 줄 클릭 시 모달 열기
-              >
-                <h3 className="bg-white p-1 rounded shadow font-semibold">
-                  {member.name}
-                </h3>
-                <p>{member.birthday}</p>
-                <p>{member.email}</p>
-                <p>{member.enrollDate}</p>
-                {/* 역할 변경 드롭다운 */}
-                <select
-                  value={member.role}
-                  onClick={(e) => e.stopPropagation()} // 드롭다운 클릭 시 모달 방지
-                  onChange={(e) => handleRoleChange(member.id, e.target.value)}
-                  className="border rounded px-2 py-1 text-sm bg-white"
-                >
-                  <option value="ADMIN">관리자</option>
-                  <option value="STUDENT">학생</option>
-                </select>
-                {/* 승인 상태 변경 드롭다운 */}
-                <select
-                  value={member.checkStatus}
-                  onClick={(e) => e.stopPropagation()} // 드롭다운 클릭 시 모달 방지
-                  onChange={(e) => handleApprovalChange(member.id, e.target.value)}
-                  className="border rounded px-2 py-1 text-sm bg-white"
-                >
-                  <option value="Y">승인</option>
-                  <option value="N">미승인</option>
-                  <option value="W">대기</option>
-                </select>
+
+      <div className="flex flex-col h-full">
+        <div className="flex-shrink-0">
+          {/* Header */}
+          <MemberMainHeader onSearch={handleSearch} />
+
+          <div className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
+            {/* Table Header */}
+            <div>
+              <div className="grid grid-cols-6 gap-5">
+                <p className="text-sm font-bold text-center text-gray-700">이름</p>
+                <p className="text-sm font-bold text-center text-gray-700">생년월일</p>
+                <p className="text-sm font-bold text-center text-gray-700">이메일</p>
+                <p className="text-sm font-bold text-center text-gray-700">가입일</p>
+                <p className="text-sm font-bold text-center text-gray-700">역할</p>
+                <p className="text-sm font-bold text-center text-gray-700">승인 상태</p>
               </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-      {/* Member Detail Modal */}
-      {selectedMember && (
-        <MemberDetail
-          memberId={selectedMember.id}
-          onClose={() => setSelectedMember(null)}
-        />
-      )}
+                <div className="border-b border-gray-200 mt-4"></div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {/* Table Rows */}
+              <ul className="space-y-4">
+                {members.map((member) => (
+                  <li key={member.id}>
+                    <div
+                      className="grid grid-cols-6 items-center text-center cursor-pointer hover:bg-gray-100 transition duration-200 ease-in-out p-2 rounded text-sm"
+                      onClick={() => setSelectedMember(member)} // 줄 클릭 시 모달 열기
+                    >
+                      <h3 className="bg-white p-1 rounded shadow font-semibold">
+                        {member.name}
+                      </h3>
+                      <p>{member.birthday}</p>
+                      <p>{member.email}</p>
+                      <p>{member.enrollDate}</p>
+                      {/* 역할 변경 드롭다운 */}
+                      <select
+                        value={member.role}
+                        onClick={(e) => e.stopPropagation()} // 드롭다운 클릭 시 모달 방지
+                        onChange={(e) => handleRoleChange(member.id,
+                          e.target.value)}
+                        className="border rounded px-2 py-1 text-sm bg-white"
+                      >
+                        <option value="ADMIN">관리자</option>
+                        <option value="STUDENT">학생</option>
+                      </select>
+                      {/* 승인 상태 변경 드롭다운 */}
+                      <select
+                        value={member.checkStatus}
+                        onClick={(e) => e.stopPropagation()} // 드롭다운 클릭 시 모달 방지
+                        onChange={(e) => handleApprovalChange(member.id,
+                          e.target.value)}
+                        className="border rounded px-2 py-1 text-sm bg-white"
+                      >
+                        <option value="Y">승인</option>
+                        <option value="N">미승인</option>
+                        <option value="W">대기</option>
+                      </select>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          </div>
+
+          {/* Member Detail Modal */}
+          {selectedMember && (
+            <MemberDetail
+              memberId={selectedMember.id}
+              onClose={() => setSelectedMember(null)}
+            />
+          )}
+        </div>
     </AdminLayout>
-  );
+);
 };
 
 export default MemberList;

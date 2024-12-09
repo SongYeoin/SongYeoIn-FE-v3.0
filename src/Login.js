@@ -65,17 +65,17 @@ export const Login = ({ role }) => {
 
       {/* 로그인 박스 */}
       <div
-        className="w-[690px] h-[858px] relative rounded-[80px] bg-[#fffcfc]/10 flex flex-col items-center gap-11">
+        className="w-[690px] h-[858px] relative rounded-[80px] bg-white/20 backdrop-blur-sm flex flex-col items-center gap-11"
+      >
         <p
-          className="w-[172px] h-[71px] text-[46px] font-bold text-center text-black mt-20 mb-16 cursor-pointer hover:text-gray-600 hover:underline transition-all duration-300"
+          className="w-[172px] h-[71px] text-[46px] font-bold text-center text-black mt-20 mb-16 cursor-pointer hover:text-gray-600 transition-all duration-300"
           onClick={() => navigate('/')}
         >
           Login
         </p>
 
         {/* 아이디 입력칸 */}
-        <div
-          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-5 p-5">
+        <div className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex items-center gap-5 p-5 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
           <svg
             width="45"
             height="44"
@@ -94,7 +94,7 @@ export const Login = ({ role }) => {
             ></path>
           </svg>
           <input
-            className="w-[380px] h-9 text-[29px] text-left text-white bg-transparent"
+            className="w-[380px] h-9 text-[29px] text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none"
             placeholder="ID"
             value={id}
             onChange={(e) => setId(e.target.value)}
@@ -103,7 +103,8 @@ export const Login = ({ role }) => {
 
         {/* 비밀번호 입력칸 */}
         <div
-          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex flex-row gap-4 p-5">
+          className="w-[490px] h-[74px] rounded-[20px] bg-[#fffefe]/50 flex items-center gap-5 p-5 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
+
           <svg
             width="49"
             height="43"
@@ -123,7 +124,7 @@ export const Login = ({ role }) => {
           </svg>
           <input
             type="password"
-            className="w-[380px] h-9 text-[29px] text-left text-white bg-transparent"
+            className="w-[380px] h-9 text-[29px] text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -139,14 +140,14 @@ export const Login = ({ role }) => {
           {/* 로그인 버튼 */}
           <button
             onClick={handleLogin}
-            className="w-[273px] h-[74px] rounded-[20px] bg-[#6a896b]/90 flex justify-center items-center text-[25px] font-bold text-center text-white"
+            className="w-[273px] h-[74px] rounded-[20px] bg-[#1e2d1f]/80 hover:bg-[#1e2d1f] transition-all duration-300 flex justify-center items-center text-[25px] font-bold text-center text-white"
           >
             로그인
           </button>
 
           {/* 회원가입 버튼 */}
           <p
-            className="w-[100px] h-[30px] text-[25px] text-right text-white cursor-pointer hover:bg-white/50 hover:scale-105 mt-4"
+            className="w-[100px] h-[30px] text-[25px] text-right text-[#1e2d1f] cursor-pointer hover:text-[#324633] hover:scale-105 transition-all duration-300"
             onClick={handleClick}
           >
             회원가입

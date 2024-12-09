@@ -60,63 +60,81 @@ export const CourseList = () => {
       totalPages={totalPages}
       onPageChange={(page) => setCurrentPage(page)}
     >
-      <CourseMainHeader onSearch={handleSearch} fetchCourses={fetchCourses}/>
-      <div
-        className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
-        <div className="grid grid-cols-8 gap-5">
-          <p className="text-xs font-bold text-center text-gray-700">과정명</p>
-          <p className="text-xs font-bold text-center text-gray-700">담당자</p>
-          <p className="text-xs font-bold text-center text-gray-700">강의실</p>
-          <p className="text-xs font-bold text-center text-gray-700">과정 기간</p>
-          <p className="text-xs font-bold text-center text-gray-700">개강일</p>
-          <p className="text-xs font-bold text-center text-gray-700">종강일</p>
-          <p className="text-xs font-bold text-center text-gray-700">수강생 수</p>
-          <p className="text-xs font-bold text-center text-gray-700">상태</p>
-        </div>
-      </div>
-      <ul className="space-y-4">
-        {courses.length > 0 ? (
-          courses.map((course) => (
-          <li key={course.id}>
-            <div
-              className="space-x-1 grid grid-cols-8 items-center text-center cursor-pointer hover:bg-gray-100 transition duration-200 ease-in-out p-2 rounded"
-              onClick={() => setSelectedCourse(course.id)} // 상세보기 클릭
-            >
-              <h3
-                className="bg-white p-1 rounded shadow font-semibold">{course.name}</h3>
-              <p>{course.adminName}</p>
-              <p>{course.roomName}호</p>
-              <p>{course.weeks}주</p>
-              <p>{course.startDate}</p>
-              <p>{course.endDate}</p>
-              <p>{course.counts}</p>
-              <p
-                className={`${
-                  course.status === "Y" ? "text-green-500" : "text-gray-400"
-                }`}
-              >
-                {course.status === "Y" ? "활성" : "종강"}
-              </p>
+
+      <div className="flex flex-col h-full">
+        <div className="flex-shrink-0">
+          <CourseMainHeader onSearch={handleSearch}
+                            fetchCourses={fetchCourses} />
+          <div className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
+            <div>
+              <div className="grid grid-cols-8 gap-5">
+                <p
+                  className="text-sm font-bold text-center text-gray-700">과정명</p>
+                <p
+                  className="text-sm font-bold text-center text-gray-700">담당자</p>
+                <p
+                  className="text-sm font-bold text-center text-gray-700">강의실</p>
+                <p className="text-sm font-bold text-center text-gray-700">과정
+                  기간</p>
+                <p
+                  className="text-sm font-bold text-center text-gray-700">개강일</p>
+                <p
+                  className="text-sm font-bold text-center text-gray-700">종강일</p>
+                <p className="text-sm font-bold text-center text-gray-700">수강생
+                  수</p>
+                <p
+                  className="text-sm font-bold text-center text-gray-700">상태</p>
+              </div>
+              <div className="border-b border-gray-200 mt-4"></div>
             </div>
-          </li>
-          ))
-        ) : (
-          <p className="text-xs text-center text-gray-500">교육과정 데이터가
-            없습니다.</p>
-        )}
-      </ul>
-      {/* 상세보기 모달 */}
-      {selectedCourse && (
-        <CourseDetail
-          courseId={selectedCourse}
-          onClose={() => setSelectedCourse(null)}
-          onDeleteSuccess={() => {
-            setSelectedCourse(null); // 모달 닫기
-            fetchCourses(searchTerm, currentPage); // 전체 목록 새로고침
-          }}
-        />)}
+          </div>
+
+          <ul className="space-y-4">
+            {courses.length > 0 ? (
+              courses.map((course) => (
+                <li key={course.id}>
+                  <div
+                    className="space-x-1 grid grid-cols-8 items-center text-center cursor-pointer hover:bg-gray-100 transition duration-200 ease-in-out p-2 rounded"
+                    onClick={() => setSelectedCourse(course.id)} // 상세보기 클릭
+                  >
+                    <h3
+                      className="bg-white p-1 rounded shadow font-semibold">{course.name}</h3>
+                    <p>{course.adminName}</p>
+                    <p>{course.roomName}호</p>
+                    <p>{course.weeks}주</p>
+                    <p>{course.startDate}</p>
+                    <p>{course.endDate}</p>
+                    <p>{course.counts}</p>
+                    <p
+                      className={`${
+                        course.status === "Y" ? "text-green-500"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      {course.status === "Y" ? "활성" : "종강"}
+                    </p>
+                  </div>
+                </li>
+              ))
+            ) : (
+              <p className="text-xs text-center text-gray-500">교육과정 데이터가
+                없습니다.</p>
+            )}
+          </ul>
+        </div>
+          {/* 상세보기 모달 */}
+          {selectedCourse && (
+            <CourseDetail
+              courseId={selectedCourse}
+              onClose={() => setSelectedCourse(null)}
+              onDeleteSuccess={() => {
+                setSelectedCourse(null); // 모달 닫기
+                fetchCourses(searchTerm, currentPage); // 전체 목록 새로고침
+              }}
+            />)}
+      </div>
     </AdminLayout>
-  );
+);
 };
 
 export default CourseList;

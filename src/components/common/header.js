@@ -57,9 +57,10 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full px-5 py-2 bg-[#ebf1e8] flex items-center justify-between top-0">
+    <header
+      className="w-full px-5 py-2 bg-[#ebf1e8] flex items-center justify-between top-0">
       {/* 왼쪽: 제목 */}
-      <h1 className="text-[25px] text-[#1e2d1f]" style={{ fontFamily: 'Dokdo' }}>
+      <h1 className="text-[25px] text-[#1e2d1f]">
         SONGYEOIN
       </h1>
 
@@ -67,7 +68,8 @@ const Header = () => {
       <div className="flex items-center gap-4">
         {/* 프로필 이미지 */}
         <img
-          src={user?.profileImage || '/images/default_profile.png'} // 사용자 프로필 이미지
+          src={user?.profileImage
+            || '/images/default_profile.png'} // 사용자 프로필 이미지
           alt="Profile"
           className="w-[38px] h-[38px] rounded-full object-cover"
         />

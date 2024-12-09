@@ -23,7 +23,8 @@ const StudentMainPage = () => {
     const fetchCurrentCourse = async () => {
       try {
         const response = await studentJournalApi.getCurrentEnrollment();
-        console.log("API 응답:", response.data);
+        console.log("API 전체 응답:", response);    // 전체 응답 확인
+        console.log("API 응답 데이터:", response.data);  // 데이터만 확인
 
         const currentEnrollment = response.data.find(enrollment => {
           const enrollDate = new Date(enrollment.enrollDate);
@@ -38,7 +39,7 @@ const StudentMainPage = () => {
             name: currentEnrollment.courseName,
             adminName: currentEnrollment.adminName,
             teacherName: currentEnrollment.teacherName,  // 백엔드에서 받아온 값 사용
-            enrollDate: currentEnrollment.enrollDate,
+            startDate: currentEnrollment.startDate,
             endDate: currentEnrollment.endDate
           });
         }

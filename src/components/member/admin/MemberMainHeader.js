@@ -11,8 +11,8 @@ const MemberMainHeader = ({ onSearch }) => {
   };
 
   return (
-    <div className="flex flex-col w-full gap-6 pr-4">
-      {/* Header Title */}
+    <div className="bg-white">
+      <div className="flex flex-col w-full gap-6 p-6">      {/* Header Title */}
       <div className="flex justify-between items-center">
         <h1 className="text-xl md:text-2xl lg:text-3xl text-[#16161b]">
           회원&nbsp;관리
@@ -20,7 +20,8 @@ const MemberMainHeader = ({ onSearch }) => {
       </div>
       <div className="flex flex-wrap gap-4 justify-end items-center">
         {/* 검색 필터 */}
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300 w-64">
+        <div
+          className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -34,13 +35,14 @@ const MemberMainHeader = ({ onSearch }) => {
             />
           </svg>
           <input
-            className="text-sm text-gray-500 w-full"
+            className="w-full text-gray-600"
             placeholder="검색할 이름을 입력하세요."
             value={searchTerm} // 검색어 상태
             onChange={handleSearch} // 입력 이벤트 처리
           />
         </div>
       </div>
+    </div>
     </div>
   );
 };

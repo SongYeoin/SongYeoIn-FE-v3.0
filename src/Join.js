@@ -177,166 +177,205 @@ export const Join = () => {
       <div
         className="w-full h-full absolute bg-no-repeat bg-center bg-cover left-0 top-0 object-cover bg-[url('./images/background_jpg.jpg')]" />
       <div
-        className="w-[690px] h-auto relative rounded-[80px] bg-[#fffcfc]/10 flex flex-col items-center gap-5 p-10">
+        className="w-[690px] h-auto relative rounded-[80px] bg-[#fffcfc]/20 flex flex-col items-center gap-5 p-10">
         <p
-          className="text-[46px] font-bold text-black mt-10 cursor-pointer hover:text-gray-600 hover:underline transition-all duration-300"
+          className="text-[46px] font-bold text-black mt-10 cursor-pointer hover:text-gray-600 transition-all duration-300"
           onClick={() => navigate('/')}
         >
           Sign Up
         </p>
 
         {/* 아이디 입력 */}
-        <div className="w-[490px]">
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
-            placeholder="아이디"
-          />
-          {errors.username && <p
-            className="text-red-500 text-sm">{errors.username}</p>}
+        <div className="w-[490px] h-[85px]">
+          <div
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
+              placeholder="아이디"
+            />
+          </div>
+          <div className="h-[36px] pl-2 flex items-center">
+            {errors.username && <p
+              className="text-red-500 text-sm">{errors.username}</p>}
+          </div>
         </div>
 
         {/* 비밀번호 입력 */}
-        <div className="w-[490px]">
+        <div className="w-[490px] h-[85px]"> {/* 고정된 높이 설정 */}
+          <div
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
           <input
             type="password"
             name="password"
             value={formData.password}
             onChange={handleChange}
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
+            className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
             placeholder="비밀번호"
           />
-          {errors.password && <p
-            className="text-red-500 text-sm">{errors.password}</p>}
-        </div>
-
-        {/* 비밀번호 확인 */}
-        <div className="w-[490px]">
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
-            placeholder="비밀번호 확인"
-          />
-          {errors.confirmPassword && <p
-            className="text-red-500 text-sm">{errors.confirmPassword}</p>}
-        </div>
-
-        {/* 이름 입력 */}
-        <div className="w-[490px]">
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
-            placeholder="이름"
-          />
-          {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
-        </div>
-
-        {/* 생년월일 입력 */}
-        <div className="w-[490px]">
-          <input
-            type="text"
-            name="birthday"
-            value={formData.birthday}
-            onChange={handleChange}
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
-            placeholder="생년월일 (yyyyMMdd)"
-          />
-          {errors.birthday && <p
-            className="text-red-500 text-sm">{errors.birthday}</p>}
-        </div>
-
-        {/* 이메일 입력 */}
-        <div className="w-[490px]">
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 p-5 text-[20px] text-black"
-            placeholder="이메일"
-          />
-          {errors.email && <p
-            className="text-red-500 text-sm">{errors.email}</p>}
-        </div>
-
-        {/* 역할 선택 */}
-        <div className="w-[490px] mt-4 flex items-center">
-          <label className="text-[16px] text-white font-bold w-[100px]">
-            역할:
-          </label>
-          <div className="flex gap-40 flex-grow">
-            {/* 수강생 라디오 버튼 */}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="role"
-                value="STUDENT"
-                checked={formData.role === 'STUDENT'}
-                onChange={handleChange}
-                className="hidden"
-              />
-              <div
-                className={`w-[28px] h-[28px] rounded-full border-2 transition-all duration-300 ${
-                  formData.role === 'STUDENT'
-                    ? 'bg-green-500 border-green-500'
-                    : 'bg-white border-gray-300 hover:border-gray-400'
-                }`}
-              />
-              <span
-                className={`text-[18px] font-bold ${
-                  formData.role === 'STUDENT' ? 'text-green-500' : 'text-gray-500'
-                }`}
-              >
-        수강생
-      </span>
-            </label>
-
-            {/* 관리자 라디오 버튼 */}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="role"
-                value="ADMIN"
-                checked={formData.role === 'ADMIN'}
-                onChange={handleChange}
-                className="hidden"
-              />
-              <div
-                className={`w-[28px] h-[28px] rounded-full border-2 transition-all duration-300 ${
-                  formData.role === 'ADMIN'
-                    ? 'bg-blue-500 border-blue-500'
-                    : 'bg-white border-gray-300 hover:border-gray-400'
-                }`}
-              />
-              <span
-                className={`text-[18px] font-bold ${
-                  formData.role === 'ADMIN' ? 'text-blue-500' : 'text-gray-500'
-                }`}
-              >
-        관리자
-      </span>
-            </label>
+          </div>
+          <div
+            className="h-[36px] pl-2 flex items-center">
+            {errors.password && <p
+              className="text-red-500 text-sm">{errors.password}</p>}
           </div>
         </div>
 
+        {/* 비밀번호 확인 */}
+        <div className="w-[490px] h-[85px]"> {/* 고정된 높이 설정 */}
+          <div
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
+              placeholder="비밀번호 확인"
+            />
+          </div>
+            <div
+              className="h-[36px] pl-2 flex items-center">
+              {errors.confirmPassword && <p
+                className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+            </div>
+          </div>
 
-        {/* 가입 버튼 */}
-        <div
-          onClick={handleSubmit}
-          className="w-[273px] h-[74px] rounded-[20px] bg-[#6a896b]/90 flex justify-center items-center cursor-pointer mt-10"
-        >
-          <p className="text-[25px] font-bold text-white">회원가입</p>
+          {/* 이름 입력 */}
+        <div className="w-[490px] h-[85px]"> {/* 고정된 높이 설정 */}
+          <div
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
+              placeholder="이름"
+            />
+          </div>
+            <div
+              className="h-[36px] pl-2 flex items-center">
+              {errors.name && <p
+                className="text-red-500 text-sm">{errors.name}</p>}
+            </div>
+          </div>
+
+          {/* 생년월일 입력 */}
+        <div className="w-[490px] h-[85px]"> {/* 고정된 높이 설정 */}
+          <div
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
+            <input
+              type="text"
+              name="birthday"
+              value={formData.birthday}
+              onChange={handleChange}
+              className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
+              placeholder="생년월일 (yyyyMMdd)"
+            />
+          </div>
+            <div
+              className="h-[36px] pl-2 flex items-center">
+              {errors.birthday && <p
+                className="text-red-500 text-sm">{errors.birthday}</p>}
+            </div>
+          </div>
+
+          {/* 이메일 입력 */}
+        <div className="w-[490px] h-[85px]"> {/* 고정된 높이 설정 */}
+          <div
+            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
+              placeholder="이메일"
+            />
+          </div>
+            <div
+              className="h-[36px] pl-2 flex items-center">
+              {errors.email && <p
+                className="text-red-500 text-sm">{errors.email}</p>}
+            </div>
+          </div>
+
+          {/* 역할 선택 섹션 */}
+          <div className="w-[490px] mt-4 mb-8 flex items-center"> {/* 마진 조정 */}
+            <label
+              className="text-[16px] text-[#1e2d1f] font-bold w-[100px]"> {/* 텍스트 색상 변경 */}
+              역할:
+            </label>
+            <div className="flex gap-40 flex-grow">
+              {/* 수강생 라디오 버튼 */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="role"
+                  value="STUDENT"
+                  checked={formData.role === 'STUDENT'}
+                  onChange={handleChange}
+                  className="hidden"
+                />
+                <div
+                  className={`w-[28px] h-[28px] rounded-full border-2 transition-all duration-300 ${
+                    formData.role === 'STUDENT'
+                      ? 'bg-[#1e2d1f] border-[#1e2d1f]'
+                      : 'bg-white border-gray-300 hover:border-[#1e2d1f]'
+                  }`}
+                />
+                <span
+                  className={`text-[18px] font-bold ${
+                    formData.role === 'STUDENT' ? 'text-[#1e2d1f]'
+                      : 'text-[#4b644c]'
+                  } hover:text-[#1e2d1f] transition-colors duration-300`}
+                >
+        수강생
+      </span>
+              </label>
+
+              {/* 관리자 라디오 버튼 */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="role"
+                  value="ADMIN"
+                  checked={formData.role === 'ADMIN'}
+                  onChange={handleChange}
+                  className="hidden"
+                />
+                <div
+                  className={`w-[28px] h-[28px] rounded-full border-2 transition-all duration-300 ${
+                    formData.role === 'ADMIN'
+                      ? 'bg-[#1e2d1f] border-[#1e2d1f]'
+                      : 'bg-white border-gray-300 hover:border-[#1e2d1f]'
+                  }`}
+                />
+                <span
+                  className={`text-[18px] font-bold ${
+                    formData.role === 'ADMIN' ? 'text-[#1e2d1f]'
+                      : 'text-[#4b644c]'
+                  } hover:text-[#1e2d1f] transition-colors duration-300`}
+                >
+        관리자
+      </span>
+              </label>
+            </div>
+          </div>
+
+
+          {/* 가입 버튼 */}
+          <div
+            onClick={handleSubmit}
+            className="w-[273px] h-[74px] rounded-[20px] bg-[#1e2d1f]/90 hover:bg-[#1e2d1f] transition-all duration-300 flex justify-center items-center cursor-pointer mt-10 mb-8"
+          >
+            <p className="text-[25px] font-bold text-white">회원가입</p>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+      );
+      };
