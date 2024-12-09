@@ -1,5 +1,24 @@
 import axios from './axios';
 
+const handleJournalError = (error) => {
+  if (error.response) {
+    const { data } = error.response;
+
+    // 파일 관련 에러
+    if (data.code === 'FILE_EXTENSION_MISMATCH') {
+      throw new Error('교육일지는 HWP, DOCX, DOC 형식만 첨부 가능합니다.');
+    }
+
+    // 교육일지 관련 에러들
+    if (data.code.startsWith('JOURNAL_')) {
+      throw new Error(data.message);
+    }
+
+    throw new Error(data.message || '요청 처리 중 오류가 발생했습니다.');
+  }
+  throw error;
+};
+
 // 학생용 교육일지 API
 export const studentJournalApi = {
   // 현재 수강생의 교육과정 조회
@@ -15,16 +34,32 @@ export const studentJournalApi = {
     axios.get(`${process.env.REACT_APP_API_URL}/journals/${journalId}`),
 
   // 등록
-  create: (formData) =>
-    axios.post(`${process.env.REACT_APP_API_URL}/journals`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    }),
+  create: async (formData) => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/journals`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response;
+    } catch (error) {
+      if (error.response && error.response.data) {
+        const errorMessage = error.response.data.message;
+        throw new Error(errorMessage);  // 백엔드에서 보낸 에러 메시지를 전달
+      }
+      throw error;  // 그 외의 에러는 그대로 전달
+    }
+  },
 
   // 수정
-  update: (journalId, formData) =>
-    axios.put(`${process.env.REACT_APP_API_URL}/journals/${journalId}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    }),
+  update: async (journalId, formData) => {
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/journals/${journalId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response;
+    } catch (error) {
+      handleJournalError(error);
+    }
+  },
 
   // 삭제
   delete: (journalId) =>
