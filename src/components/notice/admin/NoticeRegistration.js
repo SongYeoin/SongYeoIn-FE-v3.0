@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from 'api/axios';
 
 const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) => {
   const [formData, setFormData] = useState({
