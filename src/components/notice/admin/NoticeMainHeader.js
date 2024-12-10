@@ -3,18 +3,20 @@ import NoticeRegistration from './NoticeRegistration';
 import axios from 'api/axios';
 import _ from 'lodash';
 
-const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
+const NoticeMainHeader = ({ onSearch, onCourseChange, fetchNotices }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [error, setError] = useState(null);
 
-  // 모달 열기/닫기
   const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSearchTerm(''); // 검색어 초기화
+    onSearch(''); // 부모 컴포넌트에 검색 초기화 알림
+  };
 
-  // 검색어 변경 처리 (디바운스 적용)
   const debouncedSearch = _.debounce((value) => {
     onSearch(value);
   }, 300);
@@ -25,14 +27,13 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
     debouncedSearch(value);
   };
 
-  // 교육 과정 선택 처리
   const handleCourseChange = (e) => {
     const value = e.target.value;
     setSelectedCourse(value);
-    onCourseChange(value); // 부모 컴포넌트로 전달
+    onCourseChange(value);
+    setSearchTerm('');
   };
 
-  // 서버에서 교육 과정 목록 가져오기
   const fetchCourses = async () => {
     try {
       const response = await axios.get(
@@ -45,12 +46,10 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
     }
   };
 
-  // 컴포넌트 마운트 시 교육 과정 가져오기
   useEffect(() => {
     fetchCourses();
   }, []);
 
-  // 기본값 설정
   useEffect(() => {
     if (courses.length > 0 && !selectedCourse) {
       setSelectedCourse(courses[0].id);
@@ -68,26 +67,13 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
             onClick={openModal}
           >
             <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M12 5V19"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M5 12H19"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              <path d="M12 5V19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 12H19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <p className="text-sm text-white">공지사항 등록</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-4 justify-between items-center">
-          {/* 교육 과정 셀렉트 박스 */}
           <select
             className="w-80 text-center px-4 py-2 text-sm text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             value={selectedCourse}
@@ -103,11 +89,7 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
               </option>
             ))}
           </select>
-
-          {/* 검색창 */}
-          <div
-            className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300"
-          >
+          <div className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -128,8 +110,9 @@ const NoticeMainHeader = ({ onSearch, onCourseChange }) => {
           {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           <NoticeRegistration
             isOpen={isModalOpen}
-            onClose={closeModal}
+            onClose={closeModal} // 모달 닫힘 시 검색 초기화
             selectedCourse={selectedCourse}
+            fetchNotices={fetchNotices}
           />
         </div>
       </div>
