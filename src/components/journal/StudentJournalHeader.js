@@ -29,7 +29,7 @@ const StudentJournalHeader = ({ onFilterChange, refreshJournals }) => {
   // 교육과정 목록 가져오기
   const fetchCourses = useCallback(async () => {
     try {
-      const response = await axios.get('/api/enrollments/my');
+      const response = await axios.get('/enrollments/my');
       if (response.status === 200) {
         setCourses(response.data);
         if(response.data.length > 0) {
