@@ -39,7 +39,7 @@ const StudentNoticeList = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/enrollments/my`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`);
       if (response.status === 200) {
         const coursesData = response.data;
         setCourses(coursesData);

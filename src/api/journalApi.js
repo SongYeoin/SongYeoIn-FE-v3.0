@@ -23,7 +23,7 @@ const handleJournalError = (error) => {
 export const studentJournalApi = {
   // 현재 수강생의 교육과정 조회
   getCurrentEnrollment: () =>
-    axios.get(`${process.env.REACT_APP_API_URL}/api/enrollments/my`),
+    axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`),
 
   // 목록 조회
   getList: (courseId, params) =>

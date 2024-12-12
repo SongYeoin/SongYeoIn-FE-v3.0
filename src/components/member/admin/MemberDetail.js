@@ -24,7 +24,7 @@ const MemberDetail = ({ memberId, onClose }) => {
     const fetchHistory = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/enrollments?memberId=${memberId}`,
+          `${process.env.REACT_APP_API_URL}/enrollments?memberId=${memberId}`,
         );
         setHistory(response.data);
       } catch (error) {
@@ -61,11 +61,11 @@ const MemberDetail = ({ memberId, onClose }) => {
         courseId: selectedCourseId,
         memberId: member.id,
       };
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/enrollments`, requestDTO);
+      await axios.post(`${process.env.REACT_APP_API_URL}/enrollments`, requestDTO);
       alert('수강 신청이 완료되었습니다');
       setSelectedCourseId('');
       const updatedHistory = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/enrollments?memberId=${memberId}`,
+        `${process.env.REACT_APP_API_URL}/enrollments?memberId=${memberId}`,
       );
       setHistory(updatedHistory.data);
     } catch (error) {
@@ -77,12 +77,12 @@ const MemberDetail = ({ memberId, onClose }) => {
   const handleDeleteEnrollment = async (enrollmentId) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/enrollments/${enrollmentId}`,
+        `${process.env.REACT_APP_API_URL}/enrollments/${enrollmentId}`,
         { params: { memberId } },
       );
       alert('수강 신청이 삭제되었습니다');
       const updatedHistory = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/enrollments?memberId=${memberId}`,
+        `${process.env.REACT_APP_API_URL}/enrollments?memberId=${memberId}`,
       );
       setHistory(updatedHistory.data);
     } catch (error) {
