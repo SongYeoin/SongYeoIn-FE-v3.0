@@ -20,7 +20,7 @@ pipeline {
             }
             steps {
                 // AWS 자격증명을 사용하는 블록 추가
-                withAWS(credentials: AWS_CREDENTIALS) {
+                withAWS(credentials: AWS_CREDENTIALS, region: 'ap-northeast-2') {
                     echo "Deploying frontend to S3..."
                     sh """
                     aws s3 sync ./build s3://${S3_BUCKET} --delete
