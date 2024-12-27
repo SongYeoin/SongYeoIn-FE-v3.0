@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'api/axios';
 
-const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) => {
+const NoticeRegistration = ({
+  isOpen,
+  onClose,
+  fetchNotices,
+  selectedCourse,
+}) => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     files: [],
-    isGlobal: false,
+    isPinned: false,
     courseId: selectedCourse || '',
   });
+
   const [errors, setErrors] = useState({});
   const [fileErrors, setFileErrors] = useState('');
 
@@ -29,7 +35,7 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
       title: '',
       content: '',
       files: [],
-      isGlobal: false,
+      isPinned: false,
       courseId: selectedCourse || '',
     });
     setErrors({});
@@ -38,14 +44,23 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    if (type === 'checkbox' && name === 'isGlobal') {
+
+    if (type === 'checkbox' && name === 'isPinned') {
       setFormData({
         ...formData,
-        isGlobal: checked,
-        courseId: checked ? selectedCourse : selectedCourse, // 전체 공지여도 selectedCourse 유지
+        isPinned: checked,
       });
     } else {
       setFormData({ ...formData, [name]: value });
+
+      // 실시간 유효성 검사
+      const newErrors = { ...errors };
+      if (!value.trim()) {
+        newErrors[name] = `${name === 'title' ? '제목' : '내용'}을 입력해주세요.`;
+      } else {
+        delete newErrors[name];
+      }
+      setErrors(newErrors);
     }
   };
 
@@ -66,8 +81,8 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
     if (invalidFiles.length > 0) {
       setFileErrors(
         `허용되지 않은 파일 형식입니다: ${invalidFiles
-          .map((file) => file.name)
-          .join(', ')}`
+        .map((file) => file.name)
+        .join(', ')}`,
       );
       return;
     }
@@ -75,16 +90,21 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
     setFileErrors('');
     setFormData({
       ...formData,
-      files: [...Array.from(formData.files), ...selectedFiles]
+      files: [...Array.from(formData.files), ...selectedFiles],
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 모든 필드에 대한 유효성 검사
     const newErrors = {};
-    if (!formData.title) newErrors.title = '제목을 입력해주세요.';
-    if (!formData.content) newErrors.content = '내용을 입력해주세요.';
+    if (!formData.title) {
+      newErrors.title = '제목을 입력해주세요.';
+    }
+    if (!formData.content) {
+      newErrors.content = '내용을 입력해주세요.';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -100,11 +120,11 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
           [JSON.stringify({
             title: formData.title,
             content: formData.content,
-            isGlobal: formData.isGlobal,
+            isPinned: formData.isPinned,
             courseId: formData.courseId,
           })],
-          { type: 'application/json' }
-        )
+          { type: 'application/json' },
+        ),
       );
 
       formData.files.forEach((file) => data.append('files', file));
@@ -119,7 +139,6 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
 
       // 선택된 과정의 공지사항을 다시 불러옴
       fetchNotices('', 1, formData.courseId);
-
       handleClose();
     } catch (error) {
       console.error('Error submitting notice:', error);
@@ -132,11 +151,15 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
-    <div className="fixed inset-0 flex items-start justify-center bg-black bg-opacity-50 z-[9999] overflow-y-auto">
-      <div className="bg-white w-full max-w-4xl p-6 rounded-2xl shadow-lg my-10">
+    <div
+      className="fixed inset-0 flex items-start justify-center bg-black bg-opacity-50 z-[9999] overflow-y-auto">
+      <div
+        className="bg-white w-full max-w-4xl p-6 rounded-2xl shadow-lg my-10">
         <div className="mb-6">
           <div className="flex justify-between items-start">
             <h2 className="text-2xl font-bold">공지사항 등록</h2>
@@ -188,7 +211,8 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
               </span>
             </div>
 
-            <div className="bg-gray-50 p-3 rounded-lg mb-3 text-sm text-gray-600">
+            <div
+              className="bg-gray-50 p-3 rounded-lg mb-3 text-sm text-gray-600">
               <p>• 최대 5개 파일 업로드 가능</p>
               <p>• 허용 확장자: hwp, doc(x), xls(x), ppt(x), pdf, 이미지 파일</p>
             </div>
@@ -199,12 +223,15 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
                 <p className="text-sm text-gray-600 font-bold mb-2">첨부된 파일</p>
                 <ul className="space-y-2">
                   {Array.from(formData.files).map((file, index) => (
-                    <li key={index} className="flex items-center bg-gray-50 p-2 rounded">
-                      <span className="flex-1 text-sm truncate">{file.name}</span>
+                    <li key={index}
+                        className="flex items-center bg-gray-50 p-2 rounded">
+                      <span
+                        className="flex-1 text-sm truncate">{file.name}</span>
                       <button
                         type="button"
                         onClick={() => {
-                          const newFiles = Array.from(formData.files).filter((_, i) => i !== index);
+                          const newFiles = Array.from(formData.files).filter(
+                            (_, i) => i !== index);
                           setFormData({ ...formData, files: newFiles });
                         }}
                         className="ml-2 text-gray-500 hover:text-red-500"
@@ -229,17 +256,17 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
             )}
           </div>
 
-          {/* 전체공지 체크박스 */}
+          {/* 상단고정 체크박스 */}
           <div className="mb-6">
             <label className="inline-flex items-center">
               <input
                 type="checkbox"
-                name="isGlobal"
-                checked={formData.isGlobal}
+                name="isPinned"
+                checked={formData.isPinned}
                 onChange={handleInputChange}
                 className="form-checkbox h-5 w-5"
               />
-              <span className="ml-2 text-gray-600">전체공지로 설정</span>
+              <span className="ml-2 text-gray-600">상단고정 설정</span>
             </label>
           </div>
 
@@ -257,8 +284,8 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
               disabled={!!fileErrors}
               className={`w-full py-2 rounded-lg transition-colors duration-200 ${
                 fileErrors
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-green-800 text-white hover:bg-green-900"
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-green-800 text-white hover:bg-green-900'
               }`}
             >
               등록
