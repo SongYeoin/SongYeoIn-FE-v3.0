@@ -19,7 +19,23 @@ const StudentNoticeList = () => {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/notice`, {
         params: { titleKeyword: search, page: page - 1, size: 15, courseId },
       });
-      setNotices(response.data.content);
+      const data = response.data.content;
+
+      // 상단고정과 일반 게시글 분리
+      const pinnedNotices = data.filter((notice) => notice.isPinned);
+      const regularNotices = data.filter((notice) => !notice.isPinned);
+
+      // 게시글 번호 역순 계산 (상단고정 제외)
+      const totalRegularNotices = response.data.totalElements - pinnedNotices.length;
+      const paginatedRegularNotices = regularNotices.map((notice, index) => ({
+        ...notice,
+        postNumber: totalRegularNotices - (page - 1) * 15 - index,
+      }));
+
+      // 상단고정 + 역순 일반 게시글 병합
+      const mergedNotices = [...pinnedNotices, ...paginatedRegularNotices];
+
+      setNotices(mergedNotices);
       setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error('Error fetching notices:', error);
@@ -111,7 +127,7 @@ const StudentNoticeList = () => {
                   className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
                 >
                   <div className="text-sm font-medium text-gray-900 text-center">
-                    {notice.postNumber}
+                    {notice.isPinned ? '📌' : notice.postNumber}
                   </div>
                   <div className="text-sm text-gray-600 text-center">
                     {notice.title}
