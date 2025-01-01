@@ -19,7 +19,7 @@ export const AttendanceList = () => {
   const [selectedAttendance, setSelectedAttendance] = useState(null); // 선택한 출석
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
 
-  const allPeriods = ['1교시', '2교시', '3교시', '4교시', '5교시', '6교시', '7교시'];
+  const allPeriods = ['1교시', '2교시', '3교시', '4교시', '5교시', '6교시', '7교시','8교시'];
   const filledPeriodHeaders = allPeriods.map((period) =>
     periodHeaders.includes(period) ? period : null,
   );
