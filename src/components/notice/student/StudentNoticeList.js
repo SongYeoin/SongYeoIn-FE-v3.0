@@ -4,6 +4,7 @@ import NoticeMainHeader from './NoticeMainHeader';
 import NoticeDetail from './NoticeDetail';
 import axios from 'api/axios';
 import _ from 'lodash';
+import { BsPaperclip } from "react-icons/bs";
 
 const StudentNoticeList = () => {
   const [notices, setNotices] = useState([]);
@@ -129,7 +130,10 @@ const StudentNoticeList = () => {
                   <div className="text-sm font-medium text-gray-900 text-center">
                     {notice.isPinned ? '📌' : notice.postNumber}
                   </div>
-                  <div className="text-sm text-gray-600 text-center">
+                  <div className="text-sm text-gray-600 text-center flex items-center justify-center">
+                    {notice.files && notice.files.length > 0 && (
+                      <BsPaperclip className="w-5 h-5 text-gray-500 mr-1" />
+                    )}
                     {notice.title}
                   </div>
                   <div className="text-sm text-gray-600 text-center">
