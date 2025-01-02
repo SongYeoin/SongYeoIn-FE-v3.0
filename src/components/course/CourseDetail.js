@@ -502,6 +502,7 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
             <option value="5교시">5교시</option>
             <option value="6교시">6교시</option>
             <option value="7교시">7교시</option>
+            <option value="8교시">8교시</option>
           </select>
 
           <input

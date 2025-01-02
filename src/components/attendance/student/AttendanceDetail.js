@@ -9,7 +9,7 @@ const AttendanceDetail = ({ attendance, onClose }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const days = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
-  const periods = ['1교시', '2교시', '3교시', '4교시', '5교시', '6교시', '7교시'];
+  const periods = ['1교시', '2교시', '3교시', '4교시', '5교시', '6교시', '7교시','8교시'];
 
   useEffect(() => {
     if (!attendance) {
