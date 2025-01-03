@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "api/axios";
 
-const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
+const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
   const [notice, setNotice] = useState(null);
   const [editedNotice, setEditedNotice] = useState(null);
   const [newFiles, setNewFiles] = useState([]);
@@ -38,7 +38,7 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
   // 공지사항 상세 조회
   useEffect(() => {
     fetchNoticeDetail();
-  }, [noticeId]);
+  }, [noticeId, refreshNoticeList]);
 
   const fetchNoticeDetail = async () => {
     setIsLoading(true);
@@ -53,6 +53,7 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
         courseId: response.data.courseId,
         files: response.data.files || [],
       });
+      refreshNoticeList();
     } catch (error) {
       console.error("Error fetching notice detail:", error);
     } finally {
