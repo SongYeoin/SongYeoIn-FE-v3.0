@@ -45,6 +45,10 @@ const AdminNoticeList = () => {
     }
   };
 
+  const refreshNoticeList = useCallback(() => {
+    fetchNotices(searchTerm, currentPage, selectedCourse);
+  }, [searchTerm, currentPage, selectedCourse]);
+
   const debouncedFetchNotices = useCallback(
     _.debounce((search, page, courseId) => {
       fetchNotices(search, page, courseId);
@@ -149,8 +153,9 @@ const AdminNoticeList = () => {
               if (notices.length === 1 && currentPage > 1) {
                 setCurrentPage((prev) => prev - 1);
               }
-              fetchNotices(searchTerm, currentPage, selectedCourse);
+              refreshNoticeList();
             }}
+            refreshNoticeList={refreshNoticeList}
           />
         )}
       </div>
