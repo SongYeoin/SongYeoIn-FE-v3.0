@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "api/axios";
 
-const NoticeDetail = ({ noticeId, onClose }) => {
+const NoticeDetail = ({ noticeId, onClose, refreshNoticeList }) => {
   const [notice, setNotice] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [contentHeight, setContentHeight] = useState(0);
@@ -15,6 +15,7 @@ const NoticeDetail = ({ noticeId, onClose }) => {
           `${process.env.REACT_APP_API_URL}/notice/${noticeId}`
         );
         setNotice(response.data);
+        refreshNoticeList();
       } catch (error) {
         console.error("Error fetching notice detail:", error);
       } finally {
@@ -23,7 +24,7 @@ const NoticeDetail = ({ noticeId, onClose }) => {
     };
 
     fetchNoticeDetail();
-  }, [noticeId]);
+  }, [noticeId, refreshNoticeList]);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
