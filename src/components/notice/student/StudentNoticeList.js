@@ -43,6 +43,10 @@ const StudentNoticeList = () => {
     }
   };
 
+  const refreshNoticeList = useCallback(() => {
+    fetchNotices(searchTerm, currentPage, selectedCourse);
+  }, [searchTerm, currentPage, selectedCourse]);
+
   const debouncedFetchNotices = useCallback(
     _.debounce((search, page, courseId) => {
       fetchNotices(search, page, courseId);
@@ -159,6 +163,7 @@ const StudentNoticeList = () => {
           <NoticeDetail
             noticeId={selectedNotice.id}
             onClose={() => setSelectedNotice(null)}
+            refreshNoticeList={refreshNoticeList}
           />
         )}
       </div>
