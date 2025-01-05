@@ -1,12 +1,14 @@
 import React from 'react';
 import axios from 'api/axios';
+//import { useNavigate } from 'react-router-dom';
+import { useUser } from './UserContext';
 
 /**
  * JWT 디코딩 함수
  * @param {string} token - JWT 토큰
  * @returns {object|null} 디코딩된 JSON 페이로드
  */
-const parseJwt = (token) => {
+/*const parseJwt = (token) => {
   if (!token) return null;
 
   try {
@@ -23,14 +25,16 @@ const parseJwt = (token) => {
     console.error('JWT 디코딩 실패:', error);
     return null;
   }
-};
+};*/
 
 const Header = () => {
-  const token = sessionStorage.getItem('token'); // 세션 스토리지에서 Access Token 가져오기
-  const refreshToken = sessionStorage.getItem('refreshToken'); // 세션 스토리지에서 Refresh Token 가져오기
-  const user = token ? parseJwt(token) : {}; // JWT 디코딩하여 사용자 정보 추출
+  const { user, logout } = useUser(); // 사용자 상태와 로그아웃 메서드 가져오기
+  //const navigate = useNavigate();
+  //const user = token ? parseJwt(token) : {}; // JWT 디코딩하여 사용자 정보 추출
 
   const handleLogout = async () => {
+    const token = sessionStorage.getItem('token'); // 세션 스토리지에서 Access Token 가져오기
+    const refreshToken = sessionStorage.getItem('refreshToken'); // 세션 스토리지에서 Refresh Token 가져오기
     try {
       if (!token) throw new Error('토큰이 없습니다.');
 
@@ -47,7 +51,8 @@ const Header = () => {
       );
 
       // 성공 시 토큰 삭제 및 리다이렉트
-      sessionStorage.removeItem('token');
+      logout(); // 상태와 세션 스토리지 초기화
+      //sessionStorage.removeItem('token');
       alert('로그아웃 되었습니다.');
       window.location.href = '/';
     } catch (error) {
