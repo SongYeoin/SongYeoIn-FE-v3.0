@@ -114,7 +114,7 @@ const StudentSidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-[#F9F7F7] flex flex-col gap-4 p-6 fixed top-16 left-3 bottom-3 rounded-[30px]">
+    <aside className="w-56 bg-[#F9F7F7] flex flex-col gap-4 p-6 fixed top-16 left-3 bottom-3 rounded-[30px]">
       <nav className="flex flex-col gap-4 fs-2">
         {menuItems.map((item, index) => (
           <div

@@ -16,7 +16,7 @@ const StudentLayout = ({ children, currentPage, totalPages, onPageChange }) => {
         <StudentSidebar />
 
         {/* 메인 콘텐츠 */}
-        <main className="flex flex-col pl-72 w-full overflow-hidden">
+        <main className="flex flex-col pl-60 w-full overflow-hidden">
 
           {/*콘텐츠 영역*/}
           <div className="flex-1 overflow-y-auto">

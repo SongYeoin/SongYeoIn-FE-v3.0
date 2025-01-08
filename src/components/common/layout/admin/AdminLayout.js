@@ -12,7 +12,7 @@ const AdminLayout = ({ children, ...props }) => {
           <Header />
           <div className={`flex flex-1 overflow-hidden ${isMobile ? 'flex-col' : ''}`}>
             <AdminSidebar />
-            <main className={`flex flex-col ${isMobile ? 'pl-0' : 'pl-72'} w-full overflow-hidden`}>
+            <main className={`flex flex-col ${isMobile ? 'pl-0' : 'pl-60'} w-full overflow-hidden`}>
               <div className="flex-1 overflow-y-auto">
                 {children}
               </div>
