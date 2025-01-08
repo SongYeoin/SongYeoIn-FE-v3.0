@@ -49,7 +49,7 @@ export const Login = ({ role }) => {
           : `${process.env.REACT_APP_API_URL}/admin/member/login`;
       const redirectPath = role === 'student' ? '/main' : '/admin/member';
 
-      const response = await axios.post(endpoint, { username: id, password });
+      const response = await axios.post(endpoint, { username: id, password }, { isHandled: true });
       const { accessToken, refreshToken } = response.data;
 
       if (!accessToken || !refreshToken) {
