@@ -1,12 +1,14 @@
 import React from 'react';
 import axios from 'api/axios';
+//import { useNavigate } from 'react-router-dom';
+import { useUser } from './UserContext';
 
 /**
  * JWT 디코딩 함수
  * @param {string} token - JWT 토큰
  * @returns {object|null} 디코딩된 JSON 페이로드
  */
-const parseJwt = (token) => {
+/*const parseJwt = (token) => {
   if (!token) return null;
 
   try {
@@ -23,14 +25,16 @@ const parseJwt = (token) => {
     console.error('JWT 디코딩 실패:', error);
     return null;
   }
-};
+};*/
 
 const Header = () => {
-  const token = sessionStorage.getItem('token'); // 세션 스토리지에서 Access Token 가져오기
-  const refreshToken = sessionStorage.getItem('refreshToken'); // 세션 스토리지에서 Refresh Token 가져오기
-  const user = token ? parseJwt(token) : {}; // JWT 디코딩하여 사용자 정보 추출
+  const { user, logout } = useUser(); // 사용자 상태와 로그아웃 메서드 가져오기
+  //const navigate = useNavigate();
+  //const user = token ? parseJwt(token) : {}; // JWT 디코딩하여 사용자 정보 추출
 
   const handleLogout = async () => {
+    const token = sessionStorage.getItem('token'); // 세션 스토리지에서 Access Token 가져오기
+    const refreshToken = sessionStorage.getItem('refreshToken'); // 세션 스토리지에서 Refresh Token 가져오기
     try {
       if (!token) throw new Error('토큰이 없습니다.');
 
@@ -47,7 +51,8 @@ const Header = () => {
       );
 
       // 성공 시 토큰 삭제 및 리다이렉트
-      sessionStorage.removeItem('token');
+      logout(); // 상태와 세션 스토리지 초기화
+      //sessionStorage.removeItem('token');
       alert('로그아웃 되었습니다.');
       window.location.href = '/';
     } catch (error) {
@@ -57,29 +62,38 @@ const Header = () => {
   };
 
   return (
-    <header
-      className="w-full px-5 py-2 bg-[#ebf1e8] flex items-center justify-between top-0">
+    <header className="w-full px-5 py-2 bg-[#ebf1e8] flex items-center justify-between top-0">
       {/* 왼쪽: 제목 */}
       <h1 className="text-[25px] text-[#1e2d1f]">
-        SONGYEOIN
+        <img
+          src="/images/songyeoin_title.png" // 이미지 경로
+          alt="SONGYEOIN"
+          className="h-[30px]" // 적절한 높이 설정
+          style={{
+                transform: 'scale(1.8)',  // 로고 크기
+                transformOrigin: 'left center', // 왼쪽을 기준으로 확대
+                position: 'relative',
+                top: '-2px'  // 이 줄을 추가
+              }}
+        />
       </h1>
 
       {/* 오른쪽: 사용자 정보와 로그아웃 버튼 */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center h-[38px]">
         {/* 프로필 이미지 */}
         <img
           src={user?.profileImage
             || '/images/default_profile.png'} // 사용자 프로필 이미지
           alt="Profile"
-          className="w-[38px] h-[38px] rounded-full object-cover"
+          className="w-[25px] h-[25px] rounded-full object-cover mr-1 my-auto"
         />
         {/* 사용자 이름 */}
-        <span className="text-[#1e2d1f] text-[18px]">
+        <span className="text-[#1e2d1f] text-[18px] mr-5 leading-[30px] flex items-center mt-1">
           {user?.role === 'ADMIN' ? `${user?.name} 관리자님` : `${user?.name} 님`}
         </span>
         {/* 로그아웃 버튼 */}
         <i
-          className="bi bi-box-arrow-right text-3xl cursor-pointer"
+          className="bi bi-box-arrow-right text-2xl cursor-pointer flex items-center"
           title="로그아웃"
           onClick={handleLogout}
         />

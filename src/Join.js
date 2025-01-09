@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useResponsive } from 'components/common/ResponsiveWrapper';
 
 export const Join = () => {
   const navigate = useNavigate();
+  const { isMobile, isTablet } = useResponsive();
 
   const [formData, setFormData] = useState({
     username: '',
@@ -17,6 +19,36 @@ export const Join = () => {
 
   const [errors, setErrors] = useState({});
 
+  const getResponsiveStyle = () => {
+    if (isMobile) {
+      return {
+        container: 'w-[90%] min-h-[400px]',
+        inputContainer: 'w-[90%]',
+        title: 'text-2xl',
+        input: 'text-sm',
+        button: 'text-lg',
+      };
+    }
+    if (isTablet) {
+      return {
+        container: 'w-[70%] min-h-[450px]',
+        inputContainer: 'w-[70%]',
+        title: 'text-3xl',
+        input: 'text-base',
+        button: 'text-xl',
+      };
+    }
+    return {
+      container: 'w-[600px] min-h-[300px]', // min-h 감소
+      inputContainer: 'w-[400px]',
+      title: 'text-4xl',
+      input: 'text-lg',
+      button: 'text-2xl',
+    };
+  };
+
+  const styles = getResponsiveStyle();
+
   // 필드 유효성 검사
   const validateField = (name, value) => {
     const newErrors = { ...errors };
@@ -24,10 +56,8 @@ export const Join = () => {
     if (!value.trim()) {
       newErrors[name] = `${name}은(는) 필수 입력 항목입니다.`;
     } else {
-      // 유효성 검사 제거
       newErrors[name] = '';
 
-      // 추가 유효성 검사
       if (name === 'username') {
         const usernameRegex = /^[a-z0-9_]{6,12}$/;
         newErrors.username = usernameRegex.test(value)
@@ -110,8 +140,6 @@ export const Join = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-
-    // 실시간 유효성 검사
     validateField(name, value);
   };
 
@@ -124,41 +152,46 @@ export const Join = () => {
     try {
       const token = localStorage.getItem('token');
 
-      // 중복 체크 API 호출
       const [usernameCheck, emailCheck] = await Promise.all([
         axios.get(
           `${process.env.REACT_APP_API_URL}/member/check-username?username=${formData.username}`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }),
+          }
+        ),
         axios.get(
           `${process.env.REACT_APP_API_URL}/member/check-email?email=${formData.email}`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }),
+          }
+        ),
       ]);
 
-      // 중복 체크 결과 처리
       const newErrors = { ...errors };
 
       const isUsernameAvailable = usernameCheck.data?.isAvailable;
       const isEmailAvailable = emailCheck.data?.isAvailable;
 
-      newErrors.username = isUsernameAvailable ? '' : '이미 사용 중인 아이디입니다.';
-      newErrors.email = isEmailAvailable ? '' : '이미 사용 중인 이메일입니다.';
+      newErrors.username = isUsernameAvailable
+        ? ''
+        : '이미 사용 중인 아이디입니다.';
+      newErrors.email = isEmailAvailable
+        ? ''
+        : '이미 사용 중인 이메일입니다.';
 
       setErrors(newErrors);
 
-      // 중복 문제가 있으면 회원가입 중단
       if (!isUsernameAvailable || !isEmailAvailable) {
         return;
       }
 
-      // 회원가입 요청
-      await axios.post(`${process.env.REACT_APP_API_URL}/member/register`,
-        formData, {
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/member/register`,
+        formData,
+        {
           headers: { Authorization: `Bearer ${token}` },
-        });
+        }
+      );
 
       alert('회원가입이 완료되었습니다.');
       navigate('/');
@@ -172,146 +205,124 @@ export const Join = () => {
   };
 
   return (
-    <div
-      className="w-full h-full left-0 top-0 absolute overflow-hidden bg-white flex justify-center items-center">
+    <div className="w-full h-full left-0 top-0 absolute overflow-hidden bg-white flex justify-center items-center">
+      <div className="w-full h-full absolute bg-no-repeat bg-center bg-cover left-0 top-0 object-cover bg-[url('./images/background_jpg.jpg')]" />
       <div
-        className="w-full h-full absolute bg-no-repeat bg-center bg-cover left-0 top-0 object-cover bg-[url('./images/background_jpg.jpg')]" />
-      <div
-        className="w-[690px] h-auto relative rounded-[80px] bg-[#fffcfc]/20 flex flex-col items-center gap-5 p-10">
+        className={`${styles.container} relative rounded-[80px] bg-white/20 backdrop-blur-sm flex flex-col items-center gap-3 p-3 my-3`}
+      >
         <p
-          className="text-[46px] font-bold text-black mt-10 cursor-pointer hover:text-gray-600 transition-all duration-300"
+          className={`${styles.title} font-bold text-center text-black mt-8 mb-8 cursor-pointer hover:text-gray-600 transition-all duration-300`}
           onClick={() => navigate('/')}
         >
           Sign Up
         </p>
 
-        {/* 아이디 입력 */}
-        <div className="w-[490px] h-[85px]">
-          <div
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
-              placeholder="아이디"
-            />
-          </div>
-          <div className="h-[36px] pl-2 flex items-center">
-            {errors.username && <p
-              className="text-red-500 text-sm">{errors.username}</p>}
-          </div>
-        </div>
-
-        {/* 비밀번호 입력 */}
-        <div className="w-[490px] h-[85px]"> {/* 고정된 높이 설정 */}
-          <div
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
-            placeholder="비밀번호"
-          />
-          </div>
-          <div
-            className="h-[36px] pl-2 flex items-center">
-            {errors.password && <p
-              className="text-red-500 text-sm">{errors.password}</p>}
-          </div>
-        </div>
-
-        {/* 비밀번호 확인 */}
-        <div className="w-[490px] h-[85px]"> {/* 고정된 높이 설정 */}
-          <div
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
-              placeholder="비밀번호 확인"
-            />
-          </div>
+        <div className="flex flex-col items-center gap-2 w-full">
+          {/* 아이디 입력 */}
+          <div className="w-full flex flex-col items-center">
             <div
-              className="h-[36px] pl-2 flex items-center">
-              {errors.confirmPassword && <p
-                className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+              className={`${styles.inputContainer} h-[50px] rounded-[20px] bg-[#fffefe]/50 flex items-center p-5 focus-within:ring-2 focus-within:ring-[#1e2d1f]`}
+            >
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
+                placeholder="아이디"
+              />
             </div>
+            {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
+          </div>
+
+          {/* 비밀번호 입력 */}
+          <div className="w-full flex flex-col items-center">
+            <div
+              className={`${styles.inputContainer} h-[50px] rounded-[20px] bg-[#fffefe]/50 flex items-center p-5 focus-within:ring-2 focus-within:ring-[#1e2d1f]`}
+            >
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
+                placeholder="비밀번호"
+              />
+            </div>
+            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+          </div>
+
+          {/* 비밀번호 확인 */}
+          <div className="w-full flex flex-col items-center">
+            <div
+              className={`${styles.inputContainer} h-[50px] rounded-[20px] bg-[#fffefe]/50 flex items-center p-5 focus-within:ring-2 focus-within:ring-[#1e2d1f]`}
+            >
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
+                placeholder="비밀번호 확인"
+              />
+            </div>
+            {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
           </div>
 
           {/* 이름 입력 */}
-        <div className="w-[490px] h-[85px]"> {/* 고정된 높이 설정 */}
-          <div
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
-              placeholder="이름"
-            />
-          </div>
+          <div className="w-full flex flex-col items-center">
             <div
-              className="h-[36px] pl-2 flex items-center">
-              {errors.name && <p
-                className="text-red-500 text-sm">{errors.name}</p>}
+              className={`${styles.inputContainer} h-[50px] rounded-[20px] bg-[#fffefe]/50 flex items-center p-5 focus-within:ring-2 focus-within:ring-[#1e2d1f]`}
+            >
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
+                placeholder="이름"
+              />
             </div>
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
 
           {/* 생년월일 입력 */}
-        <div className="w-[490px] h-[85px]"> {/* 고정된 높이 설정 */}
-          <div
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
-            <input
-              type="text"
-              name="birthday"
-              value={formData.birthday}
-              onChange={handleChange}
-              className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
-              placeholder="생년월일 (yyyyMMdd)"
-            />
-          </div>
+          <div className="w-full flex flex-col items-center">
             <div
-              className="h-[36px] pl-2 flex items-center">
-              {errors.birthday && <p
-                className="text-red-500 text-sm">{errors.birthday}</p>}
+              className={`${styles.inputContainer} h-[50px] rounded-[20px] bg-[#fffefe]/50 flex items-center p-5 focus-within:ring-2 focus-within:ring-[#1e2d1f]`}
+            >
+              <input
+                type="text"
+                name="birthday"
+                value={formData.birthday}
+                onChange={handleChange}
+                className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
+                placeholder="생년월일 (yyyyMMdd)"
+              />
             </div>
+            {errors.birthday && <p className="text-red-500 text-xs mt-1">{errors.birthday}</p>}
           </div>
 
           {/* 이메일 입력 */}
-        <div className="w-[490px] h-[85px]"> {/* 고정된 높이 설정 */}
-          <div
-            className="w-full h-[74px] rounded-[20px] bg-[#fffefe]/50 focus-within:ring-2 focus-within:ring-[#1e2d1f]">
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full h-full p-5 text-[20px] text-black bg-transparent outline-none border-none"
-              placeholder="이메일"
-            />
-          </div>
+          <div className="w-full flex flex-col items-center">
             <div
-              className="h-[36px] pl-2 flex items-center">
-              {errors.email && <p
-                className="text-red-500 text-sm">{errors.email}</p>}
+              className={`${styles.inputContainer} h-[50px] rounded-[20px] bg-[#fffefe]/50 flex items-center p-5 focus-within:ring-2 focus-within:ring-[#1e2d1f]`}
+            >
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
+                placeholder="이메일"
+              />
             </div>
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
 
-          {/* 역할 선택 섹션 */}
-          <div className="w-[490px] mt-4 mb-8 flex items-center"> {/* 마진 조정 */}
-            <label
-              className="text-[16px] text-[#1e2d1f] font-bold w-[100px]"> {/* 텍스트 색상 변경 */}
-              역할:
-            </label>
-            <div className="flex gap-40 flex-grow">
-              {/* 수강생 라디오 버튼 */}
+          {/* 역할 선택 */}
+          <div className={`${styles.inputContainer} flex justify-center items-center mt-1 mb-1`}>
+            <div className="flex gap-10">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
@@ -322,23 +333,18 @@ export const Join = () => {
                   className="hidden"
                 />
                 <div
-                  className={`w-[28px] h-[28px] rounded-full border-2 transition-all duration-300 ${
+                  className={`w-4 h-4 rounded-full border-1 transition-all duration-300 ${
                     formData.role === 'STUDENT'
-                      ? 'bg-[#1e2d1f] border-[#1e2d1f]'
-                      : 'bg-white border-gray-300 hover:border-[#1e2d1f]'
+                      ? 'bg-[#228B22] border-2 border-white' // 수강생은 초록색 계열
+                      : 'border-[#4B5563] border-2' // 선택 안됐을 때 회색으로 변경
                   }`}
                 />
                 <span
-                  className={`text-[18px] font-bold ${
-                    formData.role === 'STUDENT' ? 'text-[#1e2d1f]'
-                      : 'text-[#4b644c]'
-                  } hover:text-[#1e2d1f] transition-colors duration-300`}
+                  className={`text-sm font-medium ${formData.role === 'STUDENT' ? 'text-[#1e2d1f]' : 'text-gray-600'}`}
                 >
-        수강생
-      </span>
+                  수강생
+                </span>
               </label>
-
-              {/* 관리자 라디오 버튼 */}
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
@@ -349,33 +355,30 @@ export const Join = () => {
                   className="hidden"
                 />
                 <div
-                  className={`w-[28px] h-[28px] rounded-full border-2 transition-all duration-300 ${
+                  className={`w-4 h-4 rounded-full border-1 transition-all duration-300 ${
                     formData.role === 'ADMIN'
-                      ? 'bg-[#1e2d1f] border-[#1e2d1f]'
-                      : 'bg-white border-gray-300 hover:border-[#1e2d1f]'
+                      ? 'bg-[#B22222] border-2 border-white' // 관리자는 빨간색 계열
+                      : 'border-[#4B5563] border-2' // 선택 안됐을 때 회색으로 변경
                   }`}
                 />
                 <span
-                  className={`text-[18px] font-bold ${
-                    formData.role === 'ADMIN' ? 'text-[#1e2d1f]'
-                      : 'text-[#4b644c]'
-                  } hover:text-[#1e2d1f] transition-colors duration-300`}
+                  className={`text-sm font-medium ${formData.role === 'ADMIN' ? 'text-[#1e2d1f]' : 'text-gray-600'}`}
                 >
-        관리자
-      </span>
+                  관리자
+                </span>
               </label>
             </div>
           </div>
 
-
-          {/* 가입 버튼 */}
-          <div
+          {/* 회원가입 버튼 */}
+          <button
             onClick={handleSubmit}
-            className="w-[273px] h-[74px] rounded-[20px] bg-[#1e2d1f]/90 hover:bg-[#1e2d1f] transition-all duration-300 flex justify-center items-center cursor-pointer mt-10 mb-8"
+            className={`${styles.inputContainer} h-[50px] rounded-[20px] bg-[#1e2d1f]/80 hover:bg-[#1e2d1f] transition-all duration-300 flex justify-center items-center ${styles.button} font-bold text-center text-white mt-8 mb-8`}
           >
-            <p className="text-[25px] font-bold text-white">회원가입</p>
-          </div>
+            회원가입
+          </button>
         </div>
       </div>
-      );
-      };
+    </div>
+  );
+};

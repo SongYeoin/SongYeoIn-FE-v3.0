@@ -40,7 +40,16 @@ export const UserProvider = ({ children }) => {
   //   }
   // }, [user]);
 
-  return <UserContext.Provider value={{user, loading}}>{children}</UserContext.Provider>;
+  // 로그아웃 메서드
+  const logout = () => {
+    setUser(null); // 사용자 상태 초기화
+    sessionStorage.removeItem('token'); // 토큰 삭제
+    sessionStorage.removeItem('refreshToken'); // 리프레시 토큰 삭제
+    sessionStorage.removeItem('user'); // 사용자 정보 삭제
+    window.location.href = '/';
+  };
+
+  return <UserContext.Provider value={{user, loading, setUser, logout}}>{children}</UserContext.Provider>;
 };
 
 export const useUser = () => useContext(UserContext);

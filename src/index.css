@@ -6,14 +6,14 @@
   font-family: 'GmarketSansMedium';
   font-style: normal;
   font-weight: 400;
-  src: url('//fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
 }
 
 @font-face {
   font-family: 'GmarketSansMedium';
   font-style: normal;
   font-weight: 700;
-  src: url('//fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
 }
 
 @font-face {
@@ -21,6 +21,19 @@
   src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts-20-12@1.0/SDSamliphopangche_Basic.woff') format('woff');
   font-weight: normal;
   font-style: normal;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
 }
 
 body {
