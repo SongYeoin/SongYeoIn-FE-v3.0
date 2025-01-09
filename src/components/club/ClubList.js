@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import {CourseContext} from '../common/CourseContext';
 import {useUser} from '../common/UserContext';
 import { PaperClipIcon } from '@heroicons/react/20/solid';
+import ClubHeader from './ClubHeader';
 
 const ClubList = () => {
   const [clubs, setClubs] = useState([]);
@@ -346,91 +347,8 @@ const ClubList = () => {
                    totalPages={totalPages}
                    onPageChange={handlePageChange}
     >
-      <div className="flex flex-col justify-start items-start self-stretch flex-grow-0 flex-shrink-0 relative">
 
-        <div className="flex justify-start items-start self-stretch flex-grow-0 flex-shrink-0 gap-4 py-7 pr-4">
-          <div className="flex flex-col justify-start items-start flex-grow relative gap-4">
-            <p className="self-stretch flex-grow-0 flex-shrink-0 w-[1498px] text-[28px] text-left text-[#16161b]">
-              동아리
-            </p>
-          </div>
-
-          <div
-            className="flex justify-center items-center flex-grow-0 flex-shrink-0 h-10 relative gap-1 px-4 py-2 rounded-lg bg-[#225930] cursor-pointer" onClick={openApplyModal}>
-            <svg
-              width={24}
-              height={24}
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="flex-grow-0 flex-shrink-0 w-6 h-6 relative"
-              preserveAspectRatio="none"
-            >
-              <path
-                d="M12 5V19"
-                stroke="white"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M5 12H19"
-                stroke="white"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <p className="flex-grow-0 flex-shrink-0 text-sm text-left text-white">신청</p>
-          </div>
-        </div>
-
-        <div className="self-stretch flex-grow-0 flex-shrink-0 h-10 relative flex justify-end items-center pr-4">
-          <div className="flex items-center gap-4">
-            <div
-              className="flex justify-start items-center w-50 gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
-              <select className="text-sm text-left text-black" defaultValue="작성자">
-                      <option value="작성자">작성자</option>
-                      <option value="참여자">참여자</option>
-                      <option value="승인상태">승인상태</option>
-              </select>
-            </div>
-            {/*<svg*/}
-            {/*  width={14}*/}
-            {/*  height={6}*/}
-            {/*  viewBox="0 0 14 6"*/}
-            {/*  fill="none"*/}
-            {/*  xmlns="http://www.w3.org/2000/svg"*/}
-            {/*  className="absolute left-[1268.5px] top-[22.5px]"*/}
-            {/*  preserveAspectRatio="none"*/}
-            {/*>*/}
-            {/*  <path*/}
-            {/*    d="M8.29897 6L5.70103 6L-2.62268e-07 9.53674e-07L3.20232 8.13697e-07L6.96392 4.26316L6.79253 4.21491L7.20747 4.21491L7.03608 4.26316L10.7977 4.81693e-07L14 3.41715e-07L8.29897 6Z"*/}
-            {/*    fill="#DADADA"*/}
-            {/*  />*/}
-            {/*</svg>*/}
-
-          <div
-            className="flex justify-start items-center w-72 gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="#9A97A9"
-              className="bi bi-search"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-            </svg>
-            <input
-              type="text"
-              className="w-full"
-              placeholder="검색할 내용을 입력하세요."
-            />
-          </div>
-          </div>
-        </div>
+        <ClubHeader onApplyClick={openApplyModal} />
 
         {/* Data Table Section */}
         <div className="overflow-x-auto w-full mt-6 px-6">
@@ -907,7 +825,6 @@ const ClubList = () => {
             </div>
           </div>
         )}
-      </div>
     </StudentLayout>
   );
 };

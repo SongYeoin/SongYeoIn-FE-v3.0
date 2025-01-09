@@ -1,8 +1,9 @@
-import React, {useCallback, useContext, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState, useContext} from "react";
 import axios from 'api/axios';
 import AdminLayout from '../../common/layout/admin/AdminLayout';
-import {CourseContext} from '../../common/CourseContext';
 import {useUser} from '../../common/UserContext';
+import { CourseContext } from '../../common/CourseContext';
+import AdminClubHeader from './AdminClubHeader';
 
 const AdminClubList = () => {
   const [clubs, setClubs] = useState([]);
@@ -17,15 +18,14 @@ const AdminClubList = () => {
 
   const [formData, setFormData] = useState();
   const [selectedCourseId, setSelectedCourseId] = useState(null); // 선택된 Course ID
-  const {courses} = useContext(CourseContext);
 
   const {user, loading:userLoading} = useUser();
   const [originalClub, setOriginalClub] = useState(null);
-
+  const { courses = [] } = useContext(CourseContext);
 
   // courses가 변경되었을 때 기본값 설정
   useEffect(() => {
-    if (courses.length > 0) {
+    if (Array.isArray(courses) && courses.length > 0) {
       setSelectedCourseId(courses[0].id); // 첫 번째 코스를 기본값으로 설정
     }
     console.log('현재 로그인한 사용자 정보:', user);
@@ -33,7 +33,7 @@ const AdminClubList = () => {
   }, [courses, user, userLoading]);
 
   const handleChange = (e) => {
-    setSelectedCourseId(e.target.value); // 선택된 Course ID 업데이트
+      setSelectedCourseId(e.target.value); // 선택된 Course ID 업데이트
   };
 
   // Pagination change handler
@@ -203,90 +203,9 @@ const AdminClubList = () => {
                    totalPages={totalPages}
                    onPageChange={handlePageChange}
     >
-      <div className="flex flex-col justify-start items-start self-stretch flex-grow-0 flex-shrink-0 relative">
-
-        <div className="flex justify-start items-start self-stretch flex-grow-0 flex-shrink-0 gap-4 py-7 pr-4">
-          <div className="flex flex-col justify-start items-start flex-grow relative gap-4">
-            <p className="self-stretch flex-grow-0 flex-shrink-0 w-[1498px] text-[28px] text-left text-[#16161b]">
-              동아리
-            </p>
-          </div>
-        </div>
-
-        <div className="self-stretch flex-grow-0 flex-shrink-0 h-10 relative flex justify-between items-center pr-4">
-          {/*<div className="w-[329px] h-10 mr-auto left-0 top-0 overflow-hidden bg-white border border-[#d6d6d6]">*/}
-            {/*<svg*/}
-            {/*  width={24}*/}
-            {/*  height={24}*/}
-            {/*  viewBox="0 0 24 24"*/}
-            {/*  fill="none"*/}
-            {/*  xmlns="http://www.w3.org/2000/svg"*/}
-            {/*  className="w-6 h-6 absolute left-[298px] top-2"*/}
-            {/*  preserveAspectRatio="xMidYMid meet"*/}
-            {/*>*/}
-            {/*  291 left-[7px] top-0.5<path d="M12 15L7 10H17L12 15Z" fill="#1D1B20"/>*/}
-            {/*</svg>*/}
-            <select className="w-80 text-center px-4 py-2 text-sm text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    value={selectedCourseId || ''} // 선택된 값 반영
-                    onChange={handleChange}
-            >
-              {courses.length === 0 ? (
-                <option disabled>Loading...</option>
-              ) : (
-                courses.map((course) => (
-                  <option key={course.id} value={course.id} className="text-sm text-black">
-                    {course.name}
-                  </option>
-                ))
-              )}
-            </select>
-          {/*</div>*/}
-
-          <div className="flex items-center gap-4">
-            <div
-              className="flex justify-start items-center w-50 gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
-              <select className="text-sm text-left text-black" defaultValue="작성자">
-                <option value="작성자">작성자</option>
-                <option value="참여자">참여자</option>
-                <option value="승인상태">승인상태</option>
-              </select>
-            </div>
-            {/*<svg*/}
-            {/*  width={14}*/}
-            {/*  height={6}*/}
-            {/*  viewBox="0 0 14 6"*/}
-            {/*  fill="none"*/}
-            {/*  xmlns="http://www.w3.org/2000/svg"*/}
-            {/*  className="absolute left-[1268.5px] top-[22.5px]"*/}
-            {/*  preserveAspectRatio="none"*/}
-            {/*>*/}
-            {/*  <path*/}
-            {/*    d="M8.29897 6L5.70103 6L-2.62268e-07 9.53674e-07L3.20232 8.13697e-07L6.96392 4.26316L6.79253 4.21491L7.20747 4.21491L7.03608 4.26316L10.7977 4.81693e-07L14 3.41715e-07L8.29897 6Z"*/}
-            {/*    fill="#DADADA"*/}
-            {/*  />*/}
-            {/*</svg>*/}
-
-            <div
-              className="flex justify-start items-center w-72 gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="#9A97A9"
-                className="bi bi-search"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-              </svg>
-              <input
-                type="text"
-                className="w-full"
-                placeholder="검색할 내용을 입력하세요."
-              />
-            </div>
-          </div>
-        </div>
+        <AdminClubHeader selectedCourseId={selectedCourseId}
+                         handleChange={handleChange}
+        />
 
         {/* Data Table Section */}
         <div className="overflow-x-auto w-full mt-6 px-6">
@@ -644,7 +563,6 @@ const AdminClubList = () => {
             </div>
           </div>
         )}
-      </div>
     </AdminLayout>
   );
 };
