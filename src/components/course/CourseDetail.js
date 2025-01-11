@@ -442,7 +442,8 @@ return (
           <div className="flex gap-2">
             <select
               value={newPeriod.dayOfWeek}
-              onChange={(e) => setNewPeriod({ ...newPeriod, dayOfWeek: e.target.value })}
+              onChange={(e) => setNewPeriod(
+                { ...newPeriod, dayOfWeek: e.target.value })}
               className="px-3 py-2 border rounded-lg bg-white w-1/5"
             >
               <option value="" disabled>요일 선택</option>
@@ -453,6 +454,9 @@ return (
               <option value="금요일">금요일</option>
               <option value="토요일">토요일</option>
               <option value="일요일">일요일</option>
+              <option value="월~금">월~금</option>
+              <option value="월~일">월~일</option>
+              <option value="주말">주말</option>
             </select>
             <select
               value={newPeriod.name}
