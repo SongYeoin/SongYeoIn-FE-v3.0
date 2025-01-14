@@ -26,7 +26,7 @@ export const AttendanceList = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/attendance/courses`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`);
         const courseList = response.data;
 
         if (courseList.length > 0) {
