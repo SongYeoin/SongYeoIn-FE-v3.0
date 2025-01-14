@@ -55,7 +55,12 @@ const AdminJournalDetail = ({ journalId, onClose }) => {
       <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">교육일지 상세보기</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-xl font-medium transition-colors duration-200">✕</button>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200"
+          >
+            ✕
+            </button>
         </div>
 
         <div className="mb-6 border border-gray-300 rounded-lg p-4">

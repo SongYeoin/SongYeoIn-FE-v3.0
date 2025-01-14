@@ -208,58 +208,69 @@ const AdminClubList = () => {
         />
 
         {/* Data Table Section */}
-        <div className="overflow-x-auto w-full mt-6 px-6">
-          {/*{loading && <p className="text-sm text-gray-500">데이터를 불러오는 중입니다...</p>}*/}
-          {/*{error && <p className="text-sm text-red-500">{error}</p>}*/}
+        <div className="flex flex-col w-full bg-white rounded-xl shadow-sm mt-6">
+          {/* Table Header */}
+          <div className="border-b border-gray-200 bg-gray-50">
+            <div className="grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr_2fr_2fr] gap-4 px-6 py-4">
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">번호</span>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">작성자</span>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">승인자</span>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">승인 상태</span>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">승인 메시지</span>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">활동일</span>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">작성일</span>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">첨부파일</span>
+              </div>
+            </div>
+          </div>
 
-          <table className="w-full text-sm text-[#16161b]">
-            <thead>
-            <tr className="border-b border-[#ebebeb]">
-              <th className="py-4 w-[130px] text-center">번호</th>
-              <th className="py-4 w-[150px] text-center">작성자</th>
-              <th className="py-4 w-[150px] text-center">승인자</th>
-              <th className="py-4 w-[130px] text-center">승인 상태</th>
-              <th className="py-4 w-[200px] text-center">승인 메시지</th>
-              <th className="py-4 w-[130px] text-center">활동일</th>
-              <th className="py-4 w-[130px] text-center">작성일</th>
-              <th className="py-4 w-[130px] text-center">첨부파일</th>
-            </tr>
-            </thead>
-            <tbody>
+          {/* Table Body */}
+          <div className="flex-1 overflow-y-auto">
             {loading ? (
-              <tr>
-                <td colSpan="8" className="text-center py-4">데이터를 불러오는 중입니다...</td>
-              </tr>
+              <div className="text-sm text-center text-gray-500 py-4">데이터를 불러오는 중입니다...</div>
             ) : error ? (
-              <tr>
-                <td colSpan="8" className="text-center py-4 text-red-500">{error}</td>
-              </tr>
+              <div className="text-sm text-center text-red-500 py-4">{error}</div>
             ) : clubs.length > 0 ? (
               clubs.map((club, index) => (
-                <tr key={club.clubId} className="border-b border-[#ebebeb]"
-                    style={{cursor: 'pointer'}} onClick={() => openDetailModal(club)}>
-                  <td className="py-4 text-center">{index + 1}</td>
-                  <td className="py-4 text-center">{club.writer}</td>
-                  <td className="py-4 text-center">{club.checker || '-'}</td>
-                  <td className="py-4 text-center">
+                <div
+                  key={club.clubId}
+                  onClick={() => openDetailModal(club)}
+                  className="grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr_2fr_2fr] gap-4 px-6 py-4 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
+                >
+                  <div className="text-sm font-medium text-gray-900 text-center">{index + 1}</div>
+                  <div className="text-sm text-gray-600 text-center">{club.writer}</div>
+                  <div className="text-sm text-gray-600 text-center">{club.checker || '-'}</div>
+                  <div className="text-sm text-gray-600 text-center">
                     {club.checkStatus === 'W' ? '대기' :
-                      club.checkStatus === 'Y' ? '승인' : '미승인'}
-                  </td>
-                  <td className="py-4 text-center">{club.checkMessage || '-'}</td>
-                  <td className="py-4 text-center">{club.studyDate}</td>
-                  <td className="py-4 text-center">{club.regDate}</td>
-                  <td className="py-4 text-center">{club.attachmentFileName || '-'}</td>
-                </tr>
+                     club.checkStatus === 'Y' ? '승인' : '미승인'}
+                  </div>
+                  <div className="text-sm text-gray-600 text-center">{club.checkMessage || '-'}</div>
+                  <div className="text-sm text-gray-600 text-center">{club.studyDate}</div>
+                  <div className="text-sm text-gray-600 text-center">{club.regDate}</div>
+                  <div className="text-sm text-gray-600 text-center">{club.attachmentFileName || '-'}</div>
+                </div>
               ))
             ) : (
-              <tr>
-                <td colSpan="8" className="py-4 text-center text-gray-500">
-                  조회된 내용이 없습니다.
-                </td>
-              </tr>
+              <div className="text-sm text-center text-gray-500 py-4">
+                조회된 내용이 없습니다.
+              </div>
             )}
-            </tbody>
-          </table>
+          </div>
         </div>
 
         {isDetailModalOpen && selectedClub && (

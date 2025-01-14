@@ -140,7 +140,7 @@ const AdminSidebar = () => {
         {menuItems.map((item, index) => (
           <div
             key={index}
-            className={`gap-3 p-3 rounded-[10px] transition-all duration-200 
+            className={`gap-3 p-3 rounded-[10px] transition-all duration-200
               ${location.pathname === item.link
               ? 'bg-white shadow-md'
               : 'hover:bg-white hover:shadow-md'}`}

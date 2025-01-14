@@ -4,11 +4,14 @@ import React, { useEffect, useState } from 'react';
 import axios from '../../../api/axios';
 import AttendanceDetail from '../student/AttendanceDetail';
 
+// 상수로 분리
+const ALL_PERIODS = ['1교시', '2교시', '3교시', '4교시', '5교시', '6교시', '7교시', '8교시'];
+
 const StudentAttendanceList = () => {
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
   const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수
   const [attendance, setAttendance] = useState([]);
-  const [periodHeaders, setPeriodHeaders] = useState([]); // 교시 헤더
+//  const [periodHeaders, setPeriodHeaders] = useState([]); // 교시 헤더
   const [courses, setCourses] = useState([]);
   const [filters, setFilters] = useState({
     courseId: '',
@@ -23,10 +26,10 @@ const StudentAttendanceList = () => {
   });
   const [selectedAttendance, setSelectedAttendance] = useState(null); // 선택한 출석
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
-  const allPeriods = ["1교시", "2교시", "3교시", "4교시", "5교시", "6교시", "7교시","8교시"];
-  const filledPeriodHeaders = allPeriods.map((period) =>
-    periodHeaders.includes(period) ? period : null
-  );
+//  const allPeriods = ["1교시", "2교시", "3교시", "4교시", "5교시", "6교시", "7교시","8교시"];
+//  const filledPeriodHeaders = allPeriods.map((period) =>
+//    periodHeaders.includes(period) ? period : null
+//  );
 
   useEffect(() => {
     // 초기 코스 데이터 불러오기
@@ -55,13 +58,13 @@ const StudentAttendanceList = () => {
     }
   }, [filters, currentPage]);
 
-  useEffect(() => {
-    if (attendance.length > 0 && attendance[0].periods.length > 0) {
-      setPeriodHeaders(attendance[0].periods); // periods가 교시 이름을 포함한다고 가정
-    } else {
-      setPeriodHeaders([]);
-    }
-  }, [attendance]); // attendance가 변경될 때 실행
+//  useEffect(() => {
+//    if (attendance.length > 0 && attendance[0].periods.length > 0) {
+//      setPeriodHeaders(attendance[0].periods); // periods가 교시 이름을 포함한다고 가정
+//    } else {
+//      setPeriodHeaders([]);
+//    }
+//  }, [attendance]); // attendance가 변경될 때 실행
 
   const fetchAttendanceData = async () => {
 
@@ -134,72 +137,57 @@ const StudentAttendanceList = () => {
   };
 
   return (
-    <StudentLayout
-      currentPage={currentPage}
-      totalPages={totalPages}
-      onPageChange={(page) => setCurrentPage(page)}
-    >
-      <AttendMainHeader
-        role="student"
-        courses={courses}
-        onFilterChange={handleFilterChange}
-      />
+    <StudentLayout currentPage={currentPage} totalPages={totalPages} onPageChange={(page) => setCurrentPage(page)}>
+      <div className="flex flex-col h-full">
+        <div className="flex-shrink-0">
+          <AttendMainHeader role="student" courses={courses} onFilterChange={handleFilterChange} />
 
-      <div
-        className="grid grid-cols-8 gap-5 w-full p-4 bg-white rounded-xl"
-      >
-        <p className="text-xs font-bold text-center text-gray-700">날짜</p>
-        {filledPeriodHeaders.map((period, index) => (
-          <p
-            key={index}
-            className={`text-xs font-bold text-center text-gray-700 ${
-              period ? "" : "text-gray-700"
-            }`}
-          >
-            {period || "-"}
-          </p>
-        ))}
-      </div>
-
-      <ul className="space-y-4">
-        {attendance.length > 0 ? (
-          attendance.map((row) => (
-            <li key={row.studentId}>
-              <div
-                className="space-x-1 grid grid-cols-8 items-center justify-center text-center cursor-pointer hover:bg-gray-100 transition duration-200 ease-in-out p-2 rounded"
-                onClick={() => handleRowClick(filters.courseId, row.studentId,
-                  row.date)}
-              >
-                <p
-                  className="text-xs text-center text-gray-700">
-                  {new Date(row.date).toLocaleDateString('ko-KR')}
-                </p>
-                {filledPeriodHeaders.map((period, index) => (
-                  <p
-                    key={index}
-                    className="flex items-center justify-center">
-                    {period
-                      ? getStatusIcon(row.students[period] || "-") // 교시가 있으면 상태 아이콘 렌더링
-                      : "-"}
-                  </p>
+          <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
+            {/* Table Header */}
+            <div className="border-b border-gray-200 bg-gray-50">
+              <div className="grid grid-cols-9 gap-4 px-6 py-4">
+                <div className="flex flex-col items-center justify-center">
+                  <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">날짜</span>
+                </div>
+                {ALL_PERIODS.map((period, index) => (
+                  <div key={index} className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">{period}</span>
+                  </div>
                 ))}
               </div>
-            </li>
-          ))
-        ) : (
-          <p className="text-xs text-center text-gray-500">출석 데이터가
-            없습니다.</p>
-        )}
-      </ul>
-      {/* 상세보기 모달 */}
-      {selectedAttendance && isModalOpen && (
-        <AttendanceDetail
-          onClose={handleModalClose}
-          attendance={selectedAttendance}
-        />
-      )}
+            </div>
+
+            {/* Table Body */}
+            <div className="flex-1 overflow-y-auto">
+              {attendance.length > 0 ? (
+                attendance.map((row) => (
+                  <div
+                    key={row.studentId}
+                    onClick={() => handleRowClick(filters.courseId, row.studentId, row.date)}
+                    className="grid grid-cols-9 gap-4 px-6 py-3 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
+                  >
+                    <div className="text-sm text-gray-600 text-center">
+                      {new Date(row.date).toLocaleDateString('ko-KR')}
+                    </div>
+                    {ALL_PERIODS.map((period, index) => (
+                      <div key={index} className="flex items-center justify-center">
+                        {getStatusIcon(row.students[period] || '-')}
+                      </div>
+                    ))}
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-center text-gray-500 py-4">출석 데이터가 없습니다.</div>
+              )}
+            </div>
+          </div>
+
+          {selectedAttendance && isModalOpen && (
+            <AttendanceDetail onClose={handleModalClose} attendance={selectedAttendance} />
+          )}
+        </div>
+      </div>
     </StudentLayout>
   );
-
-};
+  };
 export default StudentAttendanceList;

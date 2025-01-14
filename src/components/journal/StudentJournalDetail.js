@@ -85,25 +85,36 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
   if (!journal) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">교육일지 상세보기</h2>
-          <button onClick={onClose}
-                  className="text-gray-500 hover:text-gray-700 text-xl font-medium transition-colors duration-200">✕
-          </button>
-        </div>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto">
+        <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg my-10">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">교육일지 상세보기</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200"
+            >
+              ✕
+            </button>
+          </div>
 
         <div className="mb-6 border border-gray-300 rounded-lg p-4">
-          <div>
-            <label className="text-sm text-gray-600 font-bold">제목</label>
-            <p
-              className="w-full px-3 py-2 border rounded-lg bg-gray-100 mb-4">{isEditing
-              ?
-              <input type="text" name="title" value={editedData.title}
-                     onChange={handleChange} className="w-full bg-white px-2" />
-              : journal.title}</p>
-          </div>
+                  <div>
+                    <label className="text-sm text-gray-600 font-bold">제목</label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="title"
+                        value={editedData.title}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border rounded-lg bg-white mb-4"
+                      />
+                    ) : (
+                      <p className="w-full px-3 py-2 border rounded-lg bg-gray-100 mb-4">
+                        {journal.title}
+                      </p>
+                    )}
+                  </div>
+
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="text-sm text-gray-600 font-bold">작성자</label>
@@ -144,16 +155,22 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
                 name="content"
                 value={editedData.content}
                 onChange={handleChange}
-                className="w-full h-[42px] px-3 py-2 border rounded-lg bg-white"
+                className={`w-full px-3 py-2 border rounded-lg bg-white resize-y ${
+                  editedData.content ? 'min-h-[200px]' : 'min-h-[42px]'
+                }`}
               />
             ) : (
-              <p
-                className="w-full h-[42px] px-3 py-2 border rounded-lg bg-gray-100">
+              <div
+                className={`w-full px-3 py-2 border rounded-lg bg-gray-100 whitespace-pre-wrap ${
+                  journal.content ? 'min-h-[200px]' : 'min-h-[42px]'
+                }`}
+              >
                 {journal.content}
-              </p>
+              </div>
             )}
           </div>
-        </div>
+          </div>
+
 
         {journal.file && (
           <div

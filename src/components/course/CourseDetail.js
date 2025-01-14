@@ -21,12 +21,20 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  
+
   //const [editedCourse, setEditedCourse] = useState(null); // 수정된 값 관리
 
   // 페이징 관련 상태
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // 모달창 관련 코드
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
 
   // 초기 데이터 로드 (course, schedule, members)
   useEffect(() => {
@@ -282,175 +290,142 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
 
 
 
-  return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 overflow-auto">
-      <div className="bg-white w-full max-w-4xl p-6 rounded-2xl shadow-lg">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-black">교육 과정 상세보기</h2>
-          <button onClick={onClose}
-                  className="text-gray-500 hover:text-gray-800">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M18 6L6 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M6 6L18 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
+return (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto">
+    <div className="bg-white w-full max-w-4xl p-6 rounded-2xl shadow-lg my-10"
+       style={{
+         minHeight: 'min-content',
+         maxHeight: '90vh',
+         margin: '5vh auto'
+       }}>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">교육 과정 상세보기</h2>
+        <button
+          onClick={onClose}
+          className="text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200"
+        >
+          ✕
+        </button>
+      </div>
 
-        {/* 기본 정보 */}
-        <div className="mb-5 border border-gray-300 rounded-lg p-4">
-          <h3
-            className="text-lg font-bold mb-2 border-b border-gray-300 pb-2">기본
-            정보</h3>
-          <div className="">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-600 font-bold">과정명</p>
-                <input
-                  name="name"
-                  value={course.name || ""}
-                  onChange={handleCourseChange}
-                  className="text-base font-normal border border-gray-300 rounded-lg p-2">
-                </input>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 font-bold">강의실</p>
-                <input
-                  name="roomName"
-                  value={course.roomName || ''}
-                  onChange={handleCourseChange}
-                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-full"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1">
-              <div>
-                <p className="text-sm text-gray-600 font-bold">상세 설명</p>
-                <input
-                  name="description"
-                  value={course.description || ''}
-                  onChange={handleCourseChange}
-                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-full"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-600 font-bold">강사명</p>
-                <input
-                  name="teacherName"
-                  value={course.teacherName || ''}
-                  onChange={handleCourseChange}
-                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-full"
-                />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 font-bold">담당자</p>
-                <p
-                  className="bg-gray-500 text-base font-normal border border-gray-300 rounded-lg p-2">{course.adminName}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <p className="text-sm text-gray-600 font-bold">개강일</p>
-                <input
-                  type="date"
-                  name="startDate"
-                  value={course.startDate || ''}
-                  onChange={handleCourseChange}
-                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-full"
-                />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 font-bold">종강일</p>
-                <input
-                  type="date"
-                  name="endDate"
-                  value={course.endDate || ''}
-                  onChange={handleCourseChange}
-                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-full"
-                />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 font-bold">상태</p>
-                <p
-                  className={`bg-gray-500 text-base font-font-normal border border-gray-300 rounded-lg p-2 ${course.status
-                  === 'Y' ? 'text-green-500' : 'text-gray-400'}`}>
-                  {course.status === 'Y' ? '활성' : '종강'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* 기본 정보 */}
+      <div className="mb-6 border border-gray-300 rounded-lg p-4">
+        <h3 className="text-sm text-gray-600 font-bold mb-4">기본 정보</h3>
 
-        {/* 시간표 */}
-        <div className="mb-5 border border-gray-300 rounded-lg p-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <h3
-              className="text-lg font-bold mb-4 border-b border-gray-300 pb-2">시간표</h3>
+            <label className="text-sm text-gray-600 font-bold">과정명</label>
+            <input
+              name="name"
+              value={course.name || ""}
+              onChange={handleCourseChange}
+              className="w-full px-3 py-2 border rounded-lg bg-white"
+            />
           </div>
-          <div className="max-h-64 overflow-y-auto">
+          <div>
+            <label className="text-sm text-gray-600 font-bold">강의실</label>
+            <input
+              name="roomName"
+              value={course.roomName || ''}
+              onChange={handleCourseChange}
+              className="w-full px-3 py-2 border rounded-lg bg-white"
+            />
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label className="text-sm text-gray-600 font-bold">상세 설명</label>
+          <input
+            name="description"
+            value={course.description || ''}
+            onChange={handleCourseChange}
+            className="w-full px-3 py-2 border rounded-lg bg-white"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="text-sm text-gray-600 font-bold">강사명</label>
+            <input
+              name="teacherName"
+              value={course.teacherName || ''}
+              onChange={handleCourseChange}
+              className="w-full px-3 py-2 border rounded-lg bg-white"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-gray-600 font-bold">담당자</label>
+            <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
+              {course.adminName}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="text-sm text-gray-600 font-bold">개강일</label>
+            <input
+              type="date"
+              name="startDate"
+              value={course.startDate || ''}
+              onChange={handleCourseChange}
+              className="w-full px-3 py-2 border rounded-lg bg-white"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-gray-600 font-bold">종강일</label>
+            <input
+              type="date"
+              name="endDate"
+              value={course.endDate || ''}
+              onChange={handleCourseChange}
+              className="w-full px-3 py-2 border rounded-lg bg-white"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-gray-600 font-bold">상태</label>
+            <p className={`w-full px-3 py-2 border rounded-lg bg-gray-100 ${course.status === 'Y' ? 'text-green-600' : 'text-gray-600'}`}>
+              {course.status === 'Y' ? '활성' : '종강'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 시간표 */}
+      <div className="mb-6 border border-gray-300 rounded-lg p-4">
+        <h3 className="text-sm text-gray-600 font-bold mb-4">시간표</h3>
+        <div className="max-h-64 overflow-y-auto">
           {schedule && schedule.length > 0 ? (
             schedule.map((period, index) => (
-              <div key={index} className="flex gap-2 items-center">
+              <div key={index} className="flex gap-2 items-center mb-2">
                 <input
                   type="text"
                   value={period.dayOfWeek}
-                  onChange={(e) =>
-                    handlePeriodChange(index, 'dayOfWeek', e.target.value)
-                  }
-                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/5"
-                  placeholder="요일"
+                  onChange={(e) => handlePeriodChange(index, 'dayOfWeek', e.target.value)}
+                  className="px-3 py-2 border rounded-lg bg-white w-1/5"
                 />
                 <input
                   type="text"
                   value={period.name}
-                  onChange={(e) =>
-                    handlePeriodChange(index, 'name', e.target.value)
-                  }
-                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/5"
-                  placeholder="교시명"
+                  onChange={(e) => handlePeriodChange(index, 'name', e.target.value)}
+                  className="px-3 py-2 border rounded-lg bg-white w-1/5"
                 />
                 <input
                   type="time"
                   value={period.startTime}
-                  onChange={(e) =>
-                    handlePeriodChange(index, 'startTime', e.target.value)
-                  }
-                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/4"
-                  placeholder="시작시간"
+                  onChange={(e) => handlePeriodChange(index, 'startTime', e.target.value)}
+                  className="px-3 py-2 border rounded-lg bg-white w-1/4"
                 />
                 <input
                   type="time"
                   value={period.endTime}
-                  onChange={(e) =>
-                    handlePeriodChange(index, 'endTime', e.target.value)
-                  }
-                  className="text-base font-normal border border-gray-300 rounded-lg p-2 w-1/4"
-                  placeholder="종료시간"
+                  onChange={(e) => handlePeriodChange(index, 'endTime', e.target.value)}
+                  className="px-3 py-2 border rounded-lg bg-white w-1/4"
                 />
                 <button
-                  className="ml-2 text-red-500"
                   onClick={() => handleDeletePeriod(index)}
+                  className="text-red-500 hover:text-red-700 transition-colors duration-200"
                 >
                   삭제
                 </button>
@@ -460,163 +435,146 @@ const CourseDetail = ({ courseId, onClose,onDeleteSuccess }) => {
             <p className="text-gray-500">시간표 정보가 없습니다.</p>
           )}
         </div>
-        </div>
+
+        {/* 새 교시 추가 */}
         <div className="mt-4">
-          <h4 className="font-bold">새 교시 추가</h4>
-          <select
-            value={newPeriod.dayOfWeek}
-            onChange={(e) =>
-              setNewPeriod({ ...newPeriod, dayOfWeek: e.target.value })
-            }
-            className="border p-2"
-          >
-            <option value="" disabled>
-              요일 선택
-            </option>
-            <option value="월요일">월요일</option>
-            <option value="화요일">화요일</option>
-            <option value="수요일">수요일</option>
-            <option value="목요일">목요일</option>
-            <option value="금요일">금요일</option>
-            <option value="토요일">토요일</option>
-            <option value="일요일">일요일</option>
-            <option value="월~금">월~금</option>
-            <option value="월~일">월~일</option>
-            <option value="주말">주말</option>
-          </select>
-
-          <select
-            value={newPeriod.name}
-            onChange={(e) =>
-              setNewPeriod({ ...newPeriod, name: e.target.value })
-            }
-            className="border p-2"
-          >
-            <option value="" disabled>
-              교시명 선택
-            </option>
-            <option value="1교시">1교시</option>
-            <option value="2교시">2교시</option>
-            <option value="3교시">3교시</option>
-            <option value="4교시">4교시</option>
-            <option value="5교시">5교시</option>
-            <option value="6교시">6교시</option>
-            <option value="7교시">7교시</option>
-            <option value="8교시">8교시</option>
-          </select>
-
-          <input
-            type="time"
-            value={newPeriod.startTime}
-            onChange={(e) =>
-              setNewPeriod({ ...newPeriod, startTime: e.target.value })
-            }
-            className="border p-2"
-            placeholder="시작시간"
-          />
-          <input
-            type="time"
-            value={newPeriod.endTime}
-            onChange={(e) =>
-              setNewPeriod({ ...newPeriod, endTime: e.target.value })
-            }
-            className="border p-2"
-            placeholder="종료시간"
-          />
-          <button onClick={handleAddPeriod} className="text-red-500">
-            추가
-          </button>
-        </div>
-
-        {/* 수강생 목록 */}
-        <div className="mb-5 border border-gray-300 rounded-lg p-4">
-          <h3
-            className="text-lg font-bold mb-4 border-b border-gray-300 pb-2">수강생
-            목록</h3>
-          {members != null ? (
-            <>
-              <table
-                className="w-full table-auto">
-                <tbody>
-                {members.map((member) => (
-                  <tr key={member.id}>
-                    <td
-                      className="px-4 py-2">{member.name}</td>
-                    <td
-                      className="px-4 py-2">{member.birthday}</td>
-                    <td
-                      className="px-4 py-2">{member.email}</td>
-                  </tr>
-                ))}
-                </tbody>
-              </table>
-              <footer className="flex justify-center items-center p-1 bg-white">
-                <nav className="flex items-center gap-2">
-                  {/* 이전 페이지 화살표 */}
-                  <button
-                    className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 disabled:opacity-50"
-                    onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
-                    disabled={currentPage === 1}
-                  >
-                    <svg width="6" height="10" fill="none"
-                         stroke="currentColor">
-                      <path d="M5 9L1 5L5 1" />
-                    </svg>
-                  </button>
-
-                  {/* 페이지 번호 */}
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        className={`w-8 h-8 flex items-center justify-center rounded-md ${
-                          currentPage === page
-                            ? 'bg-[#225930] text-white font-bold'
-                            : 'border border-gray-300'
-                        }`}
-                        onClick={() => onPageChange(page)}
-                      >
-                        {page}
-                      </button>
-                    ))}
-
-                  {/* 다음 페이지 화살표 */}
-                  <button
-                    className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 disabled:opacity-50"
-                    onClick={() => onPageChange(
-                      Math.min(currentPage + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                  >
-                    <svg width="6" height="10" fill="none"
-                         stroke="currentColor">
-                      <path d="M1 9L5 5L1 1" />
-                    </svg>
-                  </button>
-                </nav>
-              </footer>
-            </>
-          ) : (
-            <p className="text-gray-500">수강생 정보가 없습니다.</p>
-          )}
-        </div>
-
-        {/* 저장 버튼 */}
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={handleCourseDelete}
-            className="bg-[#D9D9D9] font-bold text-white px-4 py-2 rounded hover:bg-gray-600"
-          >
-            삭제
-          </button>
-          <button
-            onClick={handleSave}
-            className="bg-[#225930] font-bold text-white px-4 py-2 rounded hover:bg-blue-600">
-            저장
-          </button>
+          <h4 className="text-sm text-gray-600 font-bold mb-2">새 교시 추가</h4>
+          <div className="flex gap-2">
+            <select
+              value={newPeriod.dayOfWeek}
+              onChange={(e) => setNewPeriod({ ...newPeriod, dayOfWeek: e.target.value })}
+              className="px-3 py-2 border rounded-lg bg-white w-1/5"
+            >
+              <option value="" disabled>요일 선택</option>
+              <option value="월요일">월요일</option>
+              <option value="화요일">화요일</option>
+              <option value="수요일">수요일</option>
+              <option value="목요일">목요일</option>
+              <option value="금요일">금요일</option>
+              <option value="토요일">토요일</option>
+              <option value="일요일">일요일</option>
+            </select>
+            <select
+              value={newPeriod.name}
+              onChange={(e) => setNewPeriod({ ...newPeriod, name: e.target.value })}
+              className="px-3 py-2 border rounded-lg bg-white w-1/5"
+            >
+              <option value="" disabled>교시명 선택</option>
+              <option value="1교시">1교시</option>
+              <option value="2교시">2교시</option>
+              <option value="3교시">3교시</option>
+              <option value="4교시">4교시</option>
+              <option value="5교시">5교시</option>
+              <option value="6교시">6교시</option>
+              <option value="7교시">7교시</option>
+              <option value="8교시">8교시</option>
+            </select>
+            <input
+              type="time"
+              value={newPeriod.startTime}
+              onChange={(e) => setNewPeriod({ ...newPeriod, startTime: e.target.value })}
+              className="px-3 py-2 border rounded-lg bg-white w-1/4"
+            />
+            <input
+              type="time"
+              value={newPeriod.endTime}
+              onChange={(e) => setNewPeriod({ ...newPeriod, endTime: e.target.value })}
+              className="px-3 py-2 border rounded-lg bg-white w-1/4"
+            />
+            <button
+              onClick={handleAddPeriod}
+              className="text-green-800 hover:text-green-900 transition-colors duration-200"
+            >
+              추가
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* 수강생 목록 */}
+      <div className="mb-6 border border-gray-300 rounded-lg p-4">
+        <h3 className="text-sm text-gray-600 font-bold mb-4">수강생 목록</h3>
+        {members != null ? (
+          <>
+            <table className="w-full mb-4">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center w-1/4">이름</th>
+                  <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center w-1/3">생년월일</th>
+                  <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center w-5/12">이메일</th>
+                </tr>
+              </thead>
+              <tbody>
+                {members.map((member) => (
+                  <tr key={member.id} className="border-b">
+                    <td className="py-2 px-4 text-center w-1/4">{member.name}</td>
+                    <td className="py-2 px-4 text-center w-1/3">{member.birthday}</td>
+                    <td className="py-2 px-4 text-center w-5/12">{member.email}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="flex justify-center items-center">
+              <nav className="flex items-center gap-2">
+                <button
+                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-50"
+                  onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  <svg width="6" height="10" fill="none" stroke="currentColor">
+                    <path d="M5 9L1 5L5 1" />
+                  </svg>
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg ${
+                      currentPage === page
+                        ? 'bg-green-800 text-white'
+                        : 'border border-gray-300'
+                    }`}
+                    onClick={() => onPageChange(page)}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-50"
+                  onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  <svg width="6" height="10" fill="none" stroke="currentColor">
+                    <path d="M1 9L5 5L1 1" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </>
+        ) : (
+          <p className="text-gray-500">수강생 정보가 없습니다.</p>
+        )}
+      </div>
+
+      {/* 버튼 영역 */}
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={handleCourseDelete}
+          className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+        >
+          삭제
+        </button>
+        <button
+          onClick={handleSave}
+          className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors duration-200"
+        >
+          저장
+        </button>
+      </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default CourseDetail;

@@ -68,44 +68,52 @@ export const Landing = () => {
 
        {/* 아이콘 섹션 */}
        <div className={`flex ${isMobile ? 'flex-col' : ''} gap-6`}>
+         {/* 수강생 카드 */}
          <div
            className={`${getResponsiveSize(
              'w-[350px] h-[350px]',
              'w-[300px] h-[300px]',
              'w-[250px] h-[250px]'
            )} rounded-[40px] bg-[#fffcfc]/30
-               flex flex-col items-center justify-center gap-4
+               flex flex-col items-center justify-center
                hover:bg-white/50 hover:scale-105 transition-all cursor-pointer`}
            onClick={() => navigate('/login/student')}
          >
-           <img
-             src="/images/student_icon.png"
-             className={`object-contain ${getResponsiveSize('w-[160px]', 'w-[140px]', 'w-[120px]')}`}
-             alt="학생 아이콘"
-           />
-           <p className={`font-bold text-[#1e2d1f] ${
-             getResponsiveSize('text-3xl', 'text-2xl', 'text-xl')
-           }`}>수강생</p>
+           <div className="flex flex-col items-center">
+             <img
+               src="/images/student_icon.png"
+               className={`object-contain ${getResponsiveSize('w-[160px]', 'w-[140px]', 'w-[120px]')} mb-3`}
+               alt="학생 아이콘"
+             />
+             <p className={`font-bold text-[#1e2d1f] ${
+               getResponsiveSize('text-3xl', 'text-2xl', 'text-xl')
+             }`}>수강생</p>
+           </div>
          </div>
 
+         {/* 관리자 카드 */}
          <div
            className={`${getResponsiveSize(
              'w-[350px] h-[350px]',
              'w-[300px] h-[300px]',
              'w-[250px] h-[250px]'
            )} rounded-[40px] bg-[#fffcfc]/30
-               flex flex-col items-center justify-center gap-4
+               flex flex-col items-center justify-center
                hover:bg-white/50 hover:scale-105 transition-all cursor-pointer`}
            onClick={() => navigate('/login/admin')}
          >
-           <img
-             src="/images/admin_icon.png"
-             className={`object-contain ${getResponsiveSize('w-[140px]', 'w-[120px]', 'w-[100px]')}`}
-             alt="관리자 아이콘"
-           />
-           <p className={`font-bold text-[#1e2d1f] ${
-             getResponsiveSize('text-3xl', 'text-2xl', 'text-xl')
-           }`}>관리자</p>
+           <div className="flex flex-col items-center">
+             <div className={`flex items-center justify-center ${getResponsiveSize('h-[160px]', 'h-[140px]', 'h-[120px]')} mb-3`}>
+               <img
+                 src="/images/admin_icon.png"
+                 className={`object-contain ${getResponsiveSize('w-[140px]', 'w-[120px]', 'w-[100px]')}`}
+                 alt="관리자 아이콘"
+               />
+             </div>
+             <p className={`font-bold text-[#1e2d1f] ${
+               getResponsiveSize('text-3xl', 'text-2xl', 'text-xl')
+             }`}>관리자</p>
+           </div>
          </div>
        </div>
      </div>

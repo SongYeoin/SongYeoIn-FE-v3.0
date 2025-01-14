@@ -87,74 +87,79 @@ export const MemberList = () => {
           {/* Header */}
           <MemberMainHeader onSearch={handleSearch} />
 
-          <div className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
-            {/* Table Header */}
-            <div>
-              <div className="grid grid-cols-6 gap-5">
-                <p className="text-sm font-bold text-center text-gray-700">이름</p>
-                <p className="text-sm font-bold text-center text-gray-700">생년월일</p>
-                <p className="text-sm font-bold text-center text-gray-700">이메일</p>
-                <p className="text-sm font-bold text-center text-gray-700">가입일</p>
-                <p className="text-sm font-bold text-center text-gray-700">역할</p>
-                <p className="text-sm font-bold text-center text-gray-700">승인 상태</p>
+          <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
+            {/* Table Header - 더 강조된 디자인 */}
+              <div className="border-b border-gray-200 bg-gray-50">
+                <div className="grid grid-cols-6 gap-4 px-6 py-4">
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">이름</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">생년월일</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">이메일</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">가입일</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">역할</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">승인 상태</span>
+                  </div>
+                </div>
               </div>
-                <div className="border-b border-gray-200 mt-4"></div>
-            </div>
 
+            {/* Table Body */}
             <div className="flex-1 overflow-y-auto">
-              {/* Table Rows */}
-              <ul className="space-y-4">
-                {members.map((member) => (
-                  <li key={member.id}>
-                    <div
-                      className="grid grid-cols-6 items-center text-center cursor-pointer hover:bg-gray-100 transition duration-200 ease-in-out p-2 rounded text-sm"
-                      onClick={() => setSelectedMember(member)} // 줄 클릭 시 모달 열기
+              {members.map((member) => (
+                <div
+                  key={member.id}
+                  onClick={() => setSelectedMember(member)}
+                  className="grid grid-cols-6 gap-4 px-6 py-3 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out relative group"
+                >
+                  <div className="text-sm font-medium text-gray-900 text-center group-hover:text-gray-700">{member.name}</div>
+                  <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{member.birthday}</div>
+                  <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{member.email}</div>
+                  <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{member.enrollDate}</div>
+                  <div className="text-center">
+                    <select
+                      value={member.role}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => handleRoleChange(member.id, e.target.value)}
+                      className="w-4/5 px-2 py-0.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 mx-auto text-center hover:border-gray-400"
                     >
-                      <h3 className="bg-white p-1 rounded shadow font-semibold">
-                        {member.name}
-                      </h3>
-                      <p>{member.birthday}</p>
-                      <p>{member.email}</p>
-                      <p>{member.enrollDate}</p>
-                      {/* 역할 변경 드롭다운 */}
-                      <select
-                        value={member.role}
-                        onClick={(e) => e.stopPropagation()} // 드롭다운 클릭 시 모달 방지
-                        onChange={(e) => handleRoleChange(member.id,
-                          e.target.value)}
-                        className="border rounded px-2 py-1 text-sm bg-white"
-                      >
-                        <option value="ADMIN">관리자</option>
-                        <option value="STUDENT">학생</option>
-                      </select>
-                      {/* 승인 상태 변경 드롭다운 */}
-                      <select
-                        value={member.checkStatus}
-                        onClick={(e) => e.stopPropagation()} // 드롭다운 클릭 시 모달 방지
-                        onChange={(e) => handleApprovalChange(member.id,
-                          e.target.value)}
-                        className="border rounded px-2 py-1 text-sm bg-white"
-                      >
-                        <option value="Y">승인</option>
-                        <option value="N">미승인</option>
-                        <option value="W">대기</option>
-                      </select>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                      <option value="ADMIN">관리자</option>
+                      <option value="STUDENT">학생</option>
+                    </select>
+                  </div>
+                  <div className="text-center">
+                    <select
+                      value={member.checkStatus}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => handleApprovalChange(member.id, e.target.value)}
+                      className="w-4/5 px-2 py-0.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 mx-auto text-center hover:border-gray-400"
+                    >
+                      <option value="Y">승인</option>
+                      <option value="N">미승인</option>
+                      <option value="W">대기</option>
+                    </select>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          </div>
+            </div>
 
-          {/* Member Detail Modal */}
-          {selectedMember && (
-            <MemberDetail
-              memberId={selectedMember.id}
-              onClose={() => setSelectedMember(null)}
-            />
-          )}
-        </div>
+            {selectedMember && (
+              <MemberDetail
+                memberId={selectedMember.id}
+                onClose={() => setSelectedMember(null)}
+              />
+            )}
+          </div>
     </AdminLayout>
 );
 };

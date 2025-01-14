@@ -50,14 +50,15 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
   };
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
+    const selectedFiles = Array.from(e.target.files);
+    const totalFileCount = formData.files.length + selectedFiles.length;
 
-    if (files.length > MAX_FILE_COUNT) {
+    if (totalFileCount > MAX_FILE_COUNT) {
       setFileErrors(`파일은 최대 ${MAX_FILE_COUNT}개까지 업로드할 수 있습니다.`);
       return;
     }
 
-    const invalidFiles = files.filter((file) => {
+    const invalidFiles = selectedFiles.filter((file) => {
       const fileExtension = file.name.split('.').pop().toLowerCase();
       return !ALLOWED_EXTENSIONS.includes(fileExtension);
     });
@@ -65,14 +66,17 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
     if (invalidFiles.length > 0) {
       setFileErrors(
         `허용되지 않은 파일 형식입니다: ${invalidFiles
-        .map((file) => file.name)
-        .join(', ')}`
+          .map((file) => file.name)
+          .join(', ')}`
       );
       return;
     }
 
     setFileErrors('');
-    setFormData({ ...formData, files });
+    setFormData({
+      ...formData,
+      files: [...Array.from(formData.files), ...selectedFiles]
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -131,75 +135,131 @@ const NoticeRegistration = ({ isOpen, onClose, fetchNotices, selectedCourse }) =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-        <h2 className="text-lg font-semibold mb-4">공지사항 등록</h2>
+    <div className="fixed inset-0 flex items-start justify-center bg-black bg-opacity-50 z-[9999] overflow-y-auto">
+      <div className="bg-white w-full max-w-4xl p-6 rounded-2xl shadow-lg my-10">
+        <div className="mb-6">
+          <div className="flex justify-between items-start">
+            <h2 className="text-2xl font-bold">공지사항 등록</h2>
+            <button
+              onClick={handleClose}
+              className="text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">제목</label>
+          {/* 제목 입력 */}
+          <div className="mb-6">
             <input
               type="text"
               name="title"
               value={formData.title}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+              className="text-2xl font-bold w-full px-3 py-2 border rounded-lg"
               placeholder="제목을 입력하세요"
             />
             {errors.title && (
-              <p className="text-red-500 text-xs mt-1">{errors.title}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.title}</p>
             )}
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">내용</label>
+
+          {/* 내용 입력 */}
+          <div className="mb-6 border border-gray-300 rounded-lg p-4">
             <textarea
               name="content"
               value={formData.content}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full min-h-[200px] px-3 py-2 border rounded-lg"
               placeholder="내용을 입력하세요"
-              rows="4"
             ></textarea>
             {errors.content && (
-              <p className="text-red-500 text-xs mt-1">{errors.content}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.content}</p>
             )}
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">첨부 파일</label>
+
+          {/* 첨부파일 섹션 */}
+          <div className="mb-6 border border-gray-300 rounded-lg p-4">
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-sm text-gray-600 font-bold">파일 첨부</label>
+              <span className="text-sm text-gray-500">
+                {`파일 ${formData.files.length}/${MAX_FILE_COUNT}개`}
+              </span>
+            </div>
+
+            <div className="bg-gray-50 p-3 rounded-lg mb-3 text-sm text-gray-600">
+              <p>• 최대 5개 파일 업로드 가능</p>
+              <p>• 허용 확장자: hwp, doc(x), xls(x), ppt(x), pdf, 이미지 파일</p>
+            </div>
+
+            {/* 선택된 파일 목록 */}
+            {formData.files.length > 0 && (
+              <div className="mb-3">
+                <p className="text-sm text-gray-600 font-bold mb-2">첨부된 파일</p>
+                <ul className="space-y-2">
+                  {Array.from(formData.files).map((file, index) => (
+                    <li key={index} className="flex items-center bg-gray-50 p-2 rounded">
+                      <span className="flex-1 text-sm truncate">{file.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newFiles = Array.from(formData.files).filter((_, i) => i !== index);
+                          setFormData({ ...formData, files: newFiles });
+                        }}
+                        className="ml-2 text-gray-500 hover:text-red-500"
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <input
               type="file"
               name="files"
               onChange={handleFileChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full px-3 py-2 border rounded-lg"
               multiple
             />
             {fileErrors && (
-              <p className="text-red-500 text-xs mt-1">{fileErrors}</p>
+              <p className="text-red-500 text-sm mt-1">{fileErrors}</p>
             )}
           </div>
-          <div className="mb-4">
+
+          {/* 전체공지 체크박스 */}
+          <div className="mb-6">
             <label className="inline-flex items-center">
               <input
                 type="checkbox"
                 name="isGlobal"
                 checked={formData.isGlobal}
                 onChange={handleInputChange}
-                className="form-checkbox h-5 w-5 text-blue-600"
+                className="form-checkbox h-5 w-5"
               />
-              <span className="ml-2 text-sm text-gray-700">전체공지로 등록</span>
+              <span className="ml-2 text-gray-600">전체공지로 설정</span>
             </label>
           </div>
-          <div className="flex justify-end space-x-3">
+
+          {/* 버튼 영역 */}
+          <div className="flex justify-end gap-2 mt-6">
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+              className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors duration-200"
             >
               취소
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
               disabled={!!fileErrors}
+              className={`w-full py-2 rounded-lg transition-colors duration-200 ${
+                fileErrors
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-green-800 text-white hover:bg-green-900"
+              }`}
             >
               등록
             </button>
