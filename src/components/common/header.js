@@ -62,38 +62,33 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full px-5 py-2 bg-[#ebf1e8] flex items-center justify-between top-0">
+    <header className="w-full px-5 py-4 bg-[#D3D3D3] flex items-center justify-between top-0">
       {/* 왼쪽: 제목 */}
       <h1 className="text-[25px] text-[#1e2d1f]">
         <img
-          src="/images/songyeoin_title.png" // 이미지 경로
+          src="/images/songyeoin_title.png"
           alt="SONGYEOIN"
-          className="h-[30px]" // 적절한 높이 설정
+          className="h-[30px]"
           style={{
-                transform: 'scale(1.8)',  // 로고 크기
-                transformOrigin: 'left center', // 왼쪽을 기준으로 확대
-                position: 'relative',
-                top: '-2px'  // 이 줄을 추가
-              }}
+            transform: 'scale(1.5) translateY(-2px)',
+            transformOrigin: 'left center',
+          }}
         />
       </h1>
 
       {/* 오른쪽: 사용자 정보와 로그아웃 버튼 */}
-      <div className="flex items-center h-[38px]">
-        {/* 프로필 이미지 */}
+      <div className="flex items-center">
         <img
-          src={user?.profileImage
-            || '/images/default_profile.png'} // 사용자 프로필 이미지
+          src={user?.profileImage || '/images/default_profile.png'}
           alt="Profile"
-          className="w-[25px] h-[25px] rounded-full object-cover mr-1 my-auto"
+          className="w-[25px] h-[25px] rounded-full object-cover mr-1"
         />
-        {/* 사용자 이름 */}
-        <span className="text-[#1e2d1f] text-[18px] mr-5 leading-[30px] flex items-center mt-1">
+        <span className="text-[#1e2d1f] text-[15px] mr-5" style={{ transform: 'translateY(2px)' }}>
           {user?.role === 'ADMIN' ? `${user?.name} 관리자님` : `${user?.name} 님`}
         </span>
-        {/* 로그아웃 버튼 */}
         <i
-          className="bi bi-box-arrow-right text-2xl cursor-pointer flex items-center"
+          className="bi bi-box-arrow-right text-2xl cursor-pointer"
+          style={{ transform: 'translateY(2px)' }}
           title="로그아웃"
           onClick={handleLogout}
         />

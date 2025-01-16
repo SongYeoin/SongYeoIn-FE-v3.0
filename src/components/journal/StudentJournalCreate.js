@@ -98,22 +98,25 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg">
+    <div className="fixed inset-0 flex items-start justify-center bg-black bg-opacity-50 z-50 overflow-y-auto">
+      <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg my-10">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">교육일지 작성</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-xl font-medium transition-colors duration-200">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200">✕</button>
         </div>
 
         <div className="mb-6 border border-gray-300 rounded-lg p-4">
           <div>
-            <label className="text-sm text-gray-600 font-bold">제목</label>
+            <label className="text-sm text-gray-600 font-bold">
+              제목 <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="title"
               value={formData.title}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-lg bg-white mb-4"
+              placeholder="제목을 입력하세요"
             />
           </div>
 
@@ -133,7 +136,9 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
 
           {/* 교육일자 입력 필드 추가 */}
           <div className="mb-4">
-            <label className="text-sm text-gray-600 font-bold">교육일자</label>
+            <label className="text-sm text-gray-600 font-bold">
+              교육일자 <span className="text-red-500">*</span>
+            </label>
             <input
               type="date"
               name="educationDate"
@@ -155,14 +160,45 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
           </div>
         </div>
 
-        <div className="mt-4 p-4 bg-gray-50 rounded">
-          <p className="font-medium">첨부파일</p>
+        {/* 첨부파일 섹션 */}
+        <div className="mb-6 border border-gray-300 rounded-lg p-4">
+          <div className="flex justify-between items-center mb-2">
+            <label className="text-sm text-gray-600 font-bold">
+              파일 첨부 <span className="text-red-500">*</span>
+            </label>
+            <span className="text-sm text-gray-500">
+              {formData.file ? '파일 1/1개' : '파일 0/1개'}
+            </span>
+          </div>
+
+          <div className="bg-gray-50 p-3 rounded-lg mb-3 text-sm text-gray-600">
+            <p>• 교육일지 파일 첨부는 필수입니다</p>
+            <p>• 허용 확장자: hwp, doc, docx</p>
+          </div>
+
+          {/* 선택된 파일 표시 */}
+          {formData.file && (
+            <div className="mb-3">
+              <p className="text-sm text-gray-600 font-bold mb-2">첨부된 파일</p>
+              <div className="flex items-center bg-gray-50 p-2 rounded">
+                <span className="flex-1 text-sm truncate">{formData.file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, file: null })}
+                  className="ml-2 text-gray-500 hover:text-red-500"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
+
           <input
             type="file"
             name="file"
             onChange={handleChange}
-            className="mt-2"
-            noValidate  // HTML5 기본 validation 비활성화
+            className="w-full px-3 py-2 border rounded-lg"
+            noValidate
           />
         </div>
 

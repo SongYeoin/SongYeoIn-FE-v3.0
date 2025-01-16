@@ -78,7 +78,7 @@ export const adminJournalApi = {
 
   // 과정 목록 조회
   getCourses: () =>
-    axios.get(`${process.env.REACT_APP_API_URL}/admin/journals/courses`),
+    axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`),
 
   // 파일 다운로드
   downloadFile: (journalId) =>

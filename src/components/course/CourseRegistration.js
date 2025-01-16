@@ -101,116 +101,136 @@ const CourseRegistration = ({ isOpen, onClose,fetchCourses }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-        <h2 className="text-lg font-semibold mb-4">교육과정 등록</h2>
-        {/* 교육 과정 등록 폼 */}
+    <div className="fixed inset-0 flex items-start justify-center bg-black bg-opacity-50 z-50 overflow-y-auto">
+      <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg my-10">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">교육과정 등록</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200">✕</button>
+        </div>
+
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">과정명</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-              placeholder="과정명을 입력하세요"
-            />
-            {errors.courseName && (
-              <p className="text-red-500 text-xs mt-1">{errors.courseName}</p>
-            )}
+          <div className="mb-6 border border-gray-300 rounded-lg p-4">
+            <div className="mb-4">
+              <label className="text-sm text-gray-600 font-bold">
+                과정명 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-lg bg-white"
+                placeholder="과정명을 입력하세요"
+              />
+              {errors.name && (
+                <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="text-sm text-gray-600 font-bold">설명</label>
+              <input
+                type="text"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-lg bg-white"
+                placeholder="설명을 입력하세요"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="text-sm text-gray-600 font-bold">
+                  담당자 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="adminName"
+                  value={formData.adminName}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-lg bg-white"
+                >
+                  <option value="">담당자를 선택하세요</option>
+                  {admins.map((admin) => (
+                    <option key={admin.id} value={admin.name}>
+                      {admin.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.adminName && (
+                  <p className="text-red-500 text-xs mt-1">{errors.adminName}</p>
+                )}
+              </div>
+              <div>
+                <label className="text-sm text-gray-600 font-bold">강사</label>
+                <input
+                  type="text"
+                  name="teacherName"
+                  value={formData.teacherName}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-lg bg-white"
+                  placeholder="강사명을 입력하세요"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="text-sm text-gray-600 font-bold">
+                  시작날짜 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-lg bg-white"
+                />
+                {errors.startDate && (
+                  <p className="text-red-500 text-xs mt-1">{errors.startDate}</p>
+                )}
+              </div>
+              <div>
+                <label className="text-sm text-gray-600 font-bold">
+                  종강날짜 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-lg bg-white"
+                />
+                {errors.endDate && (
+                  <p className="text-red-500 text-xs mt-1">{errors.endDate}</p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-600 font-bold">강의실</label>
+              <input
+                type="text"
+                name="roomName"
+                value={formData.roomName}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-lg bg-white"
+                placeholder="강의실 정보를 입력하세요 (ex. 302, 303)"
+              />
+            </div>
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">설명</label>
-            <input
-              type="text"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-              placeholder="설명 입력하세요"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">담당자</label>
-            <select
-              name="adminName"
-              value={formData.adminName}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-            >
-              <option value="">담당자를 선택하세요</option>
-              {admins.map((admin) => (
-                <option key={admin.id} value={admin.name}>
-                  {admin.name}
-                </option>
-              ))}
-            </select>
-            {errors.adminName && (
-              <p className="text-red-500 text-xs mt-1">{errors.adminName}</p>
-            )}
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">강사</label>
-            <input
-              type="text"
-              name="teacherName"
-              value={formData.teacherName}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-              placeholder="강사명을 입력하세요"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">시작날짜</label>
-            <input
-              type="date"
-              name="startDate"
-              value={formData.startDate}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-              placeholder="시작날짜를 입력하세요"
-            />
-            {errors.startDate && (
-              <p className="text-red-500 text-xs mt-1">{errors.startDate}</p>
-            )}
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">종강날짜</label>
-            <input
-              type="date"
-              name="endDate"
-              value={formData.endDate}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-              placeholder="종강날짜를 입력하세요"
-            />
-            {errors.endDate && (
-              <p className="text-red-500 text-xs mt-1">{errors.endDate}</p>
-            )}
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">강의실</label>
-            <input
-              type="text"
-              name="roomName"
-              value={formData.roomName}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-              placeholder="강의실 정보를 입력하세요 (ex. 302, 303)"
-            />
-          </div>
-          <div className="flex justify-end space-x-3">
+
+          <div className="flex justify-end gap-2 mt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+              className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
             >
               취소
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
             >
               등록
             </button>

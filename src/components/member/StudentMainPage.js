@@ -199,46 +199,54 @@ const StudentMainPage = () => {
            {selectedDate && (
              <>
                <h3 className="mb-4 text-xl font-bold">{selectedDate}</h3>
-               <div className="bg-white w-full p-4 rounded-lg">
-                 <div className="overflow-auto max-h-96">
-                   <table className="table-auto w-full border-collapse border">
-                     <thead className="bg-gray-100">
-                       <tr>
-                         <th className="border text-center font-bold">교시</th>
-                         <th className="border text-center font-bold">출석</th>
-                       </tr>
-                     </thead>
-                     <tbody>
-                       {attendanceData.length > 0 ? (
-                         attendanceData.map((entry, index) => (
-                           <tr key={index} className="border-b">
-                             <td className="border text-center">
-                               {entry.periodName}
-                             </td>
-                             <td className="flex items-center justify-center">
+               <div className="overflow-auto max-h-96">
+                 <table className="table-auto w-full border-collapse bg-white">
+                   <thead>
+                     <tr className="bg-gray-50">
+                       <th className="border px-4 py-2 text-sm font-semibold text-gray-700">교시</th>
+                       <th className="border px-4 py-2 text-sm font-semibold text-gray-700">출석</th>
+                     </tr>
+                   </thead>
+                   <tbody>
+                     {attendanceData.length > 0 ? (
+                       attendanceData.map((entry, index) => (
+                         <tr key={index} className="border-b hover:bg-gray-50">
+                           <td className="border text-center text-sm py-3">
+                             {entry.periodName}
+                           </td>
+                           <td className="border">
+                             <div className="flex items-center justify-center h-full min-h-[2.5rem]">
                                {entry.status !== null ? (
-                                 getStatusIcon(entry.status)
+                                 <div className="flex items-center justify-center">
+                                   <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm
+                                     ${entry.status === '출석' ? 'text-green-600' :
+                                       entry.status === '지각' ? 'text-orange-600' :
+                                       'text-red-600'}`
+                                   }>
+                                     {getStatusIcon(entry.status)}
+                                   </span>
+                                 </div>
                                ) : (
                                  <button
-                                   className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded"
+                                   className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-1.5 rounded transition-colors duration-200"
                                    onClick={() => handleAttendanceClick(entry.periodId)}
                                  >
                                    출석하기
                                  </button>
                                )}
-                             </td>
-                           </tr>
-                         ))
-                       ) : (
-                         <tr>
-                           <td colSpan="2" className="text-center text-gray-500">
-                             출석 데이터가 없습니다.
+                             </div>
                            </td>
                          </tr>
-                       )}
-                     </tbody>
-                   </table>
-                 </div>
+                       ))
+                     ) : (
+                       <tr>
+                         <td colSpan="2" className="text-center text-gray-500 text-sm py-4">
+                           출석 데이터가 없습니다.
+                         </td>
+                       </tr>
+                     )}
+                   </tbody>
+                 </table>
                </div>
              </>
            )}

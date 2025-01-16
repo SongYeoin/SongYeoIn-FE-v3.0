@@ -55,86 +55,92 @@ export const CourseList = () => {
 
 
   return(
-    <AdminLayout
-      currentPage={currentPage}
-      totalPages={totalPages}
-      onPageChange={(page) => setCurrentPage(page)}
-    >
+      <AdminLayout
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      >
+        <div className="flex flex-col h-full">
+          <div className="flex-shrink-0">
+            <CourseMainHeader onSearch={handleSearch} fetchCourses={fetchCourses} />
 
-      <div className="flex flex-col h-full">
-        <div className="flex-shrink-0">
-          <CourseMainHeader onSearch={handleSearch}
-                            fetchCourses={fetchCourses} />
-          <div className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
-            <div>
-              <div className="grid grid-cols-8 gap-5">
-                <p
-                  className="text-sm font-bold text-center text-gray-700">과정명</p>
-                <p
-                  className="text-sm font-bold text-center text-gray-700">담당자</p>
-                <p
-                  className="text-sm font-bold text-center text-gray-700">강의실</p>
-                <p className="text-sm font-bold text-center text-gray-700">과정
-                  기간</p>
-                <p
-                  className="text-sm font-bold text-center text-gray-700">개강일</p>
-                <p
-                  className="text-sm font-bold text-center text-gray-700">종강일</p>
-                <p className="text-sm font-bold text-center text-gray-700">수강생
-                  수</p>
-                <p
-                  className="text-sm font-bold text-center text-gray-700">상태</p>
+            <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
+              {/* Table Header */}
+              <div className="border-b border-gray-200 bg-gray-50">
+                <div className="grid grid-cols-8 gap-4 px-6 py-4">
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">과정명</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">담당자</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">강의실</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">과정 기간</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">개강일</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">종강일</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">수강생 수</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">상태</span>
+                  </div>
+                </div>
               </div>
-              <div className="border-b border-gray-200 mt-4"></div>
+
+              {/* Table Body */}
+              <div className="flex-1 overflow-y-auto">
+                {courses.length > 0 ? (
+                  courses.map((course) => (
+                    <div
+                      key={course.id}
+                      onClick={() => setSelectedCourse(course.id)}
+                      className="grid grid-cols-8 gap-4 px-6 py-4 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out relative group"
+                    >
+                      <div className="text-sm font-medium text-gray-900 text-center group-hover:text-gray-700">{course.name}</div>
+                      <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.adminName}</div>
+                      <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.roomName}호</div>
+                      <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.weeks}주</div>
+                      <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.startDate}</div>
+                      <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.endDate}</div>
+                      <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.counts}</div>
+                      <div className="text-sm text-center">
+                        <span className={`${
+                          course.status === "Y" ? "text-green-500" : "text-gray-400"
+                        } group-hover:text-opacity-80`}>
+                          {course.status === "Y" ? "활성" : "종강"}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-center text-gray-500 py-4">교육과정 데이터가 없습니다.</div>
+                )}
+              </div>
             </div>
           </div>
 
-          <ul className="space-y-4">
-            {courses.length > 0 ? (
-              courses.map((course) => (
-                <li key={course.id}>
-                  <div
-                    className="space-x-1 grid grid-cols-8 items-center text-center cursor-pointer hover:bg-gray-100 transition duration-200 ease-in-out p-2 rounded"
-                    onClick={() => setSelectedCourse(course.id)} // 상세보기 클릭
-                  >
-                    <h3
-                      className="bg-white p-1 rounded shadow font-semibold">{course.name}</h3>
-                    <p>{course.adminName}</p>
-                    <p>{course.roomName}호</p>
-                    <p>{course.weeks}주</p>
-                    <p>{course.startDate}</p>
-                    <p>{course.endDate}</p>
-                    <p>{course.counts}</p>
-                    <p
-                      className={`${
-                        course.status === "Y" ? "text-green-500"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      {course.status === "Y" ? "활성" : "종강"}
-                    </p>
-                  </div>
-                </li>
-              ))
-            ) : (
-              <p className="text-xs text-center text-gray-500">교육과정 데이터가
-                없습니다.</p>
-            )}
-          </ul>
-        </div>
-          {/* 상세보기 모달 */}
+          {/* 상세보기 모달 - 기존과 동일 */}
           {selectedCourse && (
             <CourseDetail
               courseId={selectedCourse}
               onClose={() => setSelectedCourse(null)}
               onDeleteSuccess={() => {
-                setSelectedCourse(null); // 모달 닫기
-                fetchCourses(searchTerm, currentPage); // 전체 목록 새로고침
+                setSelectedCourse(null);
+                fetchCourses(searchTerm, currentPage);
               }}
-            />)}
-      </div>
-    </AdminLayout>
-);
-};
+            />
+          )}
+        </div>
+      </AdminLayout>
+    );
+  };
 
-export default CourseList;
+  export default CourseList;

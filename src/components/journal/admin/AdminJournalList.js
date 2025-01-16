@@ -3,6 +3,8 @@ import { adminJournalApi } from '../../../api/journalApi';
 import AdminLayout from '../../common/layout/admin/AdminLayout';
 import AdminJournalHeader from './AdminJournalHeader';
 import AdminJournalDetail from './AdminJournalDetail';
+import { BsPaperclip } from "react-icons/bs";  // 상단에 추가
+
 
 const AdminJournalList = () => {
   const [journals, setJournals] = useState([]);
@@ -77,40 +79,66 @@ const AdminJournalList = () => {
             onFilterChange={handleFilterChange}
           />
 
-          <div className="flex flex-col w-full gap-5 p-4 bg-white rounded-xl">
-            <div>
-              <div className="grid grid-cols-[1fr_3fr_2fr_2fr_2fr_2fr] gap-5">
-                <p className="text-sm font-bold text-center text-gray-700">번호</p>
-                <p className="text-sm font-bold text-center text-gray-700">제목</p>
-                <p className="text-sm font-bold text-center text-gray-700">작성자</p>
-                <p className="text-sm font-bold text-center text-gray-700">교육일자</p>
-                <p className="text-sm font-bold text-center text-gray-700">작성일</p>
-                <p className="text-sm font-bold text-center text-gray-700">첨부파일</p>
+          <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
+            {/* Table Header */}
+            <div className="border-b border-gray-200 bg-gray-50">
+              <div className="grid grid-cols-[1fr_3fr_2fr_2fr_2fr_2fr] gap-4 px-6 py-4">
+                <div className="flex flex-col items-center justify-center">
+                  <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">번호</span>
+                </div>
+                <div className="flex flex-col items-center justify-center">
+                  <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">제목</span>
+                </div>
+                <div className="flex flex-col items-center justify-center">
+                  <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">작성자</span>
+                </div>
+                <div className="flex flex-col items-center justify-center">
+                  <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">교육일자</span>
+                </div>
+                <div className="flex flex-col items-center justify-center">
+                  <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">작성일</span>
+                </div>
+                <div className="flex flex-col items-center justify-center">
+                  <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">첨부파일</span>
+                </div>
               </div>
-              <div className="border-b border-gray-200 mt-4"></div>
+            </div>
+
+            {/* Table Body */}
+            <div className="flex-1 overflow-y-auto">
+              {journals.length > 0 ? (
+                journals.map((journal, index) => (
+                  <div
+                    key={journal.id}
+                    onClick={() => setSelectedJournal(journal)}
+                    className="grid grid-cols-[1fr_3fr_2fr_2fr_2fr_2fr] gap-4 px-6 py-4 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
+                  >
+                    <div className="text-sm font-medium text-gray-900 text-center">
+                      {totalElements - ((currentPage - 1) * 15 + index)}
+                    </div>
+                    <div className="text-sm text-gray-600 text-center">{journal.title}</div>
+                    <div className="text-sm text-gray-600 text-center">{journal.memberName}</div>
+                    <div className="text-sm text-gray-600 text-center">
+                      {new Date(journal.educationDate).toLocaleDateString()}
+                    </div>
+                    <div className="text-sm text-gray-600 text-center">
+                      {new Date(journal.createdAt).toLocaleDateString()}
+                    </div>
+                    <div className="text-sm text-gray-600 text-center">
+                      {journal.file ? (
+                        <BsPaperclip className="w-5 h-5 mx-auto text-gray-500" />
+                      ) : (
+                        '-'
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-center text-gray-500 py-4">교육일지 데이터가 없습니다.</div>
+              )}
             </div>
           </div>
-
-          <div className="flex-1 overflow-y-auto">
-            <ul className="space-y-4">
-              {journals.map((journal, index) => (
-                <li key={journal.id}>
-                  <div
-                    className="grid grid-cols-[1fr_3fr_2fr_2fr_2fr_2fr] gap-5 items-center text-center cursor-pointer hover:bg-gray-100 p-2 rounded text-sm"
-                    onClick={() => setSelectedJournal(journal)}
-                  >
-                    <p>{totalElements - ((currentPage - 1) * 15 + index)}</p>
-                    <p>{journal.title}</p>
-                    <p>{journal.memberName}</p>
-                    <p>{new Date(journal.educationDate).toLocaleDateString()}</p>
-                    <p>{new Date(journal.createdAt).toLocaleDateString()}</p>
-                    <p>{journal.file ? '첨부됨' : '-'}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        </div> {/* 여기에 flex-shrink-0 div 닫는 태그 추가 */}
 
         {selectedJournal && (
           <AdminJournalDetail
