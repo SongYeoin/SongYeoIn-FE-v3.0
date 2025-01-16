@@ -36,7 +36,7 @@ const StudentAttendanceList = () => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/attendance/courses`); // 수강생이 자기가 맡고 있는 교육과정 전체 조회
+          `${process.env.REACT_APP_API_URL}/enrollments/my`); // 수강생이 자기가 맡고 있는 교육과정 전체 조회
         const courseList = response.data;
 
         if (courseList.length > 0) {
