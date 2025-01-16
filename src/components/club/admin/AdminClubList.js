@@ -255,9 +255,13 @@ const AdminClubList = () => {
                   <div className="text-sm font-medium text-gray-900 text-center">{index + 1}</div>
                   <div className="text-sm text-gray-600 text-center">{club.writer}</div>
                   <div className="text-sm text-gray-600 text-center">{club.checker || '-'}</div>
-                  <div className="text-sm text-gray-600 text-center">
-                    {club.checkStatus === 'W' ? '대기' :
-                     club.checkStatus === 'Y' ? '승인' : '미승인'}
+                  <div className="text-sm text-center">
+                    <span className={`${
+                      club.checkStatus === 'Y' ? 'text-green-500' : 'text-gray-600'
+                    }`}>
+                      {club.checkStatus === 'W' ? '대기' :
+                       club.checkStatus === 'Y' ? '승인' : '미승인'}
+                    </span>
                   </div>
                   <div className="text-sm text-gray-600 text-center">{club.checkMessage || '-'}</div>
                   <div className="text-sm text-gray-600 text-center">{club.studyDate}</div>
@@ -274,302 +278,175 @@ const AdminClubList = () => {
         </div>
 
         {isDetailModalOpen && selectedClub && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div
-              className="flex flex-col justify-start items-start w-[860px] h-[800px] relative overflow-hidden rounded-[28px] bg-white">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto">
+            <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg my-10">
               {/* Modal Header */}
-              <div
-                className="flex flex-col justify-start items-start self-stretch flex-grow-0 flex-shrink-0 h-[76px] gap-1 p-6">
-                <div className="flex justify-between items-center self-stretch flex-grow-0 flex-shrink-0 relative">
-                  <p className="flex-grow-0 flex-shrink-0 text-[22px] font-black text-left text-[#101828]">
-                    신청내역 상세보기
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">신청내역 상세보기</h2>
+                <button
+                  onClick={() => setIsDetailModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="mb-6 border border-gray-300 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="text-sm text-gray-600 font-bold">번호</label>
+                    <input
+                      type="text"
+                      value={selectedClub.clubId}
+                      name="clubId"
+                      disabled
+                      className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-600 font-bold">작성자/승인자</label>
+                    <input
+                      type="text"
+                      value={`${selectedClub.writer || ""} / ${selectedClub.checker || ""}`}
+                      disabled
+                      className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm text-gray-600 font-bold">참여자</label>
+                  <input
+                    type="text"
+                    value={selectedClub.participants}
+                    name="participants"
+                    disabled
+                    className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm text-gray-600 font-bold">내용</label>
+                  <div className="w-full px-3 py-2 border rounded-lg bg-gray-100 whitespace-pre-wrap min-h-[42px]">
+                    {selectedClub.content}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="text-sm text-gray-600 font-bold">승인상태</label>
+                    {!isEditing ? (
+                      <p className={`w-full px-3 py-2 border rounded-lg bg-gray-100 ${
+                        selectedClub.checkStatus === 'Y' ? 'text-green-600' : 'text-gray-600'
+                      }`}>
+                        {selectedClub.checkStatus === 'Y' ? '승인' :
+                         selectedClub.checkStatus === 'N' ? '미승인' : '대기'}
+                      </p>
+                    ) : (
+                      <div className="flex items-center space-x-4 mt-2">
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            value="Y"
+                            name="checkStatus"
+                            checked={formData.checkStatus === 'Y'}
+                            onChange={handleInputChange}
+                            className="mr-1 w-4 h-4"
+                          />
+                          승인
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            value="N"
+                            name="checkStatus"
+                            checked={formData.checkStatus === 'N'}
+                            onChange={handleInputChange}
+                            className="mr-1 w-4 h-4"
+                          />
+                          미승인
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-600 font-bold">승인메시지</label>
+                    <input
+                      type="text"
+                      value={isEditing ? formData.checkMessage || "" : selectedClub.checkMessage || ""}
+                      name="checkMessage"
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      className={`w-full px-3 py-2 border rounded-lg ${!isEditing ? 'bg-gray-100' : 'bg-white'}`}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="text-sm text-gray-600 font-bold">활동일</label>
+                    <input
+                      type="date"
+                      value={selectedClub.studyDate}
+                      disabled
+                      className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-600 font-bold">작성일</label>
+                    <input
+                      type="date"
+                      value={selectedClub.regDate}
+                      disabled
+                      className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-600 font-bold">첨부파일</label>
+                  <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
+                    {selectedClub.attachmentFileName || "첨부된 파일 없음"}
                   </p>
-                  <svg
-                    width={24}
-                    height={24}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="flex-grow-0 flex-shrink-0 w-6 h-6 relative cursor-pointer"
-                    preserveAspectRatio="none"
-                    onClick={() => setIsDetailModalOpen(false)}
-                  >
-                    <path
-                      d="M18 6L6 18"
-                      stroke="#737088"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M6 6L18 18"
-                      stroke="#737088"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
                 </div>
               </div>
-              {/* Modal Content */}
-              <div className="flex-grow-0 flex-shrink-0 w-[860px] h-[750px] relative overflow-hidden bg-white">
-                <div className="flex justify-start items-center w-[820px] absolute left-5 top-[616px] gap-5 py-9">
 
-                  {!isEditing ? (
-                    <>
+              {/* Buttons */}
+              <div className="flex justify-end gap-2">
+                {!isEditing ? (
+                  <>
                     {selectedClub.checkStatus === 'W' && (
-                      <>
-                        {/* 삭제 버튼 */}
-                      <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer" onClick={handleDelete}>
-                        <div
-                          className="w-[400px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#d9d9d9]"/>
-                        <p
-                          className="w-[35.93px] absolute left-[182.04px] top-12 text-base font-semibold text-left text-black">
-                          삭제
-                        </p>
-                      </div>
-
-                    {/* 수정 버튼 */}
-                    <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
-                         onClick={handleEditClick}
+                      <button
+                        onClick={handleDelete}
+                        className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
+                      >
+                        삭제
+                      </button>
+                    )}
+                    <button
+                      onClick={handleEditClick}
+                      className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
                     >
-                      <div
-                        className="w-[400px] h-12 absolute left-[419.5px] top-[35.5px] rounded-2xl bg-[#225930]"/>
-                      <p
-                        className="absolute left-[605px] top-12 text-base font-semibold text-left text-white">
-                        수정
-                      </p>
-                    </div>
-                    </>
-                    )}
-
-                    {(selectedClub.checkStatus === 'Y' || selectedClub.checkStatus === 'N') && (
-                      <>
-                        {/* 수정 버튼 */}
-                        <div className="flex-grow-0 flex-shrink-0 w-[820px] h-12 cursor-pointer"
-                             onClick={handleEditClick}
-                        >
-                          <div
-                            className="w-[820px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#225930]"/>
-                          <p
-                            className="w-[61.5px] absolute left-[379.25px] top-12 text-base font-semibold text-left text-white">
-                            수정
-                          </p>
-                        </div>
-                      </>
-                    )}
-                    </>
-                  ) : (
-                    <>
-                      {/* 취소 버튼 */}
-                      <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
-                           onClick={handleCancelEdit}
-                      >
-                        <div
-                          className="w-[400px] h-12 absolute left-[-0.5px] top-[35.5px] rounded-2xl bg-[#d9d9d9]"/>
-                        <p
-                          className="w-[35.93px] absolute left-[182.04px] top-12 text-base font-semibold text-left text-black">
-                          취소
-                        </p>
-                      </div>
-                      {/* 저장 버튼 */}
-                      <div className="flex-grow-0 flex-shrink-0 w-[400px] h-12 cursor-pointer"
-                           onClick={handleSaveEdit}
-                      >
-                        <div
-                          className="w-[400px] h-12 absolute left-[419.5px] top-[35.5px] rounded-2xl bg-[#225930]"/>
-                        <p className="absolute left-[605px] top-12 text-base font-semibold text-left text-white">
-                          저장
-                        </p>
-                      </div>
-                    </>
+                      수정
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
+                    >
+                      취소
+                    </button>
+                    <button
+                      onClick={handleSaveEdit}
+                      className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
+                    >
+                      저장
+                    </button>
+                  </>
                 )}
-                </div>
-                <div
-                  className="flex flex-col justify-start items-start w-[780px] h-[592px] absolute left-10 top-0 gap-8">
-                  <div className="flex justify-start items-start self-stretch flex-grow-0 flex-shrink-0 relative gap-8">
-                    <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
-                      <p className="absolute left-0 top-0 text-sm font-black text-left text-black">번호</p>
-                      <div
-                        className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      {/*<p className="absolute left-[13px] top-[35px] text-[15px] text-left text-black">{selectedClub.ClubId}</p>*/}
-                      <input
-                        type="text"
-                        value={selectedClub.clubId}
-                        name="clubId"
-                        onChange={handleInputChange}
-                        disabled
-                        className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
-                      />
-                    </div>
-                    <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
-                      <p className="absolute left-[406px] top-0 text-sm font-black text-left text-black">
-                        작성자/승인자
-                      </p>
-                      <div
-                        className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      {/*<p className="absolute left-[419px] top-[35px] text-[15px] text-left text-black">*/}
-                      {/*  {selectedClub.writer || '-'} / {selectedClub.checker || '-'}*/}
-                      {/*</p>*/}
-                      <input
-                        type="text"
-                        value={`${selectedClub.writer || ""} / ${selectedClub.checker || ""}`}
-                        name="writerChecker"
-                        onChange={handleInputChange}
-                        disabled
-                        className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex-grow-0 flex-shrink-0 w-[780px] h-[67px]">
-                    <p className="absolute left-0 top-[99px] text-sm font-black text-left text-black">참여자</p>
-                    <div
-                      className="w-[780px] h-11 absolute left-[-0.5px] top-[121.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                    {/*<p className="absolute left-[13px] top-[134px] text-[15px] text-left text-black">{selectedClub.participants || '-'}</p>*/}
-                    <input
-                      type="text"
-                      value={selectedClub.participants}
-                      name="participants"
-                      onChange={handleInputChange}
-                      disabled
-                      className="w-[780px] h-11 absolute left-[-0.5px] top-[121.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
-                    />
-                  </div>
-                  <div className="flex-grow-0 flex-shrink-0 w-[780px] h-[103px]">
-                    <p className="absolute left-0 top-[198px] text-sm font-black text-left text-black">내용</p>
-                    <div
-                      className="w-[780px] h-20 absolute left-[-0.5px] top-[220.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                    {/*<p*/}
-                    {/*  className="absolute left-[13px] top-[251px] text-[15px] text-left text-black">{selectedClub.content || '-'}</p>*/}
-                    <textarea
-                      value={selectedClub.content}
-                      name="content"
-                      onChange={handleInputChange}
-                      disabled
-                      className="w-[780px] h-20 absolute left-[-0.5px] top-[220.5px] rounded-2xl bg-white border border-[#efeff3] px-4 py-2 outline-none resize-none"
-                    />
-                  </div>
-                  <div className="flex justify-start items-start flex-grow-0 flex-shrink-0 relative gap-8">
-                    <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
-                      <p className="absolute left-0 top-0 text-sm font-black text-left text-black">승인상태</p>
-                      <div
-                        className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      {!isEditing ? (
-                        <input
-                          type="text"
-                          value={selectedClub.checkStatus === 'Y' ? '승인' : selectedClub.checkStatus === 'N' ? '미승인' : '대기'}
-                          name="checkStatus"
-                          onChange={handleInputChange}
-                          disabled
-                          className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
-                        />
-                      ) : (
-                        <div className="flex items-center space-x-4 absolute left-[13px] top-[35px]">
-                          {/*className="absolute left-[29px] top-[35px] text-[15px] text-left text-black"*/}
-                          {/*w-4 h-4 absolute left-[13px] top-[39px]*/}
-                          <label className="flex items-center">
-                            <input
-                              type="radio"
-                              value="Y"
-                              name="checkStatus"
-                              // disabled={!isEditing || selectedClub.checkStatus !== 'W'}
-                              checked={formData.checkStatus === 'Y'}
-                              onChange={handleInputChange}
-                              className="mr-1 w-4 h-4"
-                            />
-                            승인
-                          </label>
-                          {/*className="absolute left-[83px] top-[35px] text-[15px] text-left text-black"*/}
-                          {/*w-4 h-4 absolute left-[67px] top-[39px]*/}
-                          <label className="flex items-center">
-                            <input
-                              type="radio"
-                              value="N"
-                              name="checkStatus"
-                              // disabled={!isEditing || selectedClub.checkStatus !== 'W'}
-                              checked={formData.checkStatus === 'N'}
-                              onChange={handleInputChange}
-                              className="mr-1 w-4 h-4"
-                            />
-                            미승인
-                          </label>
-                        </div>
-                      )}
-
-                    </div>
-
-                    <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
-                      <p className="absolute left-[406px] top-0 text-sm font-black text-left text-black">
-                        승인메시지
-                      </p>
-                      <div
-                        className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      {/*<p className="absolute left-[420px] top-[35px] text-[15px] text-left text-black">{selectedClub.checkMessage || '-'}</p>*/}
-                      <input
-                        type="text"
-                        value={isEditing ? formData.checkMessage || "" : selectedClub.checkMessage || ""}
-                        name="checkMessage"
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                        className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-start items-start flex-grow-0 flex-shrink-0 relative gap-8">
-                    <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
-                      <p className="absolute left-0 top-0 text-sm font-black text-left text-black">활동일</p>
-                      <div
-                        className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      {/*<p className="absolute left-[13px] top-[35px] text-[15px] text-left text-black">*/}
-                      {/*  {selectedClub.studyDate}*/}
-                      {/*</p>*/}
-                      <input
-                        type="date"
-                        value={selectedClub.studyDate}
-                        name="studyDate"
-                        onChange={handleInputChange}
-                        disabled
-                        className="w-[374px] h-11 absolute left-[-0.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
-                      />
-                    </div>
-                    <div className="flex-grow-0 flex-shrink-0 w-[374px] h-[67px]">
-                      <p className="absolute left-[406px] top-0 text-sm font-black text-left text-black">
-                        작성일
-                      </p>
-                      <div
-                        className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                      {/*<p className="absolute left-[419px] top-[35px] text-[15px] text-left text-black">*/}
-                      {/*  {selectedClub.regDate}*/}
-                      {/*</p>*/}
-                      <input
-                        type="date"
-                        value={selectedClub.regDate}
-                        name="regDate"
-                        onChange={handleInputChange}
-                        disabled
-                        className="w-[374px] h-11 absolute left-[405.5px] top-[22.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex-grow-0 flex-shrink-0 w-[780px] h-[67px]">
-                    <p className="absolute left-0 top-[531px] text-sm font-black text-left text-black">
-                      첨부파일
-                    </p>
-                    <div
-                      className="w-[780px] h-11 absolute left-[-0.5px] top-[553.5px] rounded-2xl bg-white border border-[#efeff3]"/>
-                    {/*<p className="absolute left-[13px] top-[565px] text-sm text-left text-black">*/}
-                    {/*  {selectedClub.attachment || '-'}*/}
-                    {/*</p>*/}
-                    <input
-                      type="text"
-                      value={selectedClub.attachment}
-                      name="attachment"
-                      onChange={handleInputChange}
-                      disabled
-                      className="w-[780px] h-11 absolute left-[-0.5px] top-[553.5px] rounded-2xl bg-white border border-[#efeff3] px-4 outline-none"
-                    />
-                  </div>
-                </div>
               </div>
             </div>
           </div>
