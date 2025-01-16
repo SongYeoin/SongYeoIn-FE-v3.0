@@ -398,9 +398,13 @@ const ClubList = () => {
                   <div className="text-sm font-medium text-gray-900 text-center">{index + 1}</div>
                   <div className="text-sm text-gray-600 text-center">{club.writer}</div>
                   <div className="text-sm text-gray-600 text-center">{club.checker || '-'}</div>
-                  <div className="text-sm text-gray-600 text-center">
-                    {club.checkStatus === 'W' ? '대기' :
-                     club.checkStatus === 'Y' ? '승인' : '미승인'}
+                  <div className="text-sm text-center">
+                    <span className={`${
+                      club.checkStatus === 'Y' ? 'text-green-500' : 'text-gray-600'
+                    }`}>
+                      {club.checkStatus === 'W' ? '대기' :
+                       club.checkStatus === 'Y' ? '승인' : '미승인'}
+                    </span>
                   </div>
                   <div className="text-sm text-gray-600 text-center">{club.checkMessage || '-'}</div>
                   <div className="text-sm text-gray-600 text-center">{club.studyDate}</div>
