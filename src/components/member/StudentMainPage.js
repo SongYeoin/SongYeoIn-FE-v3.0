@@ -32,7 +32,11 @@ const StudentMainPage = () => {
   const [enterTime, setEnterTime] = useState(null);
   const [exitTime, setExitTime] = useState(null);
   const today = new Date().toLocaleDateString('ko-KR',
-    { timeZone: 'Asia/Seoul' }).replace(/\./g, '').replace(/\s/g, '-').trim();
+    { timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit', // 두 자리로 설정
+      day: '2-digit',   // 두 자리로 설정
+    }).replace(/\./g, '').replace(/\s/g, '-').trim();
   const [allPeriodData, setAllPeriodData] = useState([]);
   const [filteredPeriodData, setFilteredPeriodData] = useState([]); // 선택된 날짜의 시간표 데이터
   const [dayOfWeek, setDayOfWeek] = useState('');
@@ -58,6 +62,8 @@ const StudentMainPage = () => {
          }
        );
        setAttendanceData(response.data);
+       setEnterTime(response.data.enterTime);
+       setExitTime(response.data.exitTime);
      } catch (error) {
        console.error("출석 데이터를 가져오는데 실패했습니다:", error);
      }
@@ -94,17 +100,19 @@ const StudentMainPage = () => {
   /* ===== ATTENDANCE SECTION END ===== */
 
   const handleAttendanceClick = async (isEntering) => {
-    if (isEntering) {
       try {
         const response = await axios.post(
-          `${process.env.REACT_APP_API_URL}/attendance/enroll/${currentCourse.id}`,
+          `${process.env.REACT_APP_API_URL}/attendance/enroll`,
+          {
+            isEntering: isEntering,
+            courseId: currentCourse.id
+          }
         );
-
         console.log('출석 성공:', response.data);
         /*fetchAttendanceData();*/
         alert(isEntering ? '입실 완료!' : '퇴실 완료!');
-        isEntering ? setEnterTime(response.data.enterTime) : setExitTime(
-          response.data.exitTime);
+        isEntering ? setEnterTime(formatDateTime(response.data.enterTime)) : setExitTime(
+          formatDateTime(response.data.exitTime));
       } catch (error) {
         if (error.response && error.response.data) {
           const errorMessage = error.response.data.message;
@@ -114,13 +122,24 @@ const StudentMainPage = () => {
         }
         console.error('출석 처리 실패:', error);
       }
-    }
   };
 
- /* ===== CALENDAR SECTION START =====
-  * Owner: [예린]
-  * Description: 달력 관련 로직 및 상태 관리
-  */
+  const formatDateTime = (isoString) => {
+    if (!isoString) return null;
+
+    const date = new Date(isoString);
+    const hours = String(date.getHours()).padStart(2, "0"); // 두 자리로 변환
+    const minutes = String(date.getMinutes()).padStart(2, "0"); // 두 자리로 변환
+    const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD 형식 추출
+
+    return `${hours}:${minutes} - ${formattedDate}`;
+  };
+
+
+  /* ===== CALENDAR SECTION START =====
+   * Owner: [예린]
+   * Description: 달력 관련 로직 및 상태 관리
+   */
  useEffect(() => {
    const fetchCurrentCourse = async () => {
      try {
@@ -184,6 +203,8 @@ const StudentMainPage = () => {
   // 선택된 날짜에 따라 시간표 필터링
   useEffect(() => {
 
+    console.log("today= "+ today);
+    console.log("selectedDate= "+ selectedDate);
     if (selectedDate) {
       const day = getDayOfWeek(selectedDate);
       setDayOfWeek(day);
@@ -258,7 +279,7 @@ const StudentMainPage = () => {
                    </div>) : (
                    <button
                      className="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-2 rounded mb-4 transition-colors duration-200"
-                     onClick={handleAttendanceClick(true)} // 입실 처리 핸들러
+                     onClick={() => handleAttendanceClick(true)} // 입실 처리 핸들러
                    >
                      입실하기
                    </button>
@@ -273,7 +294,7 @@ const StudentMainPage = () => {
                  ) : (
                    <button
                      className="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded mb-6 transition-colors duration-200"
-                     onClick={handleAttendanceClick(false)} // 퇴실 처리 핸들러
+                     onClick={() => handleAttendanceClick(false)} // 퇴실 처리 핸들러
                    >
                      퇴실하기
                    </button>
