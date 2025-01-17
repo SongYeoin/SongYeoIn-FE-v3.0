@@ -61,6 +61,16 @@ const Header = () => {
     }
   };
 
+  // 로고 클릭 시 역할에 따라 경로 설정 및 이동
+  const handleTitleClick = () => {
+    const targetUrl =
+      user?.role === 'ADMIN'
+        ? `/admin/member`
+        : `/main`;
+
+    window.location.href = targetUrl;
+  };
+
   return (
     <header className="w-full px-5 py-4 bg-[#D3D3D3] flex items-center justify-between top-0">
       {/* 왼쪽: 제목 */}
@@ -68,11 +78,12 @@ const Header = () => {
         <img
           src="/images/songyeoin_title.png"
           alt="SONGYEOIN"
-          className="h-[30px]"
+          className="h-[30px] cursor-pointer transition-transform duration-200 hover:opacity-70"
           style={{
             transform: 'scale(1.5) translateY(-2px)',
             transformOrigin: 'left center',
           }}
+          onClick={handleTitleClick}
         />
       </h1>
 
@@ -87,7 +98,7 @@ const Header = () => {
           {user?.role === 'ADMIN' ? `${user?.name} 관리자님` : `${user?.name} 님`}
         </span>
         <i
-          className="bi bi-box-arrow-right text-2xl cursor-pointer"
+          className="bi bi-box-arrow-right text-2xl cursor-pointer transition-transform duration-200 hover:opacity-70"
           style={{ transform: 'translateY(2px)' }}
           title="로그아웃"
           onClick={handleLogout}
