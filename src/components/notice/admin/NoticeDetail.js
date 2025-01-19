@@ -61,6 +61,36 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
     }
   };
 
+  const handleFileDownload = async (fileId) => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/admin/notice/${notice.id}/files/${fileId}/download`,
+        { responseType: "blob" }
+      );
+
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"]
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      const contentDisposition = response.headers["content-disposition"];
+      const fileName = contentDisposition
+        ? decodeURIComponent(contentDisposition.split("filename=")[1].replace(/['"]/g, ""))
+        : notice.files.find((file) => file.id === fileId)?.originalName || `파일_${fileId}`;
+
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("File download failed:", error);
+      alert("파일 다운로드에 실패했습니다.");
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setEditedNotice((prev) => ({
@@ -295,26 +325,25 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
 
         {/* 첨부파일 섹션 */}
         {editedNotice.files.length > 0 && (
-          <div className="mb-6 border border-gray-300 rounded-lg p-4">
-            <h3 className="text-sm text-gray-600 font-bold mb-4">첨부파일</h3>
+          <div
+            className="mt-6 mb-6 p-4 bg-gray-50 rounded hover:bg-gray-200 transition-colors duration-200">
+            <p className="font-medium mb-2">첨부파일</p>
             <ul className="space-y-2">
               {editedNotice.files.map((file) => (
-                <li key={file.id} className="flex items-center p-2 rounded hover:bg-gray-200 transition-colors duration-200">
-                  <a
-                    href={file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:text-blue-700 flex-1"
+                <li key={file.id} className="flex items-center justify-between">
+                  <button
+                    onClick={() => handleFileDownload(file.id)}
+                    className="text-blue-500 hover:underline text-left"
                   >
-                    {file.originalName}
-                  </a>
+                    {file.originalName || `파일_${file.id}`}
+                  </button>
                   {isEditing && (
                     <button
                       type="button"
                       onClick={() => handleDeleteFile(file.id)}
                       className="ml-2 text-red-500 hover:text-red-700"
                     >
-                      🗑
+                      ✕
                     </button>
                   )}
                 </li>
@@ -326,7 +355,7 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
         {/* 파일 업로드 섹션 */}
         {isEditing && (
           <div className="mb-6 border border-gray-300 rounded-lg p-4">
-            <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-2">
               <label className="text-sm text-gray-600 font-bold">새 파일 추가</label>
               <span className="text-sm text-gray-500">
                 {`파일 ${editedNotice.files.length + newFiles.length}/${MAX_FILE_COUNT}개`}
@@ -335,7 +364,7 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
 
             <div className="bg-gray-50 p-3 rounded-lg mb-3 text-sm text-gray-600">
               <p>• 최대 5개 파일 업로드 가능</p>
-              <p>• 허용 확장자: hwp, doc(x), xls(x), ppt(x), pdf, 이미지 파일</p>
+              <p>• 허용 확장자: hwp(x), doc(x), xls(x), ppt(x), pdf, 이미지 파일</p>
             </div>
 
             {/* 새로 추가된 파일 목록 */}
