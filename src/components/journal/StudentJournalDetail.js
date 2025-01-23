@@ -21,6 +21,35 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
     fetchJournalDetail();
   }, [journalId]);
 
+  // handleDownload 함수 추가
+  const handleDownload = async () => {
+    try {
+      const response = await studentJournalApi.downloadFile(journalId);
+
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type']
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+
+      const contentDisposition = response.headers['content-disposition'];
+      const fileName = contentDisposition
+        ? decodeURIComponent(contentDisposition.split('filename=')[1].replace(/['"]/g, ''))
+        : `${journal.file.originalName}`;
+
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('파일 다운로드 실패:', error);
+      alert('파일 다운로드에 실패했습니다.');
+    }
+  };
+
   const handleEdit = async () => {
     if (isEditing) {
       try {
@@ -174,10 +203,13 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
 
         {journal.file && (
           <div
-            className="mt-4 p-4 bg-gray-50 rounded cursor-pointer hover:bg-gray-200 transition-colors duration-200">
+            className="mt-4 p-4 bg-gray-50 rounded cursor-pointer hover:bg-gray-200 transition-colors duration-200"
+            onClick={!isEditing ? handleDownload : undefined}  // 수정 모드가 아닐 때만 다운로드 가능
+          >
             <p className="font-medium">첨부파일</p>
-            <p
-              className="text-blue-500 hover:text-blue-700">{journal.file.originalName}</p>
+            <p className="text-blue-500 hover:text-blue-700">
+              {journal.file.originalName}
+            </p>
             {isEditing &&
               <input type="file" name="file" onChange={handleChange}
                      className="mt-2" />}

@@ -52,10 +52,10 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
       const file = files[0];
       if (file) {
         const extension = file.name.split('.').pop().toLowerCase();
-        const allowedExtensions = ['hwp', 'docx', 'doc'];
+        const allowedExtensions = ['hwp', 'hwpx', 'docx', 'doc'];
 
         if (!allowedExtensions.includes(extension)) {
-          alert('교육일지는 HWP, DOCX, DOC 형식만 첨부 가능합니다.');
+          alert('교육일지는 HWP, HWPX, DOCX, DOC 형식만 첨부 가능합니다.');
           e.target.value = '';
           return;
         }
@@ -173,7 +173,7 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
 
           <div className="bg-gray-50 p-3 rounded-lg mb-3 text-sm text-gray-600">
             <p>• 교육일지 파일 첨부는 필수입니다</p>
-            <p>• 허용 확장자: hwp, doc, docx</p>
+            <p>• 허용 확장자: hwp, hwpx, doc, docx</p>
           </div>
 
           {/* 선택된 파일 표시 */}
