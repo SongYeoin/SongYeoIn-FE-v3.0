@@ -50,8 +50,8 @@ const StudentMainPage = () => {
 
   const fetchAttendanceData = useCallback(async () => {
    if (selectedDate && currentCourse) {
-     console.log("선택된 날짜(부모): " + selectedDate);
-     console.log("현재 courseId(부모): " + currentCourse.id);
+/*     console.log("선택된 날짜(부모): " + selectedDate);
+     console.log("현재 courseId(부모): " + currentCourse.id);*/
      try {
        const response = await axios.get(
          `${process.env.REACT_APP_API_URL}/attendance/main/${currentCourse.id}`,
@@ -62,8 +62,14 @@ const StudentMainPage = () => {
          }
        );
        setAttendanceData(response.data);
-       setEnterTime(response.data.enterTime);
-       setExitTime(response.data.exitTime);
+
+       // 오늘 날짜의 출석 데이터 중 enterTime과 exitTime이 있는 것 찾기
+       const enterRecord = response.data.find((item) => item.enterTime !== null);
+       const exitRecord = response.data.find((item) => item.exitTime !== null);
+
+       setEnterTime(enterRecord ? formatDateTime(enterRecord.enterTime) : null);
+       setExitTime(exitRecord ? formatDateTime(exitRecord.exitTime) : null);
+
      } catch (error) {
        console.error("출석 데이터를 가져오는데 실패했습니다:", error);
      }
@@ -111,8 +117,9 @@ const StudentMainPage = () => {
         console.log('출석 성공:', response.data);
         /*fetchAttendanceData();*/
         alert(isEntering ? '입실 완료!' : '퇴실 완료!');
-        isEntering ? setEnterTime(formatDateTime(response.data.enterTime)) : setExitTime(
-          formatDateTime(response.data.exitTime));
+        fetchAttendanceData();
+/*        isEntering ? setEnterTime(formatDateTime(response.data.enterTime)) : setExitTime(
+          formatDateTime(response.data.exitTime));*/
       } catch (error) {
         if (error.response && error.response.data) {
           const errorMessage = error.response.data.message;
@@ -130,9 +137,10 @@ const StudentMainPage = () => {
     const date = new Date(isoString);
     const hours = String(date.getHours()).padStart(2, "0"); // 두 자리로 변환
     const minutes = String(date.getMinutes()).padStart(2, "0"); // 두 자리로 변환
+    const seconds = String(date.getSeconds()).padStart(2,"0");  // 두 자리로 변환
     const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD 형식 추출
 
-    return `${hours}:${minutes} - ${formattedDate}`;
+    return `${hours}:${minutes}:${seconds} - ${formattedDate}`;
   };
 
 
@@ -203,8 +211,8 @@ const StudentMainPage = () => {
   // 선택된 날짜에 따라 시간표 필터링
   useEffect(() => {
 
-    console.log("today= "+ today);
-    console.log("selectedDate= "+ selectedDate);
+/*    console.log("today= "+ today);
+    console.log("selectedDate= "+ selectedDate);*/
     if (selectedDate) {
       const day = getDayOfWeek(selectedDate);
       setDayOfWeek(day);
@@ -227,8 +235,9 @@ const StudentMainPage = () => {
   useEffect(() => {
     if (currentCourse?.id) {
       fetchAllPeriodData();
+      fetchAttendanceData();
     }
-  }, [currentCourse, fetchAllPeriodData]);
+  }, [currentCourse, fetchAllPeriodData, fetchAttendanceData]);
 
  if (error) {
    return (
