@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "api/axios";
 
-const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
-  const [notice, setNotice] = useState(null); // 공지사항 상세 정보
-  const [editedNotice, setEditedNotice] = useState(null); // 수정된 공지사항 정보
-  const [newFiles, setNewFiles] = useState([]); // 새로 추가된 파일
-  const [filesToDelete, setFilesToDelete] = useState([]); // 삭제할 파일 ID
-  const [isEditing, setIsEditing] = useState(false); // 수정 모드 여부
-  const [fileErrors, setFileErrors] = useState(""); // 파일 오류 메시지
-  const [titleError, setTitleError] = useState(""); // 제목 오류 메시지
-  const [contentError, setContentError] = useState(""); // 내용 오류 메시지
-  const [isLoading, setIsLoading] = useState(true); // 로딩 상태
+const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
+  const [notice, setNotice] = useState(null);
+  const [editedNotice, setEditedNotice] = useState(null);
+  const [newFiles, setNewFiles] = useState([]);
+  const [filesToDelete, setFilesToDelete] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [fileErrors, setFileErrors] = useState("");
+  const [titleError, setTitleError] = useState("");
+  const [contentError, setContentError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [contentHeight, setContentHeight] = useState(0);
   const contentRef = useRef(null);
 
-  const MAX_FILE_COUNT = 5; // 최대 파일 업로드 개수
+  const MAX_FILE_COUNT = 5;
   const ALLOWED_EXTENSIONS = [
     "hwp", "hwpx", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "pdf",
     "jpeg", "jpg", "png", "gif", "bmp", "tiff", "tif", "webp", "svg",
@@ -38,7 +38,7 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
   // 공지사항 상세 조회
   useEffect(() => {
     fetchNoticeDetail();
-  }, [noticeId]);
+  }, [noticeId, refreshNoticeList]);
 
   const fetchNoticeDetail = async () => {
     setIsLoading(true);
@@ -49,9 +49,11 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
       setNotice(response.data);
       setEditedNotice({
         ...response.data,
-        isGlobal: response.data.global ?? false,
+        isPinned: response.data.isPinned ?? false,
+        courseId: response.data.courseId,
         files: response.data.files || [],
       });
+      refreshNoticeList();
     } catch (error) {
       console.error("Error fetching notice detail:", error);
     } finally {
@@ -128,7 +130,8 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
             JSON.stringify({
               title: editedNotice.title,
               content: editedNotice.content,
-              isGlobal: editedNotice.isGlobal,
+              isPinned: editedNotice.isPinned,
+              courseId: notice.courseId,
             }),
           ],
           { type: "application/json" }
@@ -163,7 +166,8 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
   const handleCancelEdit = () => {
     setEditedNotice({
       ...notice,
-      isGlobal: notice.global ?? false,
+      isPinned: notice.isPinned ?? false,
+      courseId: notice.courseId,
       files: notice.files || [],
     });
     setNewFiles([]);
@@ -364,17 +368,18 @@ const NoticeDetail = ({ noticeId, onClose, onDelete }) => {
           </div>
         )}
 
+        {/* 상단고정 체크박스 */}
         {isEditing && (
           <div className="mb-4">
             <label className="inline-flex items-center">
               <input
                 type="checkbox"
-                name="isGlobal"
-                checked={!!editedNotice?.isGlobal}
+                name="isPinned"
+                checked={!!editedNotice?.isPinned}
                 onChange={handleChange}
                 className="form-checkbox h-5 w-5"
               />
-              <span className="ml-2 text-gray-600">전체공지로 설정</span>
+              <span className="ml-2 text-gray-600">상단고정 설정</span>
             </label>
           </div>
         )}

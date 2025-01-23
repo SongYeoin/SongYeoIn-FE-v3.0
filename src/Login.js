@@ -145,7 +145,7 @@ export const Login = ({ role }) => {
             type="submit"
             className={`${styles.inputContainer} h-[60px] rounded-[20px] bg-[#1e2d1f]/80 hover:bg-[#1e2d1f] transition-all duration-300 flex justify-center items-center ${styles.button} font-bold text-center text-white`}
           >
-            로그인
+            {role === 'student' ? '수강생 로그인' : '관리자 로그인'}
           </button>
         </form>
 

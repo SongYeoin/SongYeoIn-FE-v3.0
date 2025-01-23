@@ -63,7 +63,13 @@ export const studentJournalApi = {
 
   // 삭제
   delete: (journalId) =>
-    axios.delete(`${process.env.REACT_APP_API_URL}/journals/${journalId}`)
+    axios.delete(`${process.env.REACT_APP_API_URL}/journals/${journalId}`),
+
+  // 파일 다운로드 API 추가
+  downloadFile: (journalId) =>
+      axios.get(`${process.env.REACT_APP_API_URL}/journals/${journalId}/download`, {
+          responseType: 'blob'
+      })
 };
 
 // 관리자용 교육일지 API
@@ -83,6 +89,19 @@ export const adminJournalApi = {
   // 파일 다운로드
   downloadFile: (journalId) =>
     axios.get(`${process.env.REACT_APP_API_URL}/admin/journals/${journalId}/download`, {
-      responseType: 'blob'
+      responseType: 'blob',
+      headers: {
+        'Accept': 'application/octet-stream',
+        'Content-Type': 'application/json'
+      }
+    }).then(response => {
+      const filename = response.headers['content-disposition']
+        ? decodeURIComponent(response.headers['content-disposition'].split('filename*=UTF-8\'\'')[1])
+        : `교육일지_${journalId}.hwp`;
+
+      return {
+        data: response.data,
+        filename: filename
+      };
     })
 };
