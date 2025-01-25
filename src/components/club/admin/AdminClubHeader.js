@@ -38,7 +38,7 @@ const AdminClubHeader = ({ selectedCourseId, handleChange }) => {
                   </select>
                 </div>
 
-                <div className="flex justify-start items-center w-72 gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
+                <div className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -51,7 +51,7 @@ const AdminClubHeader = ({ selectedCourseId, handleChange }) => {
                   </svg>
                   <input
                     type="text"
-                    className="w-full"
+                    className="w-full text-gray-600 focus:outline-none"
                     placeholder="검색할 내용을 입력하세요."
                   />
                 </div>

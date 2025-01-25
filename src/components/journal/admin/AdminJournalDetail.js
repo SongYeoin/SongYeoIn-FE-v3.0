@@ -17,36 +17,24 @@ const AdminJournalDetail = ({ journalId, onClose }) => {
     fetchJournalDetail();
   }, [journalId]);
 
-  const handleDownload = async () => {
-    try {
-      const response = await adminJournalApi.downloadFile(journalId);
-
-      // blob 데이터로 파일 생성
-      const blob = new Blob([response.data], {
-        type: response.headers['content-type']
-      });
-
-      // 다운로드 링크 생성
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-
-      // Content-Disposition 헤더에서 파일명 추출 또는 기본 파일명 사용
-      const contentDisposition = response.headers['content-disposition'];
-      const fileName = contentDisposition
-        ? decodeURIComponent(contentDisposition.split('filename=')[1].replace(/['"]/g, ''))
-        : `${journal.file.originalName}`;
-
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('파일 다운로드 실패:', error);
-      alert('파일 다운로드에 실패했습니다.');
-    }
-  };
+// 파일 다운로드
+const handleDownload = async () => {
+  try {
+    const response = await adminJournalApi.downloadFile(journalId);
+    const blob = response.data;
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = journal.file.originalName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('파일 다운로드 실패:', error);
+    alert('파일 다운로드에 실패했습니다.');
+  }
+};
 
   if (!journal) return null;
 

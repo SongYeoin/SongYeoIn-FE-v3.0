@@ -91,7 +91,7 @@ const AttendMainHeader = ({ role, courses, onFilterChange }) => {
             {/* 학생명 Filter */}
             {role === 'admin' && (
               <div
-                className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
+                className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -109,7 +109,7 @@ const AttendMainHeader = ({ role, courses, onFilterChange }) => {
                   value={filters.studentName}
                   onChange={handleInputChange}
                   placeholder="검색할 학생명을 입력해주세요."
-                  className="w-full"
+                  className="w-full text-gray-600 focus:outline-none"
                 />
               </div>
             )}

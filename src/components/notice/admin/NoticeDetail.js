@@ -299,12 +299,12 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
             <h3 className="text-sm text-gray-600 font-bold mb-4">첨부파일</h3>
             <ul className="space-y-2">
               {editedNotice.files.map((file) => (
-                <li key={file.id} className="flex items-center">
+                <li key={file.id} className="flex items-center p-2 rounded hover:bg-gray-200 transition-colors duration-200">
                   <a
                     href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline flex-1"
+                    className="text-blue-500 hover:text-blue-700 flex-1"
                   >
                     {file.originalName}
                   </a>

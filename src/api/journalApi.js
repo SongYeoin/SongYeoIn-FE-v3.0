@@ -67,9 +67,9 @@ export const studentJournalApi = {
 
   // 파일 다운로드 API 추가
   downloadFile: (journalId) =>
-      axios.get(`${process.env.REACT_APP_API_URL}/journals/${journalId}/download`, {
-          responseType: 'blob'
-      })
+    axios.get(`${process.env.REACT_APP_API_URL}/journals/${journalId}/download`, {
+        responseType: 'blob'
+    })
 };
 
 // 관리자용 교육일지 API
@@ -86,22 +86,16 @@ export const adminJournalApi = {
   getCourses: () =>
     axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`),
 
-  // 파일 다운로드
+  // 파일 다운로드 API
   downloadFile: (journalId) =>
     axios.get(`${process.env.REACT_APP_API_URL}/admin/journals/${journalId}/download`, {
-      responseType: 'blob',
-      headers: {
-        'Accept': 'application/octet-stream',
-        'Content-Type': 'application/json'
-      }
-    }).then(response => {
-      const filename = response.headers['content-disposition']
-        ? decodeURIComponent(response.headers['content-disposition'].split('filename*=UTF-8\'\'')[1])
-        : `교육일지_${journalId}.hwp`;
+        responseType: 'blob'
+    }),
 
-      return {
-        data: response.data,
-        filename: filename
-      };
+  // 일괄 다운로드
+  downloadZip: (journalIds) =>
+    axios.post(`${process.env.REACT_APP_API_URL}/admin/journals/zip-download`, journalIds, {
+      responseType: 'blob'
     })
+
 };

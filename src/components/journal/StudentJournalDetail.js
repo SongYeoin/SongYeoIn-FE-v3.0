@@ -21,25 +21,15 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
     fetchJournalDetail();
   }, [journalId]);
 
-  // handleDownload 함수 추가
+  // 파일 다운로드
   const handleDownload = async () => {
     try {
       const response = await studentJournalApi.downloadFile(journalId);
-
-      const blob = new Blob([response.data], {
-        type: response.headers['content-type']
-      });
-
+      const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-
-      const contentDisposition = response.headers['content-disposition'];
-      const fileName = contentDisposition
-        ? decodeURIComponent(contentDisposition.split('filename=')[1].replace(/['"]/g, ''))
-        : `${journal.file.originalName}`;
-
-      link.setAttribute('download', fileName);
+      link.download = journal.file.originalName;
       document.body.appendChild(link);
       link.click();
       link.remove();
