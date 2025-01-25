@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../common/layout/admin/AdminLayout';
 import NoticeMainHeader from './NoticeMainHeader';
+import NoticeDetail from './NoticeDetail';
 import axios from 'api/axios';
 import _ from 'lodash';
-import NoticeDetail from './NoticeDetail';
 import { BsPaperclip } from "react-icons/bs";
 
 const AdminNoticeList = () => {
@@ -12,24 +12,41 @@ const AdminNoticeList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
+  const [courses, setCourses] = useState([]);
   const [selectedNotice, setSelectedNotice] = useState(null);
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/admin/course/list`);
+      setCourses(data);
+
+      if (data.length > 0 && !selectedCourse) {
+        const firstCourseId = data[0].id;
+        setSelectedCourse(firstCourseId);
+        fetchNotices('', 1, firstCourseId);
+      }
+
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    }
+  };
 
   const fetchNotices = async (search, page, courseId) => {
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/admin/notice`,
-        {
-          params: { titleKeyword: search, page: page - 1, size: 15, courseId },
-        }
-      );
-      const data = response.data.content;
+      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/admin/notice`, {
+        params: { titleKeyword: search, page: page - 1, size: 15, courseId },
+      });
 
       // 상단고정과 일반 게시글 분리
-      const pinnedNotices = data.filter((notice) => notice.isPinned);
-      const regularNotices = data.filter((notice) => !notice.isPinned);
+      const pinnedNotices = data.content.filter((notice) => notice.isPinned);
+      const regularNotices = data.content.filter((notice) => !notice.isPinned);
 
       // 게시글 번호 역순 계산 (상단고정 제외)
-      const totalRegularNotices = response.data.totalElements - pinnedNotices.length;
+      const totalRegularNotices = data.totalElements - pinnedNotices.length;
       const paginatedRegularNotices = regularNotices.map((notice, index) => ({
         ...notice,
         postNumber: totalRegularNotices - (page - 1) * 15 - index,
@@ -39,7 +56,7 @@ const AdminNoticeList = () => {
       const mergedNotices = [...pinnedNotices, ...paginatedRegularNotices];
 
       setNotices(mergedNotices);
-      setTotalPages(response.data.totalPages);
+      setTotalPages(data.totalPages);
     } catch (error) {
       console.error('Error fetching notices:', error);
     }
@@ -68,6 +85,8 @@ const AdminNoticeList = () => {
     >
       <div className="flex flex-col h-full">
         <NoticeMainHeader
+          courses={courses}
+          selectedCourse={selectedCourse}
           onSearch={(value) => {
             setSearchTerm(value);
             setCurrentPage(1);

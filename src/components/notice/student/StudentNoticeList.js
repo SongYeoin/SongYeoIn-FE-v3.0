@@ -15,19 +15,37 @@ const StudentNoticeList = () => {
   const [courses, setCourses] = useState([]);
   const [selectedNotice, setSelectedNotice] = useState(null);
 
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`);
+      setCourses(data);
+
+      if (data.length > 0 && !selectedCourse) {
+        setSelectedCourse(data[0].courseId);
+        fetchNotices('', 1, data[0].courseId);
+      }
+
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    }
+  };
+
   const fetchNotices = async (search, page, courseId) => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/notice`, {
+      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/notice`, {
         params: { titleKeyword: search, page: page - 1, size: 15, courseId },
       });
-      const data = response.data.content;
 
       // 상단고정과 일반 게시글 분리
-      const pinnedNotices = data.filter((notice) => notice.isPinned);
-      const regularNotices = data.filter((notice) => !notice.isPinned);
+      const pinnedNotices = data.content.filter((notice) => notice.isPinned);
+      const regularNotices = data.content.filter((notice) => !notice.isPinned);
 
       // 게시글 번호 역순 계산 (상단고정 제외)
-      const totalRegularNotices = response.data.totalElements - pinnedNotices.length;
+      const totalRegularNotices = data.totalElements - pinnedNotices.length;
       const paginatedRegularNotices = regularNotices.map((notice, index) => ({
         ...notice,
         postNumber: totalRegularNotices - (page - 1) * 15 - index,
@@ -37,7 +55,7 @@ const StudentNoticeList = () => {
       const mergedNotices = [...pinnedNotices, ...paginatedRegularNotices];
 
       setNotices(mergedNotices);
-      setTotalPages(response.data.totalPages);
+      setTotalPages(data.totalPages);
     } catch (error) {
       console.error('Error fetching notices:', error);
     }
@@ -57,27 +75,6 @@ const StudentNoticeList = () => {
   useEffect(() => {
     debouncedFetchNotices(searchTerm, currentPage, selectedCourse);
   }, [searchTerm, currentPage, selectedCourse, debouncedFetchNotices]);
-
-  const fetchCourses = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`);
-      if (response.status === 200) {
-        const coursesData = response.data;
-        setCourses(coursesData);
-        if (coursesData.length > 0 && !selectedCourse) {
-          const firstCourseId = coursesData[0].courseId;
-          setSelectedCourse(firstCourseId);
-          fetchNotices('', 1, firstCourseId);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching courses:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchCourses();
-  }, []);
 
   return (
     <StudentLayout
