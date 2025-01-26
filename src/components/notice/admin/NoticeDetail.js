@@ -325,15 +325,14 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
 
         {/* 첨부파일 섹션 */}
         {editedNotice.files.length > 0 && (
-          <div
-            className="mt-6 mb-6 p-4 bg-gray-50 rounded hover:bg-gray-200 transition-colors duration-200">
-            <p className="font-medium mb-2">첨부파일</p>
+          <div className="mt-4 mb-4 p-4 bg-gray-50 rounded">
+            <p className="font-bold mb-2">첨부파일</p>
             <ul className="space-y-2">
               {editedNotice.files.map((file) => (
-                <li key={file.id} className="flex items-center justify-between">
+                <li key={file.id} className="flex items-center">
                   <button
                     onClick={() => handleFileDownload(file.id)}
-                    className="text-blue-500 hover:underline text-left"
+                    className="flex-1 p-2 rounded hover:bg-gray-200 transition-colors duration-200 cursor-pointer text-blue-500 hover:text-blue-700 text-left"
                   >
                     {file.originalName || `파일_${file.id}`}
                   </button>
@@ -355,7 +354,7 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
         {/* 파일 업로드 섹션 */}
         {isEditing && (
           <div className="mb-6 border border-gray-300 rounded-lg p-4">
-          <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center mb-2">
               <label className="text-sm text-gray-600 font-bold">새 파일 추가</label>
               <span className="text-sm text-gray-500">
                 {`파일 ${editedNotice.files.length + newFiles.length}/${MAX_FILE_COUNT}개`}
