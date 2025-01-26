@@ -134,14 +134,14 @@ const NoticeDetail = ({ noticeId, onClose, refreshNoticeList }) => {
 
         {/* 첨부파일 섹션 */}
         {notice.files && notice.files.length > 0 && (
-          <div className="mt-4 p-4 bg-gray-50 rounded hover:bg-gray-200 transition-colors duration-200">
-            <p className="font-medium mb-2">첨부파일</p>
+          <div className="mt-4 mb-4 p-4 bg-gray-50 rounded">
+            <p className="font-bold mb-2">첨부파일</p>
             <ul className="space-y-2">
               {notice.files.map((file) => (
-                <li key={file.id} className="flex items-center">
+                <li key={file.id} className="flex items-center p-2 rounded hover:bg-gray-200 transition-colors duration-200">
                   <button
                     onClick={() => handleFileDownload(file.id, file.originalName)}
-                    className="text-blue-500 hover:underline text-left"
+                    className="text-blue-500 hover:text-blue-700 flex-1 text-left"
                   >
                     {file.originalName || `파일_${file.id}`}
                   </button>
