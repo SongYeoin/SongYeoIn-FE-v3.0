@@ -24,7 +24,7 @@ const NoticeDetail = ({ noticeId, onClose, refreshNoticeList }) => {
     };
 
     fetchNoticeDetail();
-  }, [noticeId, refreshNoticeList]);
+  }, [noticeId]);
 
 
   const handleFileDownload = async (fileId) => {
