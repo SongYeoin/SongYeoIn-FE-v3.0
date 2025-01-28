@@ -38,7 +38,7 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
   // 공지사항 상세 조회
   useEffect(() => {
     fetchNoticeDetail();
-  }, [noticeId, refreshNoticeList]);
+  }, [noticeId]);
 
   const fetchNoticeDetail = async () => {
     setIsLoading(true);
@@ -173,17 +173,18 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
 
       await axios.put(
         `${process.env.REACT_APP_API_URL}/admin/notice/${editedNotice.id}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        formData
       );
 
       alert("공지사항이 수정되었습니다.");
-      await fetchNoticeDetail(); // 수정된 데이터를 다시 조회
+      refreshNoticeList();
+      setNotice((prev) => ({
+        ...prev,
+        title: editedNotice.title,
+        content: editedNotice.content,
+        isPinned: editedNotice.isPinned,
+        files: [...prev.files.filter(file => !filesToDelete.includes(file.id)), ...newFiles],
+      }));
       setIsEditing(false); // 수정 모드 해제
       setNewFiles([]);
       setFilesToDelete([]);
