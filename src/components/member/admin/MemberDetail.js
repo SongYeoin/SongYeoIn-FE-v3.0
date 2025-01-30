@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'api/axios';
+import { Copy, Check } from 'lucide-react';
 //import { FaTrash } from 'react-icons/fa';
 
 const MemberDetail = ({ memberId, onClose }) => {
@@ -10,6 +11,9 @@ const MemberDetail = ({ memberId, onClose }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [contentHeight, setContentHeight] = useState(0);
   const contentRef = useRef(null);
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [temporaryPassword, setTemporaryPassword] = useState('');
+  const [showCopySuccess, setShowCopySuccess] = useState(false);
 
   // 모달창 높이 체크
   useEffect(() => {
@@ -109,6 +113,27 @@ const MemberDetail = ({ memberId, onClose }) => {
     }
   };
 
+  // 비밀번호 초기화 처리
+  const handlePasswordReset = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/admin/member/reset-password/${memberId}`
+      );
+      setTemporaryPassword(response.data.temporaryPassword);
+      setShowResetDialog(false);
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      alert('비밀번호 초기화에 실패했습니다.');
+    }
+  };
+
+  // 비밀번호 복사
+  const handleCopyPassword = () => {
+    navigator.clipboard.writeText(temporaryPassword);
+    setShowCopySuccess(true);
+    setTimeout(() => setShowCopySuccess(false), 2000);
+  };
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -142,7 +167,7 @@ const MemberDetail = ({ memberId, onClose }) => {
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">수강생 상세보기</h2>
+          <h2 className="text-2xl font-bold">회원 상세보기</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200"
@@ -221,8 +246,53 @@ const MemberDetail = ({ memberId, onClose }) => {
                 className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default select-none focus:outline-none"
               />
             </div>
+            {member.role !== 'ADMIN' && (
+              <div>
+                <label className="text-sm text-gray-600 font-bold">보안</label>
+                <button
+                  className="w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200"
+                  onClick={() => setShowResetDialog(true)}
+                >
+                  비밀번호 초기화
+                </button>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* 비밀번호 초기화 결과 표시 */}
+        {temporaryPassword && (
+          <div className="mb-6 border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg animate-in slide-in-from-top">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <h4 className="font-medium text-blue-900">임시 비밀번호 생성됨</h4>
+            </div>
+            <div className="flex items-center gap-2 mb-3">
+              <code className="flex-1 bg-white px-3 py-2 rounded font-mono text-blue-900">
+                {temporaryPassword}
+              </code>
+              <button
+                onClick={handleCopyPassword}
+                className="min-w-[80px] px-3 py-1.5 border rounded-lg bg-white hover:bg-blue-50 flex items-center justify-center"
+              >
+                {showCopySuccess ? (
+                  <span className="flex items-center">
+                    <Check className="w-4 h-4 mr-1" />
+                    복사됨
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <Copy className="w-4 h-4 mr-1" />
+                    복사
+                  </span>
+                )}
+              </button>
+            </div>
+            <p className="text-sm text-blue-700">
+              ⚠️ 이 비밀번호를 안전하게 회원에게 전달해주세요. 이 창을 닫으면 다시 확인할 수 없습니다.
+            </p>
+          </div>
+        )}
 
         {/* 수강 신청 (학생인 경우만 표시) */}
         {member.role !== 'ADMIN' && (
@@ -294,6 +364,25 @@ const MemberDetail = ({ memberId, onClose }) => {
                 )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* 비밀번호 초기화 확인 다이얼로그 */}
+        {showResetDialog && (
+          <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <h3 className="text-lg font-bold">비밀번호 초기화</h3>
+              <p>정말 이 회원의 비밀번호를 초기화하시겠습니까?</p>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <button className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg" onClick={() => setShowResetDialog(false)}>
+                  취소
+                </button>
+                <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg" onClick={handlePasswordReset}>
+                  초기화
+                </button>
+              </div>
             </div>
           </div>
         )}
