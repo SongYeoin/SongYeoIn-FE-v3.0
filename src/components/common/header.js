@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'api/axios';
 //import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
+import MyPageModal from 'components/member/MypageModal';
 
 /**
  * JWT 디코딩 함수
@@ -29,6 +30,7 @@ import { useUser } from './UserContext';
 
 const Header = () => {
   const { user, logout } = useUser(); // 사용자 상태와 로그아웃 메서드 가져오기
+  const [showMyPageModal, setShowMyPageModal] = useState(false);
   //const navigate = useNavigate();
   //const user = token ? parseJwt(token) : {}; // JWT 디코딩하여 사용자 정보 추출
 
@@ -36,7 +38,9 @@ const Header = () => {
     const token = sessionStorage.getItem('token'); // 세션 스토리지에서 Access Token 가져오기
     const refreshToken = sessionStorage.getItem('refreshToken'); // 세션 스토리지에서 Refresh Token 가져오기
     try {
-      if (!token) throw new Error('토큰이 없습니다.');
+      if (!token) {
+        throw new Error('토큰이 없습니다.');
+      }
 
       // 백엔드 로그아웃 API 호출
       await axios.post(
@@ -47,7 +51,7 @@ const Header = () => {
             Authorization: `Bearer ${token}`, // Access Token 포함
             'Refresh-Token': refreshToken, // Refresh Token
           },
-        }
+        },
       );
 
       // 성공 시 토큰 삭제 및 리다이렉트
@@ -72,39 +76,49 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full px-5 py-4 bg-[#D3D3D3] flex items-center justify-between top-0">
-      {/* 왼쪽: 제목 */}
-      <h1 className="text-[25px] text-[#1e2d1f]">
-        <img
-          src="/images/songyeoin_title.png"
-          alt="SONGYEOIN"
-          className="h-[30px] cursor-pointer transition-transform duration-200 hover:opacity-70"
-          style={{
-            transform: 'scale(1.5) translateY(-2px)',
-            transformOrigin: 'left center',
-          }}
-          onClick={handleTitleClick}
-        />
-      </h1>
+    <>
+      <header
+        className="w-full px-5 py-4 bg-[#D3D3D3] flex items-center justify-between top-0">
+        {/* 왼쪽: 제목 */}
+        <h1 className="text-[25px] text-[#1e2d1f]">
+          <img
+            src="/images/songyeoin_title.png"
+            alt="SONGYEOIN"
+            className="h-[30px] cursor-pointer transition-transform duration-200 hover:opacity-70"
+            style={{
+              transform: 'scale(1.5) translateY(-2px)',
+              transformOrigin: 'left center',
+            }}
+            onClick={handleTitleClick}
+          />
+        </h1>
 
-      {/* 오른쪽: 사용자 정보와 로그아웃 버튼 */}
-      <div className="flex items-center">
-        <img
-          src={user?.profileImage || '/images/default_profile.png'}
-          alt="Profile"
-          className="w-[25px] h-[25px] rounded-full object-cover mr-1"
-        />
-        <span className="text-[#1e2d1f] text-[15px] mr-5" style={{ transform: 'translateY(2px)' }}>
+        {/* 오른쪽: 사용자 정보와 로그아웃 버튼 */}
+        <div className="flex items-center">
+          <img
+            src={user?.profileImage || '/images/default_profile.png'}
+            alt="Profile"
+            title="마이페이지"
+            className="w-[25px] h-[25px] rounded-full object-cover mr-1 cursor-pointer transition-transform duration-200 hover:opacity-70"
+            onClick={() => setShowMyPageModal(true)}
+          />
+          <span className="text-[#1e2d1f] text-[15px] mr-5"
+                style={{ transform: 'translateY(2px)' }}>
           {user?.role === 'ADMIN' ? `${user?.name} 관리자님` : `${user?.name} 님`}
         </span>
-        <i
-          className="bi bi-box-arrow-right text-2xl cursor-pointer transition-transform duration-200 hover:opacity-70"
-          style={{ transform: 'translateY(2px)' }}
-          title="로그아웃"
-          onClick={handleLogout}
-        />
-      </div>
-    </header>
+          <i
+            className="bi bi-box-arrow-right text-2xl cursor-pointer transition-transform duration-200 hover:opacity-70"
+            style={{ transform: 'translateY(2px)' }}
+            title="로그아웃"
+            onClick={handleLogout}
+          />
+        </div>
+      </header>
+
+      {showMyPageModal && (
+        <MyPageModal member={user} onClose={() => setShowMyPageModal(false)} />
+      )}
+    </>
   );
 };
 
