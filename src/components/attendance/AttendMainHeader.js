@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const AttendMainHeader = ({ role, courses, onFilterChange }) => {
+const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => {
 
   // 필터링 상태 관리
   const [filters, setFilters] = useState({
@@ -16,17 +16,30 @@ const AttendMainHeader = ({ role, courses, onFilterChange }) => {
     endDate: new Date().toISOString().split('T')[0], // 오늘 날짜를 기본값으로 설정
   });
 
-  /// 코스가 로드되면 첫 번째 코스 ID를 기본값으로 설정
+  /*   const filterRef = useRef(filters);
+
+   /// 코스가 로드되면 첫 번째 코스 ID를 기본값으로 설정
+ useEffect(() => {
+     if (courses.length > 0 && filterRef.current.courseId === '') {
+       const updatedFilters = {
+         ...filterRef.current,
+         courseId: courses[0].courseId,
+       };
+       setFilters(updatedFilters);
+       onFilterChange(updatedFilters);
+     }
+   }, [courses, onFilterChange]);*/
   useEffect(() => {
-    if (courses.length > 0) {
-      const updatedFilters = {
-        ...filters,
-        courseId: courses[0].courseId,
-      };
-      setFilters(updatedFilters);
-      onFilterChange(updatedFilters);
+    if (courses.length > 0 && filters.courseId === "") {
+      setFilters((prevFilters) => {
+        if (prevFilters.courseId === courses[0].courseId) return prevFilters; // ✅ 상태 변경 필요 없으면 그대로 반환
+        const updatedFilters = { ...prevFilters, courseId: courses[0].courseId };
+        onFilterChange(updatedFilters);
+        return updatedFilters;
+      });
     }
-  }, [courses]);
+  }, [courses, filters.courseId, onFilterChange]);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -73,7 +86,9 @@ const AttendMainHeader = ({ role, courses, onFilterChange }) => {
           <select
             name="courseId"
             value={filters.courseId}
-            onChange={handleInputChange}
+            onChange={(e) =>{
+              handleInputChange(e);
+            }}
             className="w-80 text-center px-4 py-2 text-sm text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             {courses.map((course) => (
@@ -86,6 +101,19 @@ const AttendMainHeader = ({ role, courses, onFilterChange }) => {
               </option>
             ))}
           </select>
+
+          <div>
+            <span> 전체(115일) 출석률:{" "}
+              {attendanceRates.overallAttendanceRate !== null
+              ? `${attendanceRates.overallAttendanceRate}%`
+              : "없음"}
+            </span>
+            <span> 한달(20일) 출석률: {" "}
+              {attendanceRates.twentyDayScore !== null
+              ? `${attendanceRates.twentyDayScore}%`
+              : "없음"}
+            </span>
+          </div>
 
           <div className="flex items-center gap-4">
             {/* 학생명 Filter */}
