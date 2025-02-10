@@ -78,8 +78,33 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
         {/* Header Title */}
         <div className="flex justify-between items-center">
           <h1 className="text-xl md:text-2xl lg:text-3xl text-[#16161b]">
-            {role === 'admin' ? '출석 관리' : '출석'}{/*출석&&nbsp;관리*/}
+            {role === 'admin' ? '출석 관리' : '출석'}
           </h1>
+
+          {role === 'student' && (
+            <div className="flex gap-4 items-center">
+              <div className="flex items-center px-4 py-2 bg-blue-50 rounded-lg">
+                <span className="text-sm">
+                  전체 출석률 (115일) {" "}
+                  <span className="font-bold text-blue-600 ml-1">
+                    {attendanceRates.overallAttendanceRate !== null
+                      ? `${attendanceRates.overallAttendanceRate}%`
+                      : "없음"}
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center px-4 py-2 bg-green-50 rounded-lg">
+                <span className="text-sm">
+                  한달 출석률 (20일) {" "}
+                  <span className="font-bold text-green-600 ml-1">
+                    {attendanceRates.twentyDayScore !== null
+                      ? `${attendanceRates.twentyDayScore}%`
+                      : "없음"}
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap gap-4 justify-between items-center">
           {/* 교육 과정 필터 */}
@@ -102,20 +127,6 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
             ))}
           </select>
 
-          {role === 'student' && (
-          <div>
-            <span> 전체(115일) 출석률:{" "}
-              {attendanceRates.overallAttendanceRate !== null
-              ? `${attendanceRates.overallAttendanceRate}%`
-              : "없음"}
-            </span>
-            <span> 한달(20일) 출석률: {" "}
-              {attendanceRates.twentyDayScore !== null
-              ? `${attendanceRates.twentyDayScore}%`
-              : "없음"}
-            </span>
-          </div>
-          )}
 
           <div className="flex items-center gap-4">
             {/* 날짜 Filter */}
