@@ -1,20 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import NoticeRegistration from './NoticeRegistration';
-import axios from 'api/axios';
 import _ from 'lodash';
 
-const NoticeMainHeader = ({ onSearch, onCourseChange, fetchNotices }) => {
+const NoticeMainHeader = ({ onSearch, onCourseChange, fetchNotices, courses, selectedCourse }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [error, setError] = useState(null);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => {
     setIsModalOpen(false);
-    setSearchTerm(''); // 검색어 초기화
-    onSearch(''); // 부모 컴포넌트에 검색 초기화 알림
+    setSearchTerm('');
+    onSearch('');
   };
 
   const debouncedSearch = _.debounce((value) => {
@@ -29,33 +25,9 @@ const NoticeMainHeader = ({ onSearch, onCourseChange, fetchNotices }) => {
 
   const handleCourseChange = (e) => {
     const value = e.target.value;
-    setSelectedCourse(value);
     onCourseChange(value);
     setSearchTerm('');
   };
-
-  const fetchCourses = async () => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/admin/course/list`
-      );
-      setCourses(response.data);
-    } catch (error) {
-      setError('교육 과정 데이터를 가져오는 중 오류가 발생했습니다.');
-      console.error('Error fetching courses:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchCourses();
-  }, []);
-
-  useEffect(() => {
-    if (courses.length > 0 && !selectedCourse) {
-      setSelectedCourse(courses[0].id);
-      onCourseChange(courses[0].id);
-    }
-  }, [courses, selectedCourse, onCourseChange]);
 
   return (
     <div className="bg-white">
@@ -89,7 +61,7 @@ const NoticeMainHeader = ({ onSearch, onCourseChange, fetchNotices }) => {
               </option>
             ))}
           </select>
-          <div className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
+          <div className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -101,16 +73,15 @@ const NoticeMainHeader = ({ onSearch, onCourseChange, fetchNotices }) => {
               <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
             </svg>
             <input
-              className="text-gray-500 w-full"
+              className="w-full text-gray-600 focus:outline-none"
               placeholder="검색할 제목을 입력하세요."
               value={searchTerm}
               onChange={handleSearch}
             />
           </div>
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           <NoticeRegistration
             isOpen={isModalOpen}
-            onClose={closeModal} // 모달 닫힘 시 검색 초기화
+            onClose={closeModal}
             selectedCourse={selectedCourse}
             fetchNotices={fetchNotices}
           />

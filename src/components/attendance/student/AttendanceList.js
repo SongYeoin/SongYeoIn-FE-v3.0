@@ -1,6 +1,6 @@
 import StudentLayout from '../../common/layout/student/StudentLayout';
 import AttendMainHeader from '../AttendMainHeader';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import axios from '../../../api/axios';
 import AttendanceDetail from '../student/AttendanceDetail';
 
@@ -26,10 +26,11 @@ const StudentAttendanceList = () => {
   });
   const [selectedAttendance, setSelectedAttendance] = useState(null); // 선택한 출석
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
-//  const allPeriods = ["1교시", "2교시", "3교시", "4교시", "5교시", "6교시", "7교시","8교시"];
-//  const filledPeriodHeaders = allPeriods.map((period) =>
-//    periodHeaders.includes(period) ? period : null
-//  );
+  const [attendanceRates, setAttendanceRates] = useState({
+    overallAttendanceRate: null,
+    twentyDayRates: [],
+    twentyDayScore: null
+  });
 
   useEffect(() => {
     // 초기 코스 데이터 불러오기
@@ -49,24 +50,23 @@ const StudentAttendanceList = () => {
     };
 
     fetchCourses();
+
   }, []);
 
-  useEffect(() => {
-    // 필터링 값이 변경될 때마다 데이터 가져오기
-    if (filters.courseId && filters.date) {
-      fetchAttendanceData();
+  const fetchAttendanceRates = useCallback(async () => {
+    try{
+
+      if(!filters.courseId) return;
+
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/attendance/course/${filters.courseId}/rate`);
+      setAttendanceRates(response.data);
+    }catch (error) {
+      console.error("출석률 데이터를 불러오는 중 오류 발생:", error);
     }
-  }, [filters, currentPage]);
+  },[filters.courseId]);
 
-//  useEffect(() => {
-//    if (attendance.length > 0 && attendance[0].periods.length > 0) {
-//      setPeriodHeaders(attendance[0].periods); // periods가 교시 이름을 포함한다고 가정
-//    } else {
-//      setPeriodHeaders([]);
-//    }
-//  }, [attendance]); // attendance가 변경될 때 실행
 
-  const fetchAttendanceData = async () => {
+  const fetchAttendanceData = useCallback(async () => {
 
     try {
       const params = {
@@ -90,7 +90,17 @@ const StudentAttendanceList = () => {
     } catch (error) {
       console.error('Error fetching attendance data:', error);
     }
-  };
+  },[currentPage, filters.courseId, filters.endDate, filters.startDate, filters.status]);
+
+  useEffect(() => {
+    // 필터링 값이 변경될 때마다 데이터 가져오기
+    if (filters.courseId && filters.date) {
+      fetchAttendanceData();
+    }
+    if (filters.courseId) {
+      fetchAttendanceRates();
+    }
+  }, [filters.courseId,filters.date,currentPage, fetchAttendanceData, fetchAttendanceRates]);
 
   const handleFilterChange = (updatedFilters) => {
     setFilters(updatedFilters);
@@ -125,8 +135,8 @@ const StudentAttendanceList = () => {
     }
   };
 
-  const handleRowClick = (courseId, studentId, date) => {
-    setSelectedAttendance({ courseId, studentId, date });
+  const handleRowClick = (courseId, date) => {
+    setSelectedAttendance({ courseId, date });
     setIsModalOpen(true); // 모달 열기
   };
 
@@ -140,7 +150,7 @@ const StudentAttendanceList = () => {
     <StudentLayout currentPage={currentPage} totalPages={totalPages} onPageChange={(page) => setCurrentPage(page)}>
       <div className="flex flex-col h-full">
         <div className="flex-shrink-0">
-          <AttendMainHeader role="student" courses={courses} onFilterChange={handleFilterChange} />
+          <AttendMainHeader role="student" courses={courses} onFilterChange={handleFilterChange} attendanceRates={attendanceRates} />
 
           <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
             {/* Table Header */}
@@ -160,10 +170,10 @@ const StudentAttendanceList = () => {
             {/* Table Body */}
             <div className="flex-1 overflow-y-auto">
               {attendance.length > 0 ? (
-                attendance.map((row) => (
+                attendance.map((row,index) => (
                   <div
-                    key={row.studentId}
-                    onClick={() => handleRowClick(filters.courseId, row.studentId, row.date)}
+                    key={`${row.studentId}-${row.date}-${index}`}
+                    onClick={() => handleRowClick(filters.courseId, row.date)}
                     className="grid grid-cols-9 gap-4 px-6 py-3 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
                   >
                     <div className="text-sm text-gray-600 text-center">

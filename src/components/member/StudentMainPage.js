@@ -1,5 +1,5 @@
 // components/member/StudentMainPage.js
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import StudentMainCalendar from './StudentMainCalendar';
 import StudentLayout from '../common/layout/student/StudentLayout';
 import StudentMainHeader from './StudentMainHeader';
@@ -29,11 +29,29 @@ const StudentMainPage = () => {
   * Description: 출석 관련 로직 및 상태 관리
   */
  const [attendanceData, setAttendanceData] = useState([]);
+  const [enterTime, setEnterTime] = useState(null);
+  const [exitTime, setExitTime] = useState(null);
+  const today = new Date().toLocaleDateString('ko-KR',
+    { timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit', // 두 자리로 설정
+      day: '2-digit',   // 두 자리로 설정
+    }).replace(/\./g, '').replace(/\s/g, '-').trim();
+  const [allPeriodData, setAllPeriodData] = useState([]);
+  const [filteredPeriodData, setFilteredPeriodData] = useState([]); // 선택된 날짜의 시간표 데이터
+  const [dayOfWeek, setDayOfWeek] = useState('');
 
- const fetchAttendanceData = async () => {
+  // 요일 계산 함수
+  const getDayOfWeek = (dateString) => {
+    const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+    const date = new Date(dateString);
+    return days[date.getDay()];
+  };
+
+  const fetchAttendanceData = useCallback(async () => {
    if (selectedDate && currentCourse) {
-     console.log("선택된 날짜(부모): " + selectedDate);
-     console.log("현재 courseId(부모): " + currentCourse.id);
+/*     console.log("선택된 날짜(부모): " + selectedDate);
+     console.log("현재 courseId(부모): " + currentCourse.id);*/
      try {
        const response = await axios.get(
          `${process.env.REACT_APP_API_URL}/attendance/main/${currentCourse.id}`,
@@ -44,70 +62,92 @@ const StudentMainPage = () => {
          }
        );
        setAttendanceData(response.data);
+
+       // 오늘 날짜의 출석 데이터 중 enterTime과 exitTime이 있는 것 찾기
+       const enterRecord = response.data.find((item) => item.enterTime !== null);
+       const exitRecord = response.data.find((item) => item.exitTime !== null);
+
+       setEnterTime(enterRecord ? formatDateTime(enterRecord.enterTime) : null);
+       setExitTime(exitRecord ? formatDateTime(exitRecord.exitTime) : null);
+
      } catch (error) {
        console.error("출석 데이터를 가져오는데 실패했습니다:", error);
      }
    }
- };
+ },[selectedDate,currentCourse]);
 
- const handleAttendanceClick = async (periodId) => {
-   console.log(`출석하기 클릭됨! 교시 ID: ${periodId}`);
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case '출석':
+        return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="#14AE5C" className="bi bi-circle"
+                    viewBox="0 0 16 16">
+          <path
+            d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+        </svg>;
+      case '지각':
+        return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="#BF6A02" className="bi bi-triangle"
+                    viewBox="0 0 16 16">
+          <path
+            d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z" />
+        </svg>;
+      case '결석':
+        return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="#EC221F" className="bi bi-x-lg"
+                    viewBox="0 0 16 16">
+          <path
+            d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+        </svg>;
+      default:
+        return '-';
+    }
+  };
+  /* ===== ATTENDANCE SECTION END ===== */
 
-   if (periodId) {
-     try {
-       const response = await axios.post(
-         `${process.env.REACT_APP_API_URL}/attendance/enroll/${periodId}`
-       );
+  const handleAttendanceClick = async (isEntering) => {
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_URL}/attendance/enroll`,
+          {
+            isEntering: isEntering,
+            courseId: currentCourse.id
+          }
+        );
+        console.log('출석 성공:', response.data);
+        /*fetchAttendanceData();*/
+        alert(isEntering ? '입실 완료!' : '퇴실 완료!');
+        fetchAttendanceData();
+/*        isEntering ? setEnterTime(formatDateTime(response.data.enterTime)) : setExitTime(
+          formatDateTime(response.data.exitTime));*/
+      } catch (error) {
+        if (error.response && error.response.data) {
+          const errorMessage = error.response.data.message;
+          alert(errorMessage);
+        } else {
+          alert('출석 처리 중 문제가 발생했습니다.');
+        }
+        console.error('출석 처리 실패:', error);
+      }
+  };
 
-       console.log("출석 성공:", response.data);
-       fetchAttendanceData();
-     } catch (error) {
-       if (error.response && error.response.data) {
-         const errorMessage = error.response.data.message;
-         alert(errorMessage);
-       } else {
-         alert("출석 처리 중 문제가 발생했습니다.");
-       }
-       console.error("출석 처리 실패:", error);
-     }
-   } else {
-     console.error("교시 ID가 제공되지 않았습니다.");
-   }
- };
+  const formatDateTime = (isoString) => {
+    if (!isoString) return null;
 
- const getStatusIcon = (status) => {
-   switch (status) {
-     case '출석':
-       return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                   fill="#14AE5C" className="bi bi-circle"
-                   viewBox="0 0 16 16">
-         <path
-           d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-       </svg>;
-     case '지각':
-       return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                   fill="#BF6A02" className="bi bi-triangle"
-                   viewBox="0 0 16 16">
-         <path
-           d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z" />
-       </svg>;
-     case '결석':
-       return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                   fill="#EC221F" className="bi bi-x-lg"
-                   viewBox="0 0 16 16">
-         <path
-           d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
-       </svg>;
-     default:
-       return '-';
-   }
- };
- /* ===== ATTENDANCE SECTION END ===== */
+    const date = new Date(isoString);
+    const hours = String(date.getHours()).padStart(2, "0"); // 두 자리로 변환
+    const minutes = String(date.getMinutes()).padStart(2, "0"); // 두 자리로 변환
+    const seconds = String(date.getSeconds()).padStart(2,"0");  // 두 자리로 변환
+    const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD 형식 추출
 
- /* ===== CALENDAR SECTION START =====
-  * Owner: [예린]
-  * Description: 달력 관련 로직 및 상태 관리
-  */
+    return `${hours}:${minutes}:${seconds} - ${formattedDate}`;
+  };
+
+
+  /* ===== CALENDAR SECTION START =====
+   * Owner: [예린]
+   * Description: 달력 관련 로직 및 상태 관리
+   */
  useEffect(() => {
    const fetchCurrentCourse = async () => {
      try {
@@ -156,9 +196,48 @@ const StudentMainPage = () => {
  }, []);
  /* ===== CALENDAR SECTION END ===== */
 
- useEffect(() => {
-   fetchAttendanceData();
- }, [selectedDate, currentCourse]);
+  // 전체 시간표 데이터 가져오기(초기 로드)
+  const fetchAllPeriodData = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/attendance/period/all/${currentCourse.id}`
+      );
+      setAllPeriodData(response.data);
+    } catch (error) {
+      console.error('시간표 데이터를 가져오는 중 오류가 발생했습니다:', error);
+    }
+  },[currentCourse]);
+
+  // 선택된 날짜에 따라 시간표 필터링
+  useEffect(() => {
+
+/*    console.log("today= "+ today);
+    console.log("selectedDate= "+ selectedDate);*/
+    if (selectedDate) {
+      const day = getDayOfWeek(selectedDate);
+      setDayOfWeek(day);
+
+      // 클라이언트에서 필터링
+      const filteredData = allPeriodData.filter(
+        (entry) => entry.dayOfWeek === day,
+      );
+      setFilteredPeriodData(filteredData);
+
+      // 과거일 경우 출석 데이터 가져오기
+      if (selectedDate < today) {
+        fetchAttendanceData();
+      }
+    }
+
+  }, [selectedDate, allPeriodData, today, fetchAttendanceData]);
+
+  // 초기 로딩 시 전체 시간표 데이터 가져오기
+  useEffect(() => {
+    if (currentCourse?.id) {
+      fetchAllPeriodData();
+      fetchAttendanceData();
+    }
+  }, [currentCourse, fetchAllPeriodData, fetchAttendanceData]);
 
  if (error) {
    return (
@@ -196,15 +275,54 @@ const StudentMainPage = () => {
          p-4 bg-[#F9F7F7] rounded-lg
        `}>
          <div className="mt-2 pb-4 w-full h-full">
-           {selectedDate && (
-             <>
-               <h3 className="mb-4 text-xl font-bold">{selectedDate}</h3>
+           <h3
+             className="mb-4 text-xl font-bold">{selectedDate} {dayOfWeek}</h3>
+
+             {/* 현재날짜: 입실/퇴실 버튼 */}
+             {selectedDate === today ? (
+               <>
+                 {/* 입실하기 Button */}
+                 {enterTime ? (
+                   <div className="mb-4 text-sm text-gray-700">
+                     입실시간: {enterTime}
+                   </div>) : (
+                   <button
+                     className="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-2 rounded mb-4 transition-colors duration-200"
+                     onClick={() => handleAttendanceClick(true)} // 입실 처리 핸들러
+                   >
+                     입실하기
+                   </button>
+                 )}
+
+
+                 {/* 퇴실하기 Button */}
+                 {exitTime ? (
+                   <div className="mb-6 text-sm text-gray-700">
+                     퇴실시간: {exitTime}
+                   </div>
+                 ) : (
+                   <button
+                     className="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded mb-6 transition-colors duration-200"
+                     onClick={() => handleAttendanceClick(false)} // 퇴실 처리 핸들러
+                   >
+                     퇴실하기
+                   </button>
+                 )}
+               </>
+             ) : selectedDate < today ? (
+               <>
+                 {/*과거 날짜인 경우: 출석 상태*/}
                <div className="overflow-auto max-h-96">
-                 <table className="table-auto w-full border-collapse bg-white">
+                 <table
+                   className="table-auto w-full border-collapse bg-white">
                    <thead>
                      <tr className="bg-gray-50">
-                       <th className="border px-4 py-2 text-sm font-semibold text-gray-700">교시</th>
-                       <th className="border px-4 py-2 text-sm font-semibold text-gray-700">출석</th>
+                       <th
+                         className="border px-4 py-2 text-sm font-semibold text-gray-700">교시
+                       </th>
+                       <th
+                         className="border px-4 py-2 text-sm font-semibold text-gray-700">출석
+                       </th>
                      </tr>
                    </thead>
                    <tbody>
@@ -215,24 +333,23 @@ const StudentMainPage = () => {
                              {entry.periodName}
                            </td>
                            <td className="border">
-                             <div className="flex items-center justify-center h-full min-h-[2.5rem]">
+                             <div
+                               className="flex items-center justify-center h-full min-h-[2.5rem]">
                                {entry.status !== null ? (
-                                 <div className="flex items-center justify-center">
-                                   <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm
-                                     ${entry.status === '출석' ? 'text-green-600' :
-                                       entry.status === '지각' ? 'text-orange-600' :
-                                       'text-red-600'}`
-                                   }>
-                                     {getStatusIcon(entry.status)}
-                                   </span>
+                                 <div
+                                   className="flex items-center justify-center">
+                              <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm
+                                ${entry.status === '출석' ? 'text-green-600' :
+                                entry.status === '지각' ? 'text-orange-600' :
+                                  'text-red-600'}`
+                              }>
+                                {getStatusIcon(entry.status)}
+                              </span>
                                  </div>
                                ) : (
-                                 <button
-                                   className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-1.5 rounded transition-colors duration-200"
-                                   onClick={() => handleAttendanceClick(entry.periodId)}
-                                 >
-                                   출석하기
-                                 </button>
+                                 <span>
+                                   해당 날짜의 출석 정보가 없습니다.
+                                 </span>
                                )}
                              </div>
                            </td>
@@ -240,7 +357,8 @@ const StudentMainPage = () => {
                        ))
                      ) : (
                        <tr>
-                         <td colSpan="2" className="text-center text-gray-500 text-sm py-4">
+                         <td colSpan="2"
+                             className="text-center text-gray-500 text-sm py-4">
                            출석 데이터가 없습니다.
                          </td>
                        </tr>
@@ -249,7 +367,49 @@ const StudentMainPage = () => {
                  </table>
                </div>
              </>
-           )}
+             ) : null}
+
+             {/* 공통 시간표*/}
+             <div className="overflow-auto max-h-96">
+               <h2>{dayOfWeek} 시간표</h2>
+               {filteredPeriodData.length > 0 ? (
+                 <table
+                   className="table-auto w-full border-collapse bg-white">
+                   <thead>
+                   <tr className="bg-gray-50">
+                     <th
+                       className="border px-4 py-2 text-sm font-semibold text-gray-700">교시
+                     </th>
+                     <th
+                       className="border px-4 py-2 text-sm font-semibold text-gray-700">시작
+                       시간
+                     </th>
+                     <th
+                       className="border px-4 py-2 text-sm font-semibold text-gray-700">종료
+                       시간
+                     </th>
+                   </tr>
+                   </thead>
+                   <tbody>
+                   {filteredPeriodData.map((entry, index) => (
+                     <tr key={index} className="text-center">
+                       <td className="border text-center text-sm py-3">
+                         {entry.name}
+                       </td>
+                       <td className="border text-center text-sm py-3">
+                         {entry.startTime.split(":").slice(0,2).join(":")}
+                       </td>
+                       <td className="border text-center text-sm py-3">
+                         {entry.endTime.split(":").slice(0,2).join(":")}
+                       </td>
+                     </tr>
+                   ))}
+                   </tbody>
+                 </table>
+               ) : (
+                 <p>해당 날짜의 시간표가 없습니다.</p>
+               )}
+             </div>
          </div>
        </div>
        {/* ===== ATTENDANCE UI SECTION END ===== */}

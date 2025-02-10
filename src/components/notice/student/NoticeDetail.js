@@ -24,7 +24,38 @@ const NoticeDetail = ({ noticeId, onClose, refreshNoticeList }) => {
     };
 
     fetchNoticeDetail();
-  }, [noticeId, refreshNoticeList]);
+  }, [noticeId]);
+
+
+  const handleFileDownload = async (fileId) => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/notice/${notice.id}/files/${fileId}/download`,
+        { responseType: "blob" }
+      );
+
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"]
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      const contentDisposition = response.headers["content-disposition"];
+      const fileName = contentDisposition
+        ? decodeURIComponent(contentDisposition.split("filename=")[1].replace(/['"]/g, ""))
+        : notice.files.find((file) => file.id === fileId)?.originalName || `파일_${fileId}`;
+
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("File download failed:", error);
+      alert("파일 다운로드에 실패했습니다.");
+    }
+  };
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -103,19 +134,20 @@ const NoticeDetail = ({ noticeId, onClose, refreshNoticeList }) => {
 
         {/* 첨부파일 섹션 */}
         {notice.files && notice.files.length > 0 && (
-          <div className="mt-4 p-4 bg-gray-50 rounded cursor-pointer hover:bg-gray-200 transition-colors duration-200">
-            <p className="font-medium">첨부파일</p>
-            {notice.files.map((file) => (
-              <a
-                key={file.id}
-                href={file.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-700"
-              >
-                {file.originalName}
-              </a>
-            ))}
+          <div className="mt-4 mb-4 p-4 bg-gray-50 rounded">
+            <p className="font-bold mb-2">첨부파일</p>
+            <ul className="space-y-2">
+              {notice.files.map((file) => (
+                <li key={file.id} className="flex items-center p-2 rounded hover:bg-gray-200 transition-colors duration-200">
+                  <button
+                    onClick={() => handleFileDownload(file.id, file.originalName)}
+                    className="text-blue-500 hover:text-blue-700 flex-1 text-left"
+                  >
+                    {file.originalName || `파일_${file.id}`}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>

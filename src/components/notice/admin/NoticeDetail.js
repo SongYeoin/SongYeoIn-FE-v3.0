@@ -38,7 +38,7 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
   // 공지사항 상세 조회
   useEffect(() => {
     fetchNoticeDetail();
-  }, [noticeId, refreshNoticeList]);
+  }, [noticeId]);
 
   const fetchNoticeDetail = async () => {
     setIsLoading(true);
@@ -58,6 +58,36 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
       console.error("Error fetching notice detail:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleFileDownload = async (fileId) => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/admin/notice/${notice.id}/files/${fileId}/download`,
+        { responseType: "blob" }
+      );
+
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"]
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      const contentDisposition = response.headers["content-disposition"];
+      const fileName = contentDisposition
+        ? decodeURIComponent(contentDisposition.split("filename=")[1].replace(/['"]/g, ""))
+        : notice.files.find((file) => file.id === fileId)?.originalName || `파일_${fileId}`;
+
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("File download failed:", error);
+      alert("파일 다운로드에 실패했습니다.");
     }
   };
 
@@ -143,17 +173,18 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
 
       await axios.put(
         `${process.env.REACT_APP_API_URL}/admin/notice/${editedNotice.id}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        formData
       );
 
       alert("공지사항이 수정되었습니다.");
-      await fetchNoticeDetail(); // 수정된 데이터를 다시 조회
+      refreshNoticeList();
+      setNotice((prev) => ({
+        ...prev,
+        title: editedNotice.title,
+        content: editedNotice.content,
+        isPinned: editedNotice.isPinned,
+        files: [...prev.files.filter(file => !filesToDelete.includes(file.id)), ...newFiles],
+      }));
       setIsEditing(false); // 수정 모드 해제
       setNewFiles([]);
       setFilesToDelete([]);
@@ -295,26 +326,24 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
 
         {/* 첨부파일 섹션 */}
         {editedNotice.files.length > 0 && (
-          <div className="mb-6 border border-gray-300 rounded-lg p-4">
-            <h3 className="text-sm text-gray-600 font-bold mb-4">첨부파일</h3>
+          <div className="mt-4 mb-4 p-4 bg-gray-50 rounded">
+            <p className="font-bold mb-2">첨부파일</p>
             <ul className="space-y-2">
               {editedNotice.files.map((file) => (
                 <li key={file.id} className="flex items-center">
-                  <a
-                    href={file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline flex-1"
+                  <button
+                    onClick={() => handleFileDownload(file.id)}
+                    className="flex-1 p-2 rounded hover:bg-gray-200 transition-colors duration-200 cursor-pointer text-blue-500 hover:text-blue-700 text-left"
                   >
-                    {file.originalName}
-                  </a>
+                    {file.originalName || `파일_${file.id}`}
+                  </button>
                   {isEditing && (
                     <button
                       type="button"
                       onClick={() => handleDeleteFile(file.id)}
                       className="ml-2 text-red-500 hover:text-red-700"
                     >
-                      🗑
+                      ✕
                     </button>
                   )}
                 </li>
@@ -335,7 +364,7 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
 
             <div className="bg-gray-50 p-3 rounded-lg mb-3 text-sm text-gray-600">
               <p>• 최대 5개 파일 업로드 가능</p>
-              <p>• 허용 확장자: hwp, doc(x), xls(x), ppt(x), pdf, 이미지 파일</p>
+              <p>• 허용 확장자: hwp(x), doc(x), xls(x), ppt(x), pdf, 이미지 파일</p>
             </div>
 
             {/* 새로 추가된 파일 목록 */}
