@@ -118,32 +118,6 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
           )}
 
           <div className="flex items-center gap-4">
-            {/* 학생명 Filter */}
-            {role === 'admin' && (
-              <div
-                className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  fill="#9A97A9"
-                  className="bi bi-search"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                </svg>
-                <input
-                  type="text"
-                  name="studentName"
-                  value={filters.studentName}
-                  onChange={handleInputChange}
-                  placeholder="검색할 학생명을 입력해주세요."
-                  className="w-full text-gray-600 focus:outline-none"
-                />
-              </div>
-            )}
-
             {/* 날짜 Filter */}
             <div>
               {role === 'admin' ? (
@@ -181,19 +155,16 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
 
             {/* 출석 상태 Selector */}
             <div className="flex space-x-2">
-              {/* Present Button */}
               <button
                 className={`px-4 py-2 rounded ${
                   filters.status === 'PRESENT'
-                    ? 'bg-[#228B22] bg-opacity-50 text-black' // 초록색 배경과 흰색 텍스트
-                    : 'bg-gray-200' // 기본 배경과 검정 텍스트
+                    ? 'bg-[#228B22] bg-opacity-50 text-black'
+                    : 'bg-gray-200'
                 }`}
                 onClick={() => handleStatusToggle('PRESENT')}
               >
                 출석
               </button>
-
-              {/* Late Button */}
               <button
                 className={`px-4 py-2 rounded ${
                   filters.status === 'LATE'
@@ -204,8 +175,6 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
               >
                 지각
               </button>
-
-              {/* Absent Button */}
               <button
                 className={`px-4 py-2 rounded ${
                   filters.status === 'ABSENT'
@@ -218,6 +187,29 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
               </button>
             </div>
 
+            {/* 학생명 Filter */}
+            {role === 'admin' && (
+              <div className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="#9A97A9"
+                  className="bi bi-search"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                </svg>
+                <input
+                  type="text"
+                  name="studentName"
+                  value={filters.studentName}
+                  onChange={handleInputChange}
+                  placeholder="검색할 학생명을 입력해주세요."
+                  className="w-full text-gray-600 focus:outline-none"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
