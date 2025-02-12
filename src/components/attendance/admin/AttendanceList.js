@@ -1,5 +1,5 @@
 import AdminLayout from '../../common/layout/admin/AdminLayout';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'api/axios';
 import AttendMainHeader from '../AttendMainHeader';
 import AttendanceDetail from './AttendanceDetail';
@@ -20,6 +20,7 @@ export const AttendanceList = () => {
   });
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [attendanceRates, setAttendanceRates] = useState({});
 
   // periodHeaders 상태 제거
 
@@ -41,13 +42,29 @@ export const AttendanceList = () => {
     fetchCourses();
   }, []);
 
-  useEffect(() => {
-    if (filters.courseId && filters.date) {
-      fetchAttendanceData();
-    }
-  }, [filters, currentPage]);
+  /* 출석률 조회 */
+  const fetchAttendanceRates = useCallback(async () => {
+    try {
+      if (!filters.courseId) return;
 
-  const fetchAttendanceData = async () => {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/admin/attendance/course/${filters.courseId}/rate`
+      );
+      setAttendanceRates(prev => ({ ...prev, ...response.data }));
+
+    } catch (error) {
+      console.error("출석률 데이터를 불러오는 중 오류 발생:", error);
+    }
+  }, [filters.courseId]);
+
+  useEffect(() => {
+    if (filters.courseId) {
+      fetchAttendanceRates();
+    }
+  }, [fetchAttendanceRates,filters.courseId]); // ✅ useCallback을 의존성으로 추가
+
+  const fetchAttendanceData = useCallback(async () => {
+
     try {
       const params = {
         studentName: filters.studentName || undefined,
@@ -68,7 +85,13 @@ export const AttendanceList = () => {
     } catch (error) {
       console.error('Error fetching attendance data:', error);
     }
-  };
+  },[currentPage, filters.studentName, filters.date,filters.courseId, filters.status]);
+
+  useEffect(() => {
+    if (filters.courseId && filters.date) {
+      fetchAttendanceData();
+    }
+  }, [filters.courseId, filters.date, currentPage, fetchAttendanceData]);
 
   const handleFilterChange = (updatedFilters) => {
     setFilters(updatedFilters);
@@ -120,21 +143,34 @@ export const AttendanceList = () => {
           <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
             {/* Table Header */}
             <div className="border-b border-gray-200 bg-gray-50">
-              <div className="grid grid-cols-11 gap-4 px-6 py-4">
+              <div className="grid grid-cols-[repeat(13,1fr)] gap-4 px-6 py-4">
                 <div className="flex flex-col items-center justify-center">
-                  <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">이름</span>
+                  <span
+                    className="text-sm font-bold text-gray-800 uppercase tracking-wider">이름</span>
                 </div>
                 <div className="flex flex-col items-center justify-center">
-                  <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">과정</span>
+                  <span
+                    className="text-sm font-bold text-gray-800 uppercase tracking-wider">과정</span>
                 </div>
                 <div className="flex flex-col items-center justify-center">
-                  <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">날짜</span>
+                  <span
+                    className="text-sm font-bold text-gray-800 uppercase tracking-wider">날짜</span>
                 </div>
                 {ALL_PERIODS.map((period, index) => (
-                  <div key={index} className="flex flex-col items-center justify-center">
-                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">{period}</span>
+                  <div key={index}
+                       className="flex flex-col items-center justify-center">
+                    <span
+                      className="text-sm font-bold text-gray-800 uppercase tracking-wider">{period}</span>
                   </div>
                 ))}
+                <div className="flex flex-col items-center justify-center">
+                  <span
+                    className="text-sm font-bold text-gray-800 uppercase tracking-wider">전체 출석률</span>
+                </div>
+                <div className="flex flex-col items-center justify-center">
+                  <span
+                    className="text-sm font-bold text-gray-800 uppercase tracking-wider">한 달 출석률</span>
+                </div>
               </div>
             </div>
 
@@ -144,19 +180,36 @@ export const AttendanceList = () => {
                 attendance.map((row) => (
                   <div
                     key={row.studentId}
-                    onClick={() => handleRowClick(filters.courseId, row.studentId, filters.date)}
-                    className="grid grid-cols-11 gap-4 px-6 py-3 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
+                    onClick={() => handleRowClick(filters.courseId,
+                      row.studentId, filters.date)}
+                    className="grid grid-cols-[repeat(13,1fr)] gap-4 px-6 py-3 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
                   >
-                    <div className="text-sm font-medium text-gray-900 text-center">{row.studentName}</div>
-                    <div className="text-sm text-gray-600 text-center">{row.courseName}</div>
+                    <div
+                      className="text-sm font-medium text-gray-900 text-center">{row.studentName}</div>
+                    <div
+                      className="text-sm text-gray-600 text-center">{row.courseName}</div>
                     <div className="text-sm text-gray-600 text-center">
                       {new Date(row.date).toLocaleDateString('ko-KR')}
                     </div>
                     {ALL_PERIODS.map((period, index) => (
-                      <div key={index} className="flex items-center justify-center">
+                      <div key={index}
+                           className="flex items-center justify-center">
                         {getStatusIcon(row.students[period] || '-')}
                       </div>
                     ))}
+
+                    <div
+                      className="text-sm text-gray-600 text-center">
+                      {attendanceRates[row.studentId]?.overallAttendanceRate !== undefined
+                      ? `${attendanceRates[row.studentId].overallAttendanceRate}%`
+                      : "없음"}
+                    </div>
+                    <div
+                      className="text-sm text-gray-600 text-center">
+                      {attendanceRates[row.studentId]?.twentyDayScore !== undefined
+                      ? `${attendanceRates[row.studentId].twentyDayScore}%`
+                      : "없음"}
+                    </div>
                   </div>
                 ))
               ) : (

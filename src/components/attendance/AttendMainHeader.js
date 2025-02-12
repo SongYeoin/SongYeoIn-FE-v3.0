@@ -102,6 +102,7 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
             ))}
           </select>
 
+          {role === 'student' && (
           <div>
             <span> 전체(115일) 출석률:{" "}
               {attendanceRates.overallAttendanceRate !== null
@@ -114,6 +115,7 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
               : "없음"}
             </span>
           </div>
+          )}
 
           <div className="flex items-center gap-4">
             {/* 학생명 Filter */}
