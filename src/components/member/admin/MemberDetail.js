@@ -41,7 +41,7 @@ const MemberDetail = ({ memberId, onClose }) => {
         );
         setMember(response.data);
       } catch (error) {
-        console.error('Error fetching member details:', error);
+        alert('회원 정보를 가져오는 중 오류가 발생했습니다.');
       }
     };
 
@@ -52,7 +52,7 @@ const MemberDetail = ({ memberId, onClose }) => {
         );
         setHistory(response.data);
       } catch (error) {
-        console.error('Error fetching history:', error);
+        alert('수강 이력을 가져오는 중 오류가 발생했습니다.');
       }
     };
 
@@ -63,7 +63,7 @@ const MemberDetail = ({ memberId, onClose }) => {
         );
         setAvailableCourses(response.data);
       } catch (error) {
-        console.error('Error fetching available courses:', error);
+        alert('과정 목록을 가져오는 중 오류가 발생했습니다.');
       }
     };
 
@@ -96,7 +96,6 @@ const MemberDetail = ({ memberId, onClose }) => {
       setIsEditing(false);
       alert('회원 정보가 수정되었습니다.');
     } catch (error) {
-      console.error('Error updating member:', error);
       alert('회원 정보 수정에 실패했습니다.');
     }
   };
@@ -126,7 +125,6 @@ const MemberDetail = ({ memberId, onClose }) => {
       );
       setHistory(updatedHistory.data);
     } catch (error) {
-      console.error('Error enrolling course:', error);
       alert('수강 신청에 실패했습니다. 다시 시도해주세요.');
     }
   };
@@ -143,7 +141,6 @@ const MemberDetail = ({ memberId, onClose }) => {
       );
       setHistory(updatedHistory.data);
     } catch (error) {
-      console.error('Error deleting enrollment:', error);
       alert('수강 신청 삭제에 실패했습니다. 다시 시도해주세요.');
     }
   };
@@ -157,7 +154,6 @@ const MemberDetail = ({ memberId, onClose }) => {
       setTemporaryPassword(response.data.temporaryPassword);
       setShowResetDialog(false);
     } catch (error) {
-      console.error('Error resetting password:', error);
       alert('비밀번호 초기화에 실패했습니다.');
     }
   };
@@ -186,7 +182,6 @@ const MemberDetail = ({ memberId, onClose }) => {
         setMember(updatedMember);
         alert('회원이 탈퇴 처리되었습니다.');
       } catch (error) {
-        console.error('Error withdrawing member:', error);
         alert('회원 탈퇴 처리에 실패했습니다.');
       }
     }
