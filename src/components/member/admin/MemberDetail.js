@@ -12,6 +12,7 @@ const MemberDetail = ({ memberId, onClose }) => {
   const [contentHeight, setContentHeight] = useState(0);
   const contentRef = useRef(null);
   const [showResetDialog, setShowResetDialog] = useState(false);
+  const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [temporaryPassword, setTemporaryPassword] = useState('');
   const [showCopySuccess, setShowCopySuccess] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -167,23 +168,16 @@ const MemberDetail = ({ memberId, onClose }) => {
 
   // 탈퇴
   const handleWithdraw = async () => {
-    const confirmMessage =
-      '정말 이 회원을 탈퇴 처리하시겠습니까?\n' +
-      '- 해당 회원의 모든 수강 정보가 삭제됩니다.\n' +
-      '- 이 작업은 되돌릴 수 없습니다.\n' +
-      '계속하시겠습니까?';
-
-    if (window.confirm(confirmMessage)) {
-      try {
-        await axios.post(
-          `${process.env.REACT_APP_API_URL}/admin/member/withdraw/${memberId}`,
-        );
-        const updatedMember = { ...member, checkStatus: 'N' };
-        setMember(updatedMember);
-        alert('회원이 탈퇴 처리되었습니다.');
-      } catch (error) {
-        alert('회원 탈퇴 처리에 실패했습니다.');
-      }
+    try {
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/admin/member/withdraw/${memberId}`,
+      );
+      const updatedMember = { ...member, checkStatus: 'N' };
+      setMember(updatedMember);
+      alert('회원이 탈퇴 처리되었습니다.');
+      setShowWithdrawDialog(false);
+    } catch (error) {
+      alert('회원 탈퇴 처리에 실패했습니다.');
     }
   };
 
@@ -362,7 +356,7 @@ const MemberDetail = ({ memberId, onClose }) => {
               <div>
               <label className="text-sm text-gray-600 font-bold">상태</label>
               <button
-                onClick={handleWithdraw}
+                onClick={() => setShowWithdrawDialog(true)}
                 disabled={member.checkStatus === 'N'}
                 className={`w-full px-3 py-2 rounded-lg transition-colors duration-200 ${
                   member.checkStatus === 'N'
@@ -538,6 +532,38 @@ const MemberDetail = ({ memberId, onClose }) => {
                 </button>
                 <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg" onClick={handlePasswordReset}>
                   초기화
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 회원 탈퇴 확인 다이얼로그 */}
+        {showWithdrawDialog && (
+          <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <h3 className="text-lg font-bold">회원 탈퇴</h3>
+              <div className="mt-2">
+                <p className="mb-2">정말 이 회원을 탈퇴 처리하시겠습니까?</p>
+                <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                  <li>• 해당 회원의 모든 수강 정보가 삭제됩니다.</li>
+                  <li>• 이 작업은 되돌릴 수 없습니다.</li>
+                  <li>• 진행 중인 수업이 있다면, 종료 후 탈퇴하는 것을 권장합니다.</li>
+                </ul>
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg"
+                  onClick={() => setShowWithdrawDialog(false)}
+                >
+                  취소
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                  onClick={handleWithdraw}
+                >
+                  탈퇴
                 </button>
               </div>
             </div>
