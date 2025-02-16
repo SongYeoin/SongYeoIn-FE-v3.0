@@ -201,15 +201,6 @@ const MemberDetail = ({ memberId, onClose }) => {
     );
   }
 
-  const renderApprovalStatus = (status) => {
-    switch(status) {
-      case 'Y': return '승인';
-      case 'N': return '미승인';
-      case 'W': return '대기';
-      default: return '대기';
-    }
-  };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto">
       <div
@@ -333,7 +324,10 @@ const MemberDetail = ({ memberId, onClose }) => {
               ) : (
                 <input
                   type="text"
-                  value={renderApprovalStatus(member.checkStatus)}
+                  value={
+                    member.checkStatus === 'Y' ? '승인' :
+                      member.checkStatus === 'N' ? '미승인' : '대기'
+                  }
                   readOnly
                   className={`w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default select-none focus:outline-none ${
                     member.checkStatus === 'Y' ? 'text-green-600' :
