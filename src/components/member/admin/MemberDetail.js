@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'api/axios';
 import { Copy, Check } from 'lucide-react';
+import { useUser } from '../../common/UserContext';
 //import { FaTrash } from 'react-icons/fa';
 
 const MemberDetail = ({ memberId, onClose }) => {
+  const { user: currentAdmin } = useUser();
   const [member, setMember] = useState(null);
   const [history, setHistory] = useState([]);
   const [availableCourses, setAvailableCourses] = useState([]);
@@ -171,8 +173,9 @@ const MemberDetail = ({ memberId, onClose }) => {
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/admin/member/withdraw/${memberId}`,
+        { adminId: currentAdmin.id }
       );
-      const updatedMember = { ...member, checkStatus: 'N' };
+      const updatedMember = { ...member, deletedBy: currentAdmin.id };
       setMember(updatedMember);
       alert('회원이 탈퇴 처리되었습니다.');
       setShowWithdrawDialog(false);
@@ -353,12 +356,12 @@ const MemberDetail = ({ memberId, onClose }) => {
                 onClick={() => setShowWithdrawDialog(true)}
                 disabled={member.checkStatus === 'N'}
                 className={`w-full px-3 py-2 rounded-lg transition-colors duration-200 ${
-                  member.checkStatus === 'N'
+                  member.deletedBy !== null
                     ? 'bg-gray-400 text-white cursor-not-allowed'
                     : 'border-2 border-red-400 text-red-600 hover:bg-red-50'
                 }`}
               >
-                {member.checkStatus === 'Y' ? '회원 탈퇴' : '탈퇴 완료'}
+                {member.deletedBy === null ? '회원 탈퇴' : '탈퇴 완료'}
               </button>
             </div>
             )}
