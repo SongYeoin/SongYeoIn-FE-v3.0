@@ -163,9 +163,13 @@ const MemberDetail = ({ memberId, onClose }) => {
 
   // 비밀번호 복사
   const handleCopyPassword = () => {
-    navigator.clipboard.writeText(temporaryPassword);
-    setShowCopySuccess(true);
-    setTimeout(() => setShowCopySuccess(false), 2000);
+    try {
+      navigator.clipboard.writeText(temporaryPassword);
+      setShowCopySuccess(true);
+      setTimeout(() => setShowCopySuccess(false), 2000);
+    } catch (error) {
+      alert('비밀번호 복사에 실패했습니다. 수동으로 복사해주세요.');
+    }
   };
 
   // 탈퇴
@@ -199,13 +203,22 @@ const MemberDetail = ({ memberId, onClose }) => {
       <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <p>회원 정보를 가져올 수 없습니다.</p>
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+            >
+              닫기
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto">
       <div
         ref={contentRef}
         className="bg-white w-full max-w-4xl p-6 rounded-2xl shadow-lg my-10"
