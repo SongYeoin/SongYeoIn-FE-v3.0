@@ -24,7 +24,7 @@ const StudentJournalList = () => {
     try {
       const response = await studentJournalApi.getList(filters.courseId, {
         pageNum: currentPage,
-        amount: 15,
+        amount: 20,
         startDate: filters.startDate,
         endDate: filters.endDate
       });
