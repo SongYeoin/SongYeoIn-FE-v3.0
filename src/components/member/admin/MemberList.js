@@ -18,7 +18,7 @@ export const MemberList = () => {
      const response = await axios.get(
        `${process.env.REACT_APP_API_URL}/admin/member`,
        {
-         params: { word: search, page: page - 1, size: 15 },
+         params: { word: search, page: page - 1, size: 20 },
        }
      );
      setMembers(response.data.content); // 데이터를 상태에 저장

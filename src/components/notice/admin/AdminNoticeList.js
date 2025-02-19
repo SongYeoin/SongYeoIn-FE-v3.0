@@ -38,7 +38,7 @@ const AdminNoticeList = () => {
   const fetchNotices = async (search, page, courseId) => {
     try {
       const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/admin/notice`, {
-        params: { titleKeyword: search, page: page - 1, size: 15, courseId },
+        params: { titleKeyword: search, page: page - 1, size: 20, courseId },
       });
 
       // 상단고정과 일반 게시글 분리
@@ -49,7 +49,7 @@ const AdminNoticeList = () => {
       const totalRegularNotices = data.totalElements - pinnedNotices.length;
       const paginatedRegularNotices = regularNotices.map((notice, index) => ({
         ...notice,
-        postNumber: totalRegularNotices - (page - 1) * 15 - index,
+        postNumber: totalRegularNotices - (page - 1) * 20 - index,
       }));
 
       // 상단고정 + 역순 일반 게시글 병합
