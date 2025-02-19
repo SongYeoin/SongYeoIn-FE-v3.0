@@ -47,6 +47,25 @@ const StudentMainPage = () => {
     const date = new Date(dateString);
     return days[date.getDay()];
   };
+  const [showPeriodSelection, setShowPeriodSelection] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState(null); // 선택한 교시 ID
+  const [selectedPeriodName, setSelectedPeriodName] = useState(""); // 선택한 교시 이름
+
+  // 교시 선택 핸들러
+  const handlePeriodSelect = (periodId, periodName) => {
+    setSelectedPeriod(periodId);
+    setSelectedPeriodName(periodName);
+  };
+
+  const handleEarlyExitClick = () => {
+    if (!showPeriodSelection) {
+      setShowPeriodSelection(true); // 첫 클릭 시 시간표 표시
+    } else if (selectedPeriod) {
+      handleAttendanceClick('EARLY_EXIT', selectedPeriod, selectedPeriodName); // 선택한 경우 조퇴 처리
+      setShowPeriodSelection(false);
+      setSelectedPeriod(null);
+    }
+  };
 
   const fetchAttendanceData = useCallback(async () => {
    if (selectedDate && currentCourse) {
@@ -99,27 +118,65 @@ const StudentMainPage = () => {
           <path
             d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
         </svg>;
+      case '조퇴':
+        return '조퇴';
       default:
         return '-';
     }
   };
   /* ===== ATTENDANCE SECTION END ===== */
 
-  const handleAttendanceClick = async (isEntering) => {
+  const handleAttendanceClick = async (attendanceType, periodId = null, periodName = "") => {
       try {
+
+        if (attendanceType === "EARLY_EXIT") {
+          if (!periodId) {
+            alert("조퇴할 교시를 선택해주세요.");
+            return;
+          }
+
+          const confirmExit = window.confirm(`선택한 교시 (${periodName})에 조퇴하시겠습니까?`);
+          if (!confirmExit) {
+            return; // 사용자가 취소하면 요청을 보내지 않음
+          }
+        }
+
+
+        const requestData = {
+          attendanceType: attendanceType,
+          courseId: currentCourse.id,
+        };
+
+        // 조퇴하는 경우 periodId 추가
+        if (attendanceType === "EARLY_EXIT") {
+          if (!periodId) {
+            alert(`조퇴 완료! (교시: ${periodName})`);
+            return;
+          }
+          requestData.periodId = periodId; // API 요청에 선택한 교시 포함
+        }
+
         const response = await axios.post(
           `${process.env.REACT_APP_API_URL}/attendance/enroll`,
-          {
-            isEntering: isEntering,
-            courseId: currentCourse.id
-          }
+          requestData
         );
+
         console.log('출석 성공:', response.data);
-        /*fetchAttendanceData();*/
-        alert(isEntering ? '입실 완료!' : '퇴실 완료!');
+
+        if (attendanceType === "ENTER") {
+          alert("입실 완료!");
+          //setEnterTime(formatDateTime(response.data.enterTime));
+        } else if (attendanceType === "EARLY_EXIT") {
+          alert("조퇴 완료!");
+          //setExitTime(formatDateTime(response.data.exitTime));
+        } else if (attendanceType === "EXIT") {
+          alert("퇴실 완료!");
+          //setExitTime(formatDateTime(response.data.exitTime));
+        }
+
+
         fetchAttendanceData();
-/*        isEntering ? setEnterTime(formatDateTime(response.data.enterTime)) : setExitTime(
-          formatDateTime(response.data.exitTime));*/
+
       } catch (error) {
         if (error.response && error.response.data) {
           const errorMessage = error.response.data.message;
@@ -288,12 +345,63 @@ const StudentMainPage = () => {
                    </div>) : (
                    <button
                      className="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-2 rounded mb-4 transition-colors duration-200"
-                     onClick={() => handleAttendanceClick(true)} // 입실 처리 핸들러
+                     onClick={() => handleAttendanceClick('ENTER')} // 입실 처리 핸들러
                    >
                      입실하기
                    </button>
                  )}
 
+
+                 {/* 시간표 출력 (교시 선택 가능) */}
+                 {showPeriodSelection && (<table
+                   className="w-full border-collapse border border-gray-300">
+                   <thead>
+                   <tr>
+                     <th className="border text-sm py-3">선택</th>
+                     <th className="border text-sm py-3">교시</th>
+                     <th className="border text-sm py-3">시작 시간</th>
+                     <th className="border text-sm py-3">종료 시간</th>
+                   </tr>
+                   </thead>
+                   <tbody>
+                   {filteredPeriodData.map((entry, index) => (
+                     <tr key={index} className="text-center">
+                       <td className="border text-center text-sm py-3">
+                         <input
+                           type="radio"
+                           name="selectedPeriod"
+                           value={entry.id}
+                           checked={selectedPeriod === entry.id}
+                           onChange={() => handlePeriodSelect(entry.id, entry.name)}
+                         />
+                       </td>
+                       <td
+                         className="border text-center text-sm py-3">{entry.name}</td>
+                       <td className="border text-center text-sm py-3">
+                         {entry.startTime.split(':').slice(0, 2).join(':')}
+                       </td>
+                       <td className="border text-center text-sm py-3">
+                         {entry.endTime.split(':').slice(0, 2).join(':')}
+                       </td>
+                     </tr>
+                   ))}
+                   </tbody>
+                 </table>)}
+
+                 {/* 조퇴하기 Button (입실한 경우에만 활성화) */}
+                 {enterTime && !exitTime && (
+                   <button
+                     className={`text-white text-sm px-4 py-2 rounded mb-4 transition-colors duration-200
+                     ${!showPeriodSelection || selectedPeriod
+                       ? 'bg-yellow-500 hover:bg-yellow-600'
+                       : 'bg-gray-400 cursor-not-allowed'
+                     }`}
+                     onClick={handleEarlyExitClick}
+                     disabled={showPeriodSelection && !selectedPeriod}
+                   >
+                     {showPeriodSelection ? '조퇴 확정하기' : '조퇴하기'}
+                   </button>
+                 )}
 
                  {/* 퇴실하기 Button */}
                  {exitTime ? (
@@ -303,7 +411,7 @@ const StudentMainPage = () => {
                  ) : (
                    <button
                      className="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded mb-6 transition-colors duration-200"
-                     onClick={() => handleAttendanceClick(false)} // 퇴실 처리 핸들러
+                     onClick={() => handleAttendanceClick('EXIT')} // 퇴실 처리 핸들러
                    >
                      퇴실하기
                    </button>

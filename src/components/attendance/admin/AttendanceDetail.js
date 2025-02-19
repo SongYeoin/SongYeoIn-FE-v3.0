@@ -172,6 +172,8 @@ const AttendanceDetail = ({ attendance, onClose }) => {
             <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
           </svg>
         ); // Cross
+      case '조퇴':
+        return '조퇴';
       default:
         return '-'; // Empty for unknown status
     }
@@ -332,7 +334,8 @@ return (
                                   name={`status-${index}`}
                                   value="PRESENT"
                                   checked={selectedStatus === 'PRESENT'}
-                                  onChange={(e) => setSelectedStatus(e.target.value)}
+                                  onChange={(e) => setSelectedStatus(
+                                    e.target.value)}
                                 />
                                 출석
                               </label>
@@ -342,7 +345,8 @@ return (
                                   name={`status-${index}`}
                                   value="LATE"
                                   checked={selectedStatus === 'LATE'}
-                                  onChange={(e) => setSelectedStatus(e.target.value)}
+                                  onChange={(e) => setSelectedStatus(
+                                    e.target.value)}
                                 />
                                 지각
                               </label>
@@ -352,9 +356,21 @@ return (
                                   name={`status-${index}`}
                                   value="ABSENT"
                                   checked={selectedStatus === 'ABSENT'}
-                                  onChange={(e) => setSelectedStatus(e.target.value)}
+                                  onChange={(e) => setSelectedStatus(
+                                    e.target.value)}
                                 />
                                 결석
+                              </label>
+                              <label className="flex items-center gap-1">
+                                <input
+                                  type="radio"
+                                  name={`status-${index}`}
+                                  value="EARLY_EXIT"
+                                  checked={selectedStatus === 'EARLY_EXIT'}
+                                  onChange={(e) => setSelectedStatus(
+                                    e.target.value)}
+                                />
+                                조퇴
                               </label>
                             </div>
                             {/* 버튼들을 수평으로 배치 */}
