@@ -97,7 +97,7 @@ const Header = () => {
           <div className="absolute top-0 left-[18px] w-[25px] h-[25px]
             opacity-0 group-hover:opacity-60
             transition-all duration-50
-            bg-yellow-200 blur-lg rounded-full"
+            bg-yellow-200 blur-lg rounded-full pointer-events-none"
             style={{
               transform: 'scale(1.5) translateY(-2px)',
             }}
@@ -106,7 +106,7 @@ const Header = () => {
           <div className="absolute top-1 left-[20px] w-[15px] h-[15px]
             opacity-0 group-hover:opacity-70
             transition-all duration-50
-            bg-yellow-100 blur-md rounded-full"
+            bg-yellow-100 blur-md rounded-full pointer-events-none"
             style={{
               transform: 'scale(1.5) translateY(-2px)',
             }}
