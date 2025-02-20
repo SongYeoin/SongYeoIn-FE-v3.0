@@ -10,7 +10,7 @@ const AdminJournalDetail = ({ journalId, onClose }) => {
         const response = await adminJournalApi.getDetail(journalId);
         setJournal(response.data);
       } catch (error) {
-        console.error('교육일지 상세 조회 실패:', error);
+        alert(error.response?.data?.message || '교육일지 조회에 실패했습니다.');
       }
     };
 

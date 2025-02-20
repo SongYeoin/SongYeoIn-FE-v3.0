@@ -44,12 +44,11 @@ const AdminJournalList = () => {
         startDate: filters.startDate,
         endDate: filters.endDate
       });
-
       setJournals(response.data.data);
       setTotalPages(response.data.pageInfo.totalPages);
-      setTotalElements(response.data.pageInfo.totalElements); // 추가
+      setTotalElements(response.data.pageInfo.totalElements);
     } catch (error) {
-      console.error('교육일지 목록 조회 실패:', error);
+      alert(error.response?.data?.message || '교육일지 목록 조회에 실패했습니다.');
     }
   };
 

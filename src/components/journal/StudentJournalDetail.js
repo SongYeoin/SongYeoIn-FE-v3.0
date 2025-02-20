@@ -10,11 +10,10 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
     const fetchJournalDetail = async () => {
       try {
         const response = await studentJournalApi.getDetail(journalId);
-        console.log('Journal Detail:', response.data);  // 데이터 구조 확인
         setJournal(response.data);
         setEditedData(response.data);
       } catch (error) {
-        console.error('교육일지 상세 조회 실패:', error);
+        alert(error.response?.data?.message || '교육일지 조회에 실패했습니다.');
       }
     };
 
@@ -73,10 +72,9 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
     if (window.confirm('정말 삭제하시겠습니까?')) {
       try {
         await studentJournalApi.delete(journalId);
-        onClose();  // 모달 닫기
+        onClose();
       } catch (error) {
-        console.error('교육일지 삭제 실패:', error);
-        alert('교육일지 삭제에 실패했습니다.');
+        alert(error.response?.data?.message || '교육일지 삭제에 실패했습니다.');
       }
     }
   };
