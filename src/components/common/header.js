@@ -78,7 +78,7 @@ const Header = () => {
   return (
     <>
       <header
-        className="w-full px-5 py-4 bg-[#D3D3D3] flex items-center justify-between top-0">
+        className="w-full px-5 py-6 bg-[#D3D3D3] flex items-center justify-between top-0">
         {/* 왼쪽: 제목 */}
         <h1 className="text-[25px] text-[#1e2d1f]">
           <img
@@ -103,7 +103,7 @@ const Header = () => {
             onClick={() => setShowMyPageModal(true)}
           />
           <span className="text-[#1e2d1f] text-[15px] mr-5"
-                style={{ transform: 'translateY(2px)' }}>
+                style={{ transform: 'translateY(1px)' }}>
           {user?.role === 'ADMIN' ? `${user?.name} 관리자님` : `${user?.name} 님`}
         </span>
           <i
