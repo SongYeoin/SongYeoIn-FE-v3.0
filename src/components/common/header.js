@@ -80,16 +80,36 @@ const Header = () => {
       <header className={`w-full px-5 py-6 flex items-center justify-between top-0
         ${user?.role === 'ADMIN' ? 'bg-[#BCC8D1]' : 'bg-[#D3D3D3]'}`}>
         {/* 왼쪽: 제목 */}
-        <h1 className="text-[25px] text-[#1e2d1f]">
+        <h1 className="text-[25px] text-[#1e2d1f] relative group">
           <img
             src="/images/songyeoin_title.png"
             alt="SONGYEOIN"
-            className="h-[30px] cursor-pointer transition-transform duration-200 hover:opacity-70"
+            className="h-[30px] cursor-pointer transition-all duration-50
+              group-hover:brightness-125 group-hover:scale-110
+              group-hover:filter group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
             style={{
               transform: 'scale(1.5) translateY(-2px)',
               transformOrigin: 'left center',
             }}
             onClick={handleTitleClick}
+          />
+          {/* 전구 효과 */}
+          <div className="absolute top-0 left-[18px] w-[25px] h-[25px]
+            opacity-0 group-hover:opacity-60
+            transition-all duration-50
+            bg-yellow-200 blur-lg rounded-full"
+            style={{
+              transform: 'scale(1.5) translateY(-2px)',
+            }}
+          />
+          {/* 중심 발광 효과 */}
+          <div className="absolute top-1 left-[20px] w-[15px] h-[15px]
+            opacity-0 group-hover:opacity-70
+            transition-all duration-50
+            bg-yellow-100 blur-md rounded-full"
+            style={{
+              transform: 'scale(1.5) translateY(-2px)',
+            }}
           />
         </h1>
 
