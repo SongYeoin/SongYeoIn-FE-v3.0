@@ -45,20 +45,12 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
     return <div>로딩 중 ...</div>;
   }
 
-
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'file') {
       const file = files[0];
       if (file) {
-        const extension = file.name.split('.').pop().toLowerCase();
-        const allowedExtensions = ['hwp', 'hwpx', 'docx', 'doc'];
-
-        if (!allowedExtensions.includes(extension)) {
-          alert('교육일지는 HWP, HWPX, DOCX, DOC 형식만 첨부 가능합니다.');
-          e.target.value = '';
-          return;
-        }
+        // 파일 형식 검증 로직 제거하고 바로 설정
         setFormData({
           ...formData,
           file: file
@@ -73,15 +65,10 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
   };
 
   const handleSubmit = async (e) => {
-    if (e) e.preventDefault();  // form submit 기본 동작 방지
+    if (e) e.preventDefault();
 
     try {
-      // 파일 체크
-      if (!formData.file) {
-        alert('교육일지 파일 첨부는 필수입니다.');
-        return;
-      }
-
+      // 파일 체크도 백엔드에서 처리하도록 수정
       const submitData = new FormData();
       submitData.append('courseId', courseId);
       submitData.append('title', formData.title);
@@ -93,7 +80,7 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
       onSuccess();
       onClose();
     } catch (error) {
-      alert(error.message);
+      alert(error.message);  // 백엔드 에러 메시지 표시
     }
   };
 

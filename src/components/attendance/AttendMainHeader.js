@@ -97,8 +97,8 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
                 <span className="text-sm">
                   한달 출석률 (20일) {" "}
                   <span className="font-bold text-green-600 ml-1">
-                    {attendanceRates.twentyDayScore !== null
-                      ? `${attendanceRates.twentyDayScore}%`
+                    {attendanceRates.twentyDayRate !== null
+                      ? `${attendanceRates.twentyDayRate}%`
                       : "없음"}
                   </span>
                 </span>
@@ -143,7 +143,7 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
                 />
               ) : (
                 // Student용 날짜 필터 (시작 날짜와 끝 날짜)
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col md:flex-row gap-2">
                   <input
                     type="date"
                     name="startDate"
@@ -196,11 +196,22 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
               >
                 결석
               </button>
+              <button
+                className={`px-4 py-2 rounded ${
+                  filters.status === 'EARLY_EXIT'
+                    ? 'bg-[#FF0000] bg-opacity-50 text-black'
+                    : 'bg-gray-200'
+                }`}
+                onClick={() => handleStatusToggle('EARLY_EXIT')}
+              >
+                조퇴
+              </button>
             </div>
 
             {/* 학생명 Filter */}
             {role === 'admin' && (
-              <div className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500">
+              <div
+                className="w-72 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
