@@ -7,7 +7,7 @@ const MenuBar = ({ items }) => {
   const location = useLocation();
   const { isMobile, isTablet } = useResponsive();
 
-  const navClass = isMobile ? 'px-4' : isTablet ? 'px-[60px]' : 'px-[120px]';
+  const navClass = isMobile ? 'px-4' : isTablet ? 'px-[60px]' : 'px-[180px]';
 
   return (
     <nav className={`w-full bg-[#F5F5F5] py-2 ${navClass}`}>

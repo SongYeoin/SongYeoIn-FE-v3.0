@@ -32,7 +32,7 @@ const handleDownload = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('파일 다운로드 실패:', error);
-    alert('파일 다운로드에 실패했습니다.');
+    alert(error.message || '파일 다운로드에 실패했습니다.'); // error.message 사용
   }
 };
 

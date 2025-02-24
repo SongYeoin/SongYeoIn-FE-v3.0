@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { adminJournalApi } from '../../../api/journalApi';
 import AdminLayout from '../../common/layout/admin/AdminLayout';
 import AdminJournalHeader from './AdminJournalHeader';
@@ -31,7 +31,7 @@ const AdminJournalList = () => {
    }
  };
 
- const fetchJournals = async () => {
+ const fetchJournals = useCallback(async () => {
    try {
      const response = await adminJournalApi.getList(filters.courseId, {
        pageNum: currentPage,
@@ -48,7 +48,13 @@ const AdminJournalList = () => {
    } catch (error) {
      alert(error.response?.data?.message || '교육일지 목록 조회에 실패했습니다.');
    }
- };
+ }, [filters, currentPage]); // filters와 currentPage를 의존성 배열에 추가
+
+ useEffect(() => {
+   if (filters.courseId) {
+     fetchJournals();
+   }
+ }, [filters.courseId, fetchJournals]); // filters.courseId와 fetchJournals를 의존성 배열에 추가
 
  const handleDownloadZip = async () => {
    try {
@@ -63,6 +69,7 @@ const AdminJournalList = () => {
      window.URL.revokeObjectURL(url);
    } catch (error) {
      console.error('일괄 다운로드 실패:', error);
+     alert(error.message || '일괄 다운로드에 실패했습니다.');  // error.message 사용
    }
  };
 
@@ -74,7 +81,7 @@ const AdminJournalList = () => {
    if (filters.courseId) {
      fetchJournals();
    }
- }, [currentPage, filters]);
+ }, [currentPage, filters, fetchJournals]); // fetchJournals를 의존성 배열에 추가
 
  const handleFilterChange = (newFilters) => {
    setFilters(newFilters);

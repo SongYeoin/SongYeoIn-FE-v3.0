@@ -13,6 +13,12 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
     educationDate: new Date().toISOString().split('T')[0] // 오늘 날짜를 기본값으로
   });
 
+  const [errors, setErrors] = useState({
+    title: false,
+    educationDate: false,
+    file: false
+  });
+
   // 컴포넌트가 마운트될 때 한번만 실행
   useEffect(() => {
     // 세션 스토리지에서 직접 토큰을 가져와서 파싱
@@ -62,10 +68,31 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
         [name]: value
       });
     }
+    // 에러 상태 초기화
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: false
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
+
+    // 유효성 검사
+    const newErrors = {
+      title: !formData.title.trim(),
+      educationDate: !formData.educationDate,
+      file: !formData.file
+    };
+
+    setErrors(newErrors);
+
+    // 에러가 하나라도 있으면 제출하지 않음
+    if (Object.values(newErrors).some(error => error)) {
+      return;
+    }
 
     try {
       // 파일 체크도 백엔드에서 처리하도록 수정
@@ -102,9 +129,10 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg bg-white mb-4"
+              className="w-full px-3 py-2 border rounded-lg bg-white mb-1"
               placeholder="제목을 입력하세요"
             />
+            {errors.title && <p className="text-red-500 text-sm mb-4">제목을 입력해주세요.</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-4">
@@ -134,6 +162,7 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
               className="w-full px-3 py-2 border rounded-lg bg-white"
               max={new Date().toISOString().split('T')[0]} // 오늘 날짜까지만 선택 가능
             />
+            {errors.educationDate && <p className="text-red-500 text-sm mt-1">교육일자를 선택해주세요.</p>}
           </div>
 
           <div>
@@ -187,6 +216,7 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
             className="w-full px-3 py-2 border rounded-lg"
             noValidate
           />
+          {errors.file && <p className="text-red-500 text-sm mt-1">파일을 첨부해주세요.</p>}
         </div>
 
         <div className="flex justify-end gap-2 mt-4">

@@ -167,40 +167,40 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
             {/* 출석 상태 Selector */}
             <div className="flex space-x-2">
               <button
-                className={`px-4 py-2 rounded ${
+                className={`px-4 py-2 rounded transition-colors duration-200 ${
                   filters.status === 'PRESENT'
                     ? 'bg-[#228B22] bg-opacity-50 text-black'
-                    : 'bg-gray-200'
+                    : 'bg-gray-200 hover:bg-[#228B22] hover:bg-opacity-30'
                 }`}
                 onClick={() => handleStatusToggle('PRESENT')}
               >
                 출석
               </button>
               <button
-                className={`px-4 py-2 rounded ${
+                className={`px-4 py-2 rounded transition-colors duration-200 ${
                   filters.status === 'LATE'
                     ? 'bg-[#F1B747] bg-opacity-60 text-black'
-                    : 'bg-gray-200'
+                    : 'bg-gray-200 hover:bg-[#F1B747] hover:bg-opacity-40'
                 }`}
                 onClick={() => handleStatusToggle('LATE')}
               >
                 지각
               </button>
               <button
-                className={`px-4 py-2 rounded ${
+                className={`px-4 py-2 rounded transition-colors duration-200 ${
                   filters.status === 'ABSENT'
                     ? 'bg-[#FF0000] bg-opacity-50 text-black'
-                    : 'bg-gray-200'
+                    : 'bg-gray-200 hover:bg-[#FF0000] hover:bg-opacity-30'
                 }`}
                 onClick={() => handleStatusToggle('ABSENT')}
               >
                 결석
               </button>
               <button
-                className={`px-4 py-2 rounded ${
+                className={`px-4 py-2 rounded transition-colors duration-200 ${
                   filters.status === 'EARLY_EXIT'
                     ? 'bg-[#FF0000] bg-opacity-50 text-black'
-                    : 'bg-gray-200'
+                    : 'bg-gray-200 hover:bg-[#FF0000] hover:bg-opacity-30'
                 }`}
                 onClick={() => handleStatusToggle('EARLY_EXIT')}
               >

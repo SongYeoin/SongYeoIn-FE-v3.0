@@ -1,13 +1,13 @@
 // components/common/layout/admin/AdminLayout.js
 import React from 'react';
-import Header from '../../header';
+import Header from '../../Header';
 import Footer from '../../Footer';
 import MenuBar from '../../MenuBar';
 import { useResponsive } from '../../ResponsiveWrapper';
 
 const AdminLayout = ({ children, ...props }) => {
  const { isMobile, isTablet } = useResponsive();
- const mainClass = isMobile ? 'px-4' : isTablet ? 'px-[60px]' : 'px-[120px]';
+ const mainClass = isMobile ? 'px-4' : isTablet ? 'px-[60px]' : 'px-[180px]';
 
  const menuItems = [
    {

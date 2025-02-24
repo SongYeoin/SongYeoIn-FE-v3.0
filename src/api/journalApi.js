@@ -66,10 +66,38 @@ export const studentJournalApi = {
     axios.delete(`${process.env.REACT_APP_API_URL}/journals/${journalId}`),
 
   // 파일 다운로드 API 추가
-  downloadFile: (journalId) =>
-    axios.get(`${process.env.REACT_APP_API_URL}/journals/${journalId}/download`, {
-        responseType: 'blob'
-    })
+  downloadFile: async (journalId) => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/journals/${journalId}/download`, {
+        responseType: 'blob',
+        validateStatus: function (status) {
+          return status < 500;
+        }
+      });
+
+      // 성공적인 응답인 경우만 반환
+      if (response.status === 200) {
+        return response;
+      }
+
+      // 에러 응답 처리
+      if (response.data instanceof Blob) {
+        const text = await response.data.text();
+        const errorData = JSON.parse(text);
+        throw new Error(errorData.message); // 백엔드 에러 메시지 사용
+      }
+
+    } catch (error) {
+      // error.response가 있고 데이터가 Blob인 경우
+      if (error.response?.data instanceof Blob) {
+        const text = await error.response.data.text();
+        const errorData = JSON.parse(text);
+        throw new Error(errorData.message); // 백엔드 에러 메시지 사용
+      }
+      // 그 외의 에러는 원본 에러 메시지 그대로 전달
+      throw error;
+    }
+  }
 };
 
 // 관리자용 교육일지 API
@@ -87,15 +115,75 @@ export const adminJournalApi = {
     axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`),
 
   // 파일 다운로드 API
-  downloadFile: (journalId) =>
-    axios.get(`${process.env.REACT_APP_API_URL}/admin/journals/${journalId}/download`, {
-        responseType: 'blob'
-    }),
+  downloadFile: async (journalId) => {
+      try {
+          const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/journals/${journalId}/download`, { // URL 경로 수정
+              responseType: 'blob',
+              isHandled: true,
+              validateStatus: status => status < 500,
+              headers: {
+                  'Accept': 'application/json, application/octet-stream'
+              }
+          });
+          return response;
+      } catch (error) {
+          if (error.response) {
+              // response type이 blob인 경우
+              if (error.response.data instanceof Blob) {
+                  const reader = new FileReader();
+                  const text = await new Promise((resolve) => {
+                      reader.onload = () => resolve(reader.result);
+                      reader.readAsText(error.response.data);
+                  });
+
+                  try {
+                      const errorData = JSON.parse(text);
+                      throw new Error(errorData.message);
+                  } catch (e) {
+                      throw new Error('파일 다운로드에 실패했습니다.');
+                  }
+              } else {
+                  // 일반적인 JSON 응답인 경우
+                  throw new Error(error.response.data.message || '파일 다운로드에 실패했습니다.');
+              }
+          }
+          throw error;
+      }
+  },
 
   // 일괄 다운로드
-  downloadZip: (journalIds) =>
-    axios.post(`${process.env.REACT_APP_API_URL}/admin/journals/zip-download`, journalIds, {
-      responseType: 'blob'
-    })
+  downloadZip: async (journalIds) => {
+      try {
+          const response = await axios.post(`${process.env.REACT_APP_API_URL}/admin/journals/zip-download`, journalIds, {
+              responseType: 'blob',
+              isHandled: true,
+              validateStatus: status => status < 500,
+              headers: {
+                  'Accept': 'application/json, application/octet-stream'
+              }
+          });
+          return response;
+      } catch (error) {
+          if (error.response) {
+              if (error.response.data instanceof Blob) {
+                  const reader = new FileReader();
+                  const text = await new Promise((resolve) => {
+                      reader.onload = () => resolve(reader.result);
+                      reader.readAsText(error.response.data);
+                  });
+
+                  try {
+                      const errorData = JSON.parse(text);
+                      throw new Error(errorData.message);
+                  } catch (e) {
+                      throw new Error('파일 다운로드에 실패했습니다.');
+                  }
+              } else {
+                  throw new Error(error.response.data.message || '파일 다운로드에 실패했습니다.');
+              }
+          }
+          throw error;
+      }
+  }
 
 };
