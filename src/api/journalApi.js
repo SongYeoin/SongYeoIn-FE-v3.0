@@ -117,35 +117,30 @@ export const adminJournalApi = {
   // 파일 다운로드 API
   downloadFile: async (journalId) => {
       try {
-          const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/journals/${journalId}/download`, { // URL 경로 수정
-              responseType: 'blob',
-              isHandled: true,
-              validateStatus: status => status < 500,
-              headers: {
-                  'Accept': 'application/json, application/octet-stream'
+          const response = await axios.get(
+              `${process.env.REACT_APP_API_URL}/admin/journals/${journalId}/download`,
+              {
+                  responseType: 'blob',
+                  validateStatus: null, // 모든 상태 코드를 처리하기 위해 제거
+                  headers: {
+                      'Accept': 'application/json, application/octet-stream'
+                  }
               }
-          });
+          );
+
+          // 성공적인 응답이 아닌 경우 에러 처리
+          if (response.status !== 200) {
+              const text = await response.data.text();
+              const errorData = JSON.parse(text);
+              throw new Error(errorData.message);
+          }
+
           return response;
       } catch (error) {
-          if (error.response) {
-              // response type이 blob인 경우
-              if (error.response.data instanceof Blob) {
-                  const reader = new FileReader();
-                  const text = await new Promise((resolve) => {
-                      reader.onload = () => resolve(reader.result);
-                      reader.readAsText(error.response.data);
-                  });
-
-                  try {
-                      const errorData = JSON.parse(text);
-                      throw new Error(errorData.message);
-                  } catch (e) {
-                      throw new Error('파일 다운로드에 실패했습니다.');
-                  }
-              } else {
-                  // 일반적인 JSON 응답인 경우
-                  throw new Error(error.response.data.message || '파일 다운로드에 실패했습니다.');
-              }
+          if (error.response?.data instanceof Blob) {
+              const text = await error.response.data.text();
+              const errorData = JSON.parse(text);
+              throw new Error(errorData.message);
           }
           throw error;
       }
@@ -154,33 +149,31 @@ export const adminJournalApi = {
   // 일괄 다운로드
   downloadZip: async (journalIds) => {
       try {
-          const response = await axios.post(`${process.env.REACT_APP_API_URL}/admin/journals/zip-download`, journalIds, {
-              responseType: 'blob',
-              isHandled: true,
-              validateStatus: status => status < 500,
-              headers: {
-                  'Accept': 'application/json, application/octet-stream'
+          const response = await axios.post(
+              `${process.env.REACT_APP_API_URL}/admin/journals/zip-download`,
+              journalIds,
+              {
+                  responseType: 'blob',
+                  validateStatus: null, // 모든 상태 코드 허용
+                  headers: {
+                      'Accept': 'application/json, application/octet-stream'
+                  }
               }
-          });
+          );
+
+          // 성공적인 응답이 아닌 경우 에러 처리
+          if (response.status !== 200) {
+              const text = await response.data.text();
+              const errorData = JSON.parse(text);
+              throw new Error(errorData.message || '파일 다운로드에 실패했습니다.');
+          }
+
           return response;
       } catch (error) {
-          if (error.response) {
-              if (error.response.data instanceof Blob) {
-                  const reader = new FileReader();
-                  const text = await new Promise((resolve) => {
-                      reader.onload = () => resolve(reader.result);
-                      reader.readAsText(error.response.data);
-                  });
-
-                  try {
-                      const errorData = JSON.parse(text);
-                      throw new Error(errorData.message);
-                  } catch (e) {
-                      throw new Error('파일 다운로드에 실패했습니다.');
-                  }
-              } else {
-                  throw new Error(error.response.data.message || '파일 다운로드에 실패했습니다.');
-              }
+          if (error.response?.data instanceof Blob) {
+              const text = await error.response.data.text();
+              const errorData = JSON.parse(text);
+              throw new Error(errorData.message || '파일 다운로드에 실패했습니다.');
           }
           throw error;
       }
