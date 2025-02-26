@@ -177,9 +177,9 @@ const MemberDetail = ({ memberId, onClose }) => {
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/admin/member/withdraw/${memberId}`,
-        { adminId: currentAdmin.id }
+        { adminId: currentAdmin.sub }
       );
-      const updatedMember = { ...member, deletedBy: currentAdmin.id };
+      const updatedMember = { ...member, deletedBy: currentAdmin.sub };
       setMember(updatedMember);
       alert('회원이 탈퇴 처리되었습니다.');
       setShowWithdrawDialog(false);
