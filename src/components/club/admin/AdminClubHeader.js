@@ -1,8 +1,13 @@
-import React, {useContext} from 'react';
-import { CourseContext } from '../../common/CourseContext';
+import React from 'react';
+//import { CourseContext } from '../../common/CourseContext';
 
-const AdminClubHeader = ({ selectedCourseId, handleChange }) => {
-  const { courses = [] } = useContext(CourseContext);
+const AdminClubHeader = ({ courses, selectedCourse, courseChange }) => {
+  //const { courses = [] } = useContext(CourseContext);
+
+  const handleChange = (e) => {
+        const courseId = e.target.value;
+        courseChange(courseId);
+    };
 
   return (
     <>
@@ -16,15 +21,16 @@ const AdminClubHeader = ({ selectedCourseId, handleChange }) => {
             {/* 검색 부분 */}
             <div className="self-stretch flex-grow-0 flex-shrink-0 h-10 relative flex justify-between items-center">
               <select className="w-80 text-center px-4 py-2 text-sm text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                  value={selectedCourseId || ''} // 선택된 값 반영
+                                  value={selectedCourse || ''} // 선택된 값 반영
                                   onChange={handleChange}
+                                  disabled={courses.length === 0}
               >
                 {courses.length === 0 ? (
-                  <option disabled>Loading...</option>
+                  <option disabled>교육 과정이 없습니다.</option>
                 ) : (
                   courses.map((course) => (
-                    <option key={course.id} value={course.id} className="text-sm text-black">
-                      {course.name}
+                    <option key={course.courseId} value={course.courseId} className="text-sm text-black">
+                      {course.courseName}
                     </option>
                   ))
                 )}
