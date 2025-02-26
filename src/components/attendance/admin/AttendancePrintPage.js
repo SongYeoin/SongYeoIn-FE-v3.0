@@ -41,85 +41,31 @@ const AttendancePrintPage = ({
     }
   };
 
-  // 인쇄용으로 데이터를 5일씩 페이지로 재구성
-  const createPrintPages = () => {
-    if (!pages || pages.length === 0 || !pages[0].students || pages[0].students.length === 0) {
-      return [];
-    }
-
-    // 모든 날짜 수집
-    const allDates = [];
-    const allStudents = [];
-
-    // 모든 페이지의 모든 날짜 수집
-    pages.forEach(page => {
-      if (page.students && page.students.length > 0 && page.students[0].dailyAttendance) {
-        page.students[0].dailyAttendance.forEach(day => {
-          if (!allDates.includes(day.date)) {
-            allDates.push(day.date);
-          }
-        });
-      }
-    });
-
-    // 모든 학생 정보 수집 (첫 페이지에서만 가져옴)
-    if (pages[0].students) {
-      pages[0].students.forEach(student => {
-        allStudents.push(student);
-      });
-    }
-
-    // 날짜를 정렬
-    allDates.sort();
-
-    // 5일씩 분할하여 페이지 생성
-    const printPages = [];
-    for (let i = 0; i < allDates.length; i += 5) {
-      const dateBatch = allDates.slice(i, i + 5);
-
-      const pageStudents = allStudents.map(student => {
-        const filteredAttendance = [];
-
-        // 해당 페이지에 포함될 날짜만 필터링
-        dateBatch.forEach(date => {
-          const dayData = student.dailyAttendance.find(day => day.date === date);
-          if (dayData) {
-            filteredAttendance.push(dayData);
-          }
-        });
-
-        return {
-          ...student,
-          dailyAttendance: filteredAttendance
-        };
-      });
-
-      printPages.push({
-        ...pages[0], // 기본 페이지 정보 복사
-        students: pageStudents
-      });
-    }
-
-    return printPages;
-  };
-
-  const printPages = createPrintPages();
+  // 인쇄용 페이지 생성
+  const printPages = pages || [];
 
   // 인쇄용 출력물
   return (
-    <div className="print-content" style={{ width: '100%', maxWidth: '297mm', margin: '0 auto' }}>
+    <div className="print-content">
       {/* 출석부 페이지들 (5일씩 구분) */}
       {printPages.map((page, pageIdx) => (
-        <div key={`print-page-${pageIdx}`} className={pageIdx < printPages.length - 1 ? 'page-break-after' : ''} style={{ marginBottom: '50px', pageBreakAfter: 'always' }}>
-          <div className="w-full mx-auto" style={{width: '100%', border: '1px solid #333', maxWidth: '297mm' }}>
+        <div key={`print-page-${pageIdx}`} className="page-break-after">
+          <div style={{ width: '100%', border: '1px solid #333', maxWidth: '297mm' }}>
             {/* 헤더 영역 */}
-            <div className="mb-4" style={{ width: '100%',padding: '10px' }}>
-              <div className="text-center text-xl font-bold mb-4" style={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center' }}>출 석 부</div>
-              <div className="w-full grid grid-cols-4" style={{ width: '100%',fontSize: '10px'}}>
-                <div className="p-2" style={{ padding: '8px' }}>센터명: {centerName}</div>
-                <div className="p-2" style={{ padding: '8px' }}>과정명: {courseName}</div>
-                <div className="p-2" style={{ padding: '8px' }}>기간: {startDate} - {endDate}</div>
-                <div className="p-2" style={{ padding: '8px' }}>{termLabel}: {termStartDate} - {termEndDate}</div>
+            <div style={{ width: '100%', padding: '10px' }}>
+              <div style={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center' }}>출 석 부</div>
+              <div style={{
+                width: "100%",
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '10px',
+                fontSize: '12px',
+                textAlign: 'left'
+              }}>
+                <div>센터명: {centerName}</div>
+                <div>과정명: {courseName}</div>
+                <div>기간: {startDate} - {endDate}</div>
+                <div>{termLabel}: {termStartDate} - {termEndDate}</div>
               </div>
             </div>
 
@@ -128,7 +74,6 @@ const AttendancePrintPage = ({
               width: '100%',
               borderCollapse: 'collapse',
               border: '1px solid #333',
-              fontSize: '10px',
               tableLayout: 'fixed'
             }}>
               {/* 날짜 헤더 */}
@@ -141,12 +86,12 @@ const AttendancePrintPage = ({
                     {formatDate(day.date)}
                   </th>
                 ))}
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '20px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>소정출석일</th>
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '20px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>실제출석일</th>
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '20px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>결석</th>
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '20px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>지각</th>
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '20px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>조퇴</th>
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '20px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>확인</th>
+                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>소정출석일</th>
+                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>실제출석일</th>
+                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>결석</th>
+                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>지각</th>
+                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>조퇴</th>
+                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>확인</th>
               </tr>
               <tr>
                 <th style={{ border: '1px solid #333', textAlign: 'center', width: '60px', height: '24px', verticalAlign: 'middle' }}>결재</th>
@@ -159,7 +104,7 @@ const AttendancePrintPage = ({
                 <th style={{ border: '1px solid #333', width: '60px', textAlign: 'center', height: '24px', verticalAlign: 'middle' }}>성명</th>
                 {page.students[0]?.dailyAttendance.map((day) =>
                   Array.from({ length: 8 }, (_, i) => i + 1).map((num) => (
-                    <th key={`print-period-${day.date}-${num}`} style={{ border: '1px solid #333', width: '15px', textAlign: 'center', fontSize: '9px', verticalAlign: 'middle' }}>
+                    <th key={`print-period-${day.date}-${num}`} style={{ border: '1px solid #333', width: '15px', textAlign: 'center', fontSize: '10px', verticalAlign: 'middle' }}>
                       {num}
                     </th>
                   ))
@@ -182,27 +127,27 @@ const AttendancePrintPage = ({
 
                     return Array.from({ length: 8 }, (_, i) => i + 1).map(
                       periodNum => (
-                        <td key={`print-status-${day.date}-${periodNum}`} style={{ border: '1px solid #333', textAlign: 'center', width: '15px', verticalAlign: 'middle' }}>
+                        <td key={`print-status-${day.date}-${periodNum}`} style={{ border: '1px solid #333', textAlign: 'center', width: '15px', verticalAlign: 'middle', fontSize: '10px' }}>
                           {getStatusIcon(periodMap[periodNum] || '-')}
                         </td>
                       )
                     );
                   })}
                   {/* 통계 열 추가 */}
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle' }}>{student.processedDays}</td>
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle' }}>{student.realAttendDays}</td>
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle' }}>{student.absentCount}</td>
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle' }}>{student.lateCount}</td>
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle' }}>{student.earlyLeaveCount}</td>
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle' }}></td>
+                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}>{student.processedDays}</td>
+                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}>{student.realAttendDays}</td>
+                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}>{student.absentCount}</td>
+                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}>{student.lateCount}</td>
+                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}>{student.earlyLeaveCount}</td>
+                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}></td>
                 </tr>
               ))}
               </tbody>
             </table>
 
             {/* 페이지 번호 */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px', marginBottom: '8px' }}>
-              <div style={{ padding: '8px 16px', fontSize: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', marginBottom: '10px' }}>
+              <div style={{ padding: '4px 12px', fontSize: '12px' }}>
                 {pageIdx + 1} / {printPages.length + 1}
               </div>
             </div>
@@ -211,8 +156,8 @@ const AttendancePrintPage = ({
       ))}
 
       {/* 요약 페이지 (마지막 페이지) */}
-      <div style={{ pageBreakAfter: 'always', marginTop: '50px', marginBottom: '50px' }}>
-        <div style={{ width: '100%', maxWidth: '210mm', margin: '0 auto', border: '1px solid #333' }}>
+      <div className="page-break-after">
+        <div style={{ width: '100%', maxWidth: '297mm', margin: '0 auto', border: '1px solid #333' }}>
           <div style={{ marginBottom: '16px', padding: '10px' }}>
             <div style={{ textAlign: 'center', fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>출석 요약</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', fontSize: '12px', marginBottom: '16px' }}>
@@ -260,8 +205,8 @@ const AttendancePrintPage = ({
           </table>
 
           {/* 페이지 번호 */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px', marginBottom: '8px' }}>
-            <div style={{ padding: '8px 16px', fontSize: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px', marginBottom: '10px' }}>
+            <div style={{ padding: '4px 12px', fontSize: '12px' }}>
               {printPages.length + 1} / {printPages.length + 1}
             </div>
           </div>

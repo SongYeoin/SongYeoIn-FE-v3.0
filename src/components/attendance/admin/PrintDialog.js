@@ -135,11 +135,11 @@ const PrintDialog = ({
   };
 
   // 모달 외부 클릭 시 닫기
-  const handleOutsideClick = (e) => {
+  /*const handleOutsideClick = (e) => {
     if (e.target.className.includes('modal-overlay')) {
       onClose();
     }
-  };
+  };*/
 
   // 모달이 열려있지 않으면 아무것도 렌더링하지 않음
   if (!isOpen) {
@@ -150,8 +150,9 @@ const PrintDialog = ({
     <div>
       {/* 화면에 보여지는 모달 (인쇄 시에는 숨김) */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto modal-overlay ${isPrinting ? 'print-hide' : ''}`}
-        onClick={handleOutsideClick}
+        className={`fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto modal-overlay ${isPrinting
+          ? 'print-hide' : ''}`}
+        //onClick={handleOutsideClick}
         style={{ display: isPrinting ? 'none' : 'flex' }}
       >
         <div
@@ -210,8 +211,10 @@ const PrintDialog = ({
             {/* 출석부 내용 영역 - 미리보기용 (인쇄 시 제외) */}
             <div className="border rounded-lg p-4 mt-4">
               {isLoading ? (
-                <div className="flex items-center justify-center p-8 text-gray-500">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-3"></div>
+                <div
+                  className="flex items-center justify-center p-8 text-gray-500">
+                  <div
+                    className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-3"></div>
                   데이터를 불러오는 중입니다...
                 </div>
               ) : !attendancePrintData ? (
@@ -222,17 +225,24 @@ const PrintDialog = ({
                 <div className="w-full p-4 mb-8">
                   {/* 미리보기용 출석부 (인쇄 시 제외) */}
                   {!isSummaryPage ? (
-                    <div className="max-w-[210mm] mx-auto border border-gray-800 overflow-x-auto">
+                    <div
+                      className="max-w-[210mm] mx-auto border border-gray-800 overflow-x-auto">
                       {/* 헤더 영역 */}
                       <div className="w-full border-b border-gray-800 p-4">
                         <div className="mb-4 text-center text-xl font-bold">
                           출 석 부
                         </div>
                         <div className="grid grid-cols-4 text-sm mb-2">
-                          <div className="p-2">센터명: {attendancePrintData.centerName || '송파여성새로일하기센터'}</div>
-                          <div className="p-2">과정명: {attendancePrintData.courseName || courseName}</div>
-                          <div className="p-2">기간: {attendancePrintData.startDate} - {attendancePrintData.endDate}</div>
-                          <div className="p-2">{attendancePrintData.termLabel}: {attendancePrintData.termStartDate} - {attendancePrintData.termEndDate}</div>
+                          <div
+                            className="p-2">센터명: {attendancePrintData.centerName
+                            || '송파여성새로일하기센터'}</div>
+                          <div
+                            className="p-2">과정명: {attendancePrintData.courseName
+                            || courseName}</div>
+                          <div
+                            className="p-2">기간: {attendancePrintData.startDate} - {attendancePrintData.endDate}</div>
+                          <div
+                            className="p-2">{attendancePrintData.termLabel}: {attendancePrintData.termStartDate} - {attendancePrintData.termEndDate}</div>
                         </div>
                       </div>
 
@@ -241,35 +251,62 @@ const PrintDialog = ({
                         {/* 날짜 헤더 */}
                         <thead>
                         <tr className="border-b border-gray-800">
-                          <th rowSpan="3" className="border-r border-gray-800 w-12 text-center">번호</th>
-                          <th className="border-r border-gray-800 text-center min-w-20 w-20 h-6">날짜</th>
-                          {currentPageData?.students[0]?.dailyAttendance.map((day) => (
-                            <th key={day.date} colSpan="8" className="border border-gray-800 p-1 w-4 min-w-4">
-                              {formatDate(day.date)}
-                            </th>
-                          ))}
-                          <th rowSpan="3" className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">소정출석일</th>
-                          <th rowSpan="3" className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">실제출석일</th>
-                          <th rowSpan="3" className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">결석</th>
-                          <th rowSpan="3" className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">지각</th>
-                          <th rowSpan="3" className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">조퇴</th>
-                          <th rowSpan="3" className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">확인</th>
+                          <th rowSpan="3"
+                              className="border-r border-gray-800 w-12 text-center">번호
+                          </th>
+                          <th
+                            className="border-r border-gray-800 text-center min-w-20 w-20 h-6">날짜
+                          </th>
+                          {currentPageData?.students[0]?.dailyAttendance.map(
+                            (day) => (
+                              <th key={day.date} colSpan="8"
+                                  className="border border-gray-800 p-1 w-4 min-w-4">
+                                {formatDate(day.date)}
+                              </th>
+                            ))}
+                          <th rowSpan="3"
+                              className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">소정출석일
+                          </th>
+                          <th rowSpan="3"
+                              className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">실제출석일
+                          </th>
+                          <th rowSpan="3"
+                              className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">결석
+                          </th>
+                          <th rowSpan="3"
+                              className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">지각
+                          </th>
+                          <th rowSpan="3"
+                              className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">조퇴
+                          </th>
+                          <th rowSpan="3"
+                              className="border border-gray-800 [writing-mode:vertical-rl] text-center w-6 h-24">확인
+                          </th>
                         </tr>
                         <tr>
-                          <th className="border-r border-gray-800 text-center min-w-20 w-20 h-6">결재</th>
-                          {currentPageData?.students[0]?.dailyAttendance.map((day, idx) => (
-                            <th colSpan="8" key={`approval-${idx}`} className="border border-gray-800 h-6"></th>
-                          ))}
+                          <th
+                            className="border-r border-gray-800 text-center min-w-20 w-20 h-6">결재
+                          </th>
+                          {currentPageData?.students[0]?.dailyAttendance.map(
+                            (day, idx) => (
+                              <th colSpan="8" key={`approval-${idx}`}
+                                  className="border border-gray-800 h-6"></th>
+                            ))}
                         </tr>
                         {/* 교시 헤더 */}
                         <tr className="border-b border-gray-800">
-                          <th className="border border-r border-gray-800 min-w-20 w-20 text-center h-6">성명</th>
-                          {currentPageData?.students[0]?.dailyAttendance.map((day) =>
-                            Array.from({ length: 8 }, (_, i) => i + 1).map((num) => (
-                              <th key={`${day.date}-${num}`} className="border border-gray-800 min-w-5 w-5 text-center text-sm">
-                                {num}
-                              </th>
-                            ))
+                          <th
+                            className="border border-r border-gray-800 min-w-20 w-20 text-center h-6">성명
+                          </th>
+                          {currentPageData?.students[0]?.dailyAttendance.map(
+                            (day) =>
+                              Array.from({ length: 8 }, (_, i) => i + 1).map(
+                                (num) => (
+                                  <th key={`${day.date}-${num}`}
+                                      className="border border-gray-800 min-w-5 w-5 text-center text-sm">
+                                    {num}
+                                  </th>
+                                ))
                           )}
                         </tr>
                         </thead>
@@ -277,9 +314,13 @@ const PrintDialog = ({
                         {/* 학생 목록 및 출석 체크 영역 */}
                         <tbody>
                         {currentPageData?.students?.map((student, idx) => (
-                          <tr key={`${idx}-${student.studentId}`} className="border-b border-gray-800">
-                            <td className="border-r border-gray-800 p-2 text-center">{idx + 1}</td>
-                            <td className="border-r border-gray-800 text-center min-w-20 w-20">{student.studentName}</td>
+                          <tr key={`${idx}-${student.studentId}`}
+                              className="border-b border-gray-800">
+                            <td
+                              className="border-r border-gray-800 p-2 text-center">{idx
+                              + 1}</td>
+                            <td
+                              className="border-r border-gray-800 text-center min-w-20 w-20">{student.studentName}</td>
                             {student.dailyAttendance.map((day) => {
                               // 각 날짜별로 모든 교시(1-8)에 대한 셀을 생성
                               const periodMap = {};
@@ -287,21 +328,29 @@ const PrintDialog = ({
                                 periodMap[period.period] = period.status;
                               });
 
-                              return Array.from({ length: 8 }, (_, i) => i + 1).map(
+                              return Array.from({ length: 8 },
+                                (_, i) => i + 1).map(
                                 periodNum => (
-                                  <td key={`${day.date}-${periodNum}`} className="border border-gray-800 text-center">
+                                  <td key={`${day.date}-${periodNum}`}
+                                      className="border border-gray-800 text-center">
                                     {getStatusIcon(periodMap[periodNum] || '-')}
                                   </td>
                                 )
                               );
                             })}
                             {/* 통계 열 추가 */}
-                            <td className="border border-gray-800 p-2 text-center">{student.processedDays}</td>
-                            <td className="border border-gray-800 p-2 text-center">{student.realAttendDays}</td>
-                            <td className="border border-gray-800 p-2 text-center">{student.absentCount}</td>
-                            <td className="border border-gray-800 p-2 text-center">{student.lateCount}</td>
-                            <td className="border border-gray-800 p-2 text-center">{student.earlyLeaveCount}</td>
-                            <td className="border border-gray-800 p-2 text-center"></td>
+                            <td
+                              className="border border-gray-800 p-2 text-center">{student.processedDays}</td>
+                            <td
+                              className="border border-gray-800 p-2 text-center">{student.realAttendDays}</td>
+                            <td
+                              className="border border-gray-800 p-2 text-center">{student.absentCount}</td>
+                            <td
+                              className="border border-gray-800 p-2 text-center">{student.lateCount}</td>
+                            <td
+                              className="border border-gray-800 p-2 text-center">{student.earlyLeaveCount}</td>
+                            <td
+                              className="border border-gray-800 p-2 text-center"></td>
                           </tr>
                         ))}
                         </tbody>
@@ -316,17 +365,24 @@ const PrintDialog = ({
                     </div>
                   ) : (
                     // 요약 페이지 미리보기
-                    <div className="max-w-[210mm] mx-auto border border-gray-800 p-4">
+                    <div
+                      className="max-w-[210mm] mx-auto border border-gray-800 p-4">
                       {/* 헤더 영역 */}
                       <div className="w-full border-gray-800">
                         <div className="mb-4 text-center text-xl font-bold">
                           출석 요약
                         </div>
                         <div className="grid grid-cols-4 text-sm mb-2">
-                          <div className="p-2">센터명: {attendancePrintData.centerName || '송파여성새로일하기센터'}</div>
-                          <div className="p-2">과정명: {attendancePrintData.courseName || courseName}</div>
-                          <div className="p-2">기간: {attendancePrintData.startDate} - {attendancePrintData.endDate}</div>
-                          <div className="p-2">{attendancePrintData.termLabel}: {attendancePrintData.termStartDate} - {attendancePrintData.termEndDate}</div>
+                          <div
+                            className="p-2">센터명: {attendancePrintData.centerName
+                            || '송파여성새로일하기센터'}</div>
+                          <div
+                            className="p-2">과정명: {attendancePrintData.courseName
+                            || courseName}</div>
+                          <div
+                            className="p-2">기간: {attendancePrintData.startDate} - {attendancePrintData.endDate}</div>
+                          <div
+                            className="p-2">{attendancePrintData.termLabel}: {attendancePrintData.termStartDate} - {attendancePrintData.termEndDate}</div>
                         </div>
                       </div>
 
@@ -345,19 +401,38 @@ const PrintDialog = ({
                         </tr>
                         </thead>
                         <tbody>
-                        {attendancePrintData.summaryPage?.studentSummaries.map((student, idx) => (
-                          <tr key={student.studentId}>
-                            <td className="p-3 border border-gray-800 text-center">{idx + 1}</td>
-                            <td className="p-3 border border-gray-800">{student.studentName}</td>
-                            <td className="p-3 border border-gray-800">{attendancePrintData.courseName || courseName}</td>
-                            <td className="p-3 border border-gray-800 text-center">{student.totalWorkingDays}일</td>
-                            <td className="p-3 border border-gray-800 text-center">{student.attendanceDays}일</td>
-                            <td className="p-3 border border-gray-800 text-center">{student.absentDays}일</td>
-                            <td className="p-3 border border-gray-800 text-center">{student.lateDays}회</td>
-                            <td className="p-3 border border-gray-800 text-center">{student.earlyLeaveDays}회</td>
-                            <td className="p-3 border border-gray-800 text-center">{student.attendanceRate.toFixed(1)}%</td>
-                          </tr>
-                        ))}
+                        {attendancePrintData.summaryPage?.studentSummaries.map(
+                          (student, idx) => (
+                            <tr key={student.studentId}>
+                              <td
+                                className="p-3 border border-gray-800 text-center">{idx
+                                + 1}</td>
+                              <td
+                                className="p-3 border border-gray-800">{student.studentName}</td>
+                              <td
+                                className="p-3 border border-gray-800">{attendancePrintData.courseName
+                                || courseName}</td>
+                              <td
+                                className="p-3 border border-gray-800 text-center">{student.totalWorkingDays}일
+                              </td>
+                              <td
+                                className="p-3 border border-gray-800 text-center">{student.attendanceDays}일
+                              </td>
+                              <td
+                                className="p-3 border border-gray-800 text-center">{student.absentDays}일
+                              </td>
+                              <td
+                                className="p-3 border border-gray-800 text-center">{student.lateDays}회
+                              </td>
+                              <td
+                                className="p-3 border border-gray-800 text-center">{student.earlyLeaveDays}회
+                              </td>
+                              <td
+                                className="p-3 border border-gray-800 text-center">{student.attendanceRate.toFixed(
+                                1)}%
+                              </td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
 
@@ -372,7 +447,8 @@ const PrintDialog = ({
 
                   {/* 페이지 네비게이션 버튼 (인쇄 시에는 숨김) */}
                   <div className="flex justify-between mt-4">
-                    <button onClick={handlePrevPage} disabled={currentPage === 0}
+                    <button onClick={handlePrevPage}
+                            disabled={currentPage === 0}
                             className="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                       이전 페이지
                     </button>
@@ -432,9 +508,9 @@ const PrintDialog = ({
             }
             
             .print-content {
-            width: 297mm; /* A4 가로 크기 */
-            max-width: 100%;
-            margin: auto;
+              width: 297mm; /* A4 가로 크기 */
+              max-width: 100%;
+              height: auto !important;
             }
             
             .print-only {
@@ -448,7 +524,42 @@ const PrintDialog = ({
               display: none !important;
             }
             
-           
+            .page-break-after {
+              page-break-after: always;
+              margin-bottom: 0;
+              padding-bottom: 0;
+            }
+
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              table-layout: fixed;
+            }
+
+            th, td {
+              border: 1px solid #333;
+              padding: 4px;
+              text-align: center;
+              vertical-align: middle;
+              font-size: 10px;
+              overflow: visible;
+            }
+
+            th {
+              background-color: #f3f4f6;
+            }
+            
+            /* 교시 셀 너비 조정 */
+            th[colSpan="8"] {
+              width: auto;
+            }
+            
+            /* 세로 텍스트 */
+            th[rowSpan="3"] {
+              writing-mode: vertical-rl;
+              text-orientation: mixed;
+              width: 24px !important;
+            }
           }
         `}
       </style>
