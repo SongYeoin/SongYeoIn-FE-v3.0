@@ -1,64 +1,46 @@
 import React, { useState } from 'react';
-import axios from 'api/axios';
-//import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
 import MyPageModal from 'components/member/MypageModal';
 
-/**
- * JWT 디코딩 함수
- * @param {string} token - JWT 토큰
- * @returns {object|null} 디코딩된 JSON 페이로드
- */
-/*const parseJwt = (token) => {
-  if (!token) return null;
-
-  try {
-    const base64Url = token.split('.')[1]; // JWT의 Payload 추출
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/'); // Base64 URL 디코딩
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-      .split('')
-      .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)
-      .join('')
-    );
-    return JSON.parse(jsonPayload); // JSON 형태로 변환
-  } catch (error) {
-    console.error('JWT 디코딩 실패:', error);
-    return null;
-  }
-};*/
-
 const Header = () => {
-  const { user, logout } = useUser(); // 사용자 상태와 로그아웃 메서드 가져오기
+  const navigate = useNavigate();
+  const { user, logout, tokenRemainingSeconds, extendToken, isExtendingToken } = useUser();
   const [showMyPageModal, setShowMyPageModal] = useState(false);
-  //const navigate = useNavigate();
-  //const user = token ? parseJwt(token) : {}; // JWT 디코딩하여 사용자 정보 추출
 
-  const handleLogout = async () => {
-    const token = sessionStorage.getItem('token'); // 세션 스토리지에서 Access Token 가져오기
-    const refreshToken = sessionStorage.getItem('refreshToken'); // 세션 스토리지에서 Refresh Token 가져오기
+  // 남은 시간 포맷팅 함수
+  const formatRemainingTime = (seconds) => {
+    if (seconds === null || seconds === undefined || seconds < 0) return '만료됨';
+
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  // 토큰 연장 핸들러
+  const handleExtendToken = async () => {
+    if (isExtendingToken) return; // 이미 연장 중이면 중복 요청 방지
+
     try {
-      if (!token) {
-        throw new Error('토큰이 없습니다.');
+      const success = await extendToken();
+      if (success) {
+        alert('로그인이 연장되었습니다.');
+      } else {
+        alert('로그인 연장에 실패했습니다. 다시 로그인해주세요.');
+        logout();
       }
+    } catch (error) {
+      console.error('토큰 연장 중 오류 발생:', error);
+      alert('로그인 연장 중 오류가 발생했습니다.');
+    }
+  };
 
-      // 백엔드 로그아웃 API 호출
-      await axios.post(
-        `${process.env.REACT_APP_API_URL}/member/logout`, // 백엔드 로그아웃 API 엔드포인트
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Access Token 포함
-            'Refresh-Token': refreshToken, // Refresh Token
-          },
-        },
-      );
-
-      // 성공 시 토큰 삭제 및 리다이렉트
-      logout(); // 상태와 세션 스토리지 초기화
-      //sessionStorage.removeItem('token');
+  // 로그아웃 핸들러
+  const handleLogout = async () => {
+    try {
+      await logout();
       alert('로그아웃 되었습니다.');
-      window.location.href = '/';
     } catch (error) {
       console.error('로그아웃 실패:', error);
       alert('로그아웃 중 문제가 발생했습니다.');
@@ -67,12 +49,16 @@ const Header = () => {
 
   // 로고 클릭 시 역할에 따라 경로 설정 및 이동
   const handleTitleClick = () => {
-    const targetUrl =
-      user?.role === 'ADMIN'
-        ? `/admin/member`
-        : `/main`;
+    const targetUrl = user?.role === 'ADMIN' ? `/admin/member` : `/main`;
+    navigate(targetUrl); // window.location.href 대신 navigate 사용
+  };
 
-    window.location.href = targetUrl;
+  // 시간에 따른 색상 설정
+  const getTimeColor = () => {
+    if (tokenRemainingSeconds === null) return 'text-gray-600';
+    if (tokenRemainingSeconds <= 60) return 'text-red-600 font-bold animate-pulse';
+    if (tokenRemainingSeconds <= 300) return 'text-orange-500';
+    return 'text-gray-600';
   };
 
   return (
@@ -98,23 +84,43 @@ const Header = () => {
             opacity-0 group-hover:opacity-60
             transition-all duration-50
             bg-yellow-200 blur-lg rounded-full pointer-events-none"
-            style={{
-              transform: 'scale(1.5) translateY(-2px)',
-            }}
+               style={{
+                 transform: 'scale(1.5) translateY(-2px)',
+               }}
           />
           {/* 중심 발광 효과 */}
           <div className="absolute top-1 left-[20px] w-[15px] h-[15px]
             opacity-0 group-hover:opacity-70
             transition-all duration-50
             bg-yellow-100 blur-md rounded-full pointer-events-none"
-            style={{
-              transform: 'scale(1.5) translateY(-2px)',
-            }}
+               style={{
+                 transform: 'scale(1.5) translateY(-2px)',
+               }}
           />
         </h1>
 
-        {/* 오른쪽: 사용자 정보와 로그아웃 버튼 */}
+        {/* 오른쪽: 토큰 만료 시간과 사용자 정보 */}
         <div className="flex items-center">
+          {/* 토큰 만료 시간 표시 */}
+          {tokenRemainingSeconds !== null && (
+            <div className="flex items-center mr-4">
+              <span className={`text-sm mr-2 ${getTimeColor()}`}>
+                세션 만료: {formatRemainingTime(tokenRemainingSeconds)}
+              </span>
+              <button
+                onClick={handleExtendToken}
+                disabled={isExtendingToken}
+                className={`text-white text-xs py-1 px-2 rounded transition-colors
+                  ${isExtendingToken
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-500 hover:bg-blue-600'}`}
+              >
+                {isExtendingToken ? '연장 중...' : '연장'}
+              </button>
+            </div>
+          )}
+
+          {/* 사용자 정보와 로그아웃 버튼 */}
           <img
             src={user?.profileImage || '/images/default_profile.png'}
             alt="Profile"
@@ -124,8 +130,8 @@ const Header = () => {
           />
           <span className="text-[#1e2d1f] text-[15px] mr-5"
                 style={{ transform: 'translateY(1px)' }}>
-          {user?.role === 'ADMIN' ? `${user?.name} 관리자님` : `${user?.name} 님`}
-        </span>
+            {user?.role === 'ADMIN' ? `${user?.name} 관리자님` : `${user?.name} 님`}
+          </span>
           <i
             className="bi bi-box-arrow-right text-2xl cursor-pointer transition-transform duration-200 hover:opacity-70"
             style={{ transform: 'translateY(2px)' }}

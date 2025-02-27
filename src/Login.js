@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useResponsive } from 'components/common/ResponsiveWrapper';
+import { setAccessToken, initializeTokenSystem } from 'api/axios';
 
 export const Login = ({ role }) => {
   const navigate = useNavigate();
@@ -10,38 +11,49 @@ export const Login = ({ role }) => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 컴포넌트 마운트 시 토큰 시스템 초기화
+  useEffect(() => {
+    initializeTokenSystem();
+  }, []);
 
   const getResponsiveStyle = () => {
     if (isMobile) {
       return {
-        container: 'w-[90%] min-h-[400px]',  // 높이 감소
+        container: 'w-[90%] min-h-[400px]',
         inputContainer: 'w-[90%]',
-        title: 'text-2xl',                    // 텍스트 크기 감소
-        input: 'text-base',                   // 텍스트 크기 감소
-        button: 'text-lg'                     // 버튼 텍스트 크기 감소
+        title: 'text-2xl',
+        input: 'text-base',
+        button: 'text-lg'
       };
     }
     if (isTablet) {
       return {
-        container: 'w-[70%] min-h-[450px]',  // 높이 감소
+        container: 'w-[70%] min-h-[450px]',
         inputContainer: 'w-[70%]',
-        title: 'text-3xl',                    // 텍스트 크기 감소
-        input: 'text-lg',                     // 텍스트 크기 감소
-        button: 'text-xl'                     // 버튼 텍스트 크기 감소
+        title: 'text-3xl',
+        input: 'text-lg',
+        button: 'text-xl'
       };
     }
     return {
-      container: 'w-[600px] min-h-[500px]',  // 전체 크기 감소
-      inputContainer: 'w-[400px]',           // 입력창 너비 감소
-      title: 'text-4xl',                     // 텍스트 크기 감소
-      input: 'text-xl',                      // 텍스트 크기 감소
-      button: 'text-2xl'                     // 버튼 텍스트 크기 감소
+      container: 'w-[600px] min-h-[500px]',
+      inputContainer: 'w-[400px]',
+      title: 'text-4xl',
+      input: 'text-xl',
+      button: 'text-2xl'
     };
   };
 
   const styles = getResponsiveStyle();
 
   const handleLogin = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    setErrorMessage('');
+
     try {
       const endpoint =
         role === 'student'
@@ -49,18 +61,31 @@ export const Login = ({ role }) => {
           : `${process.env.REACT_APP_API_URL}/admin/member/login`;
       const redirectPath = role === 'student' ? '/main' : '/admin/member';
 
-      const response = await axios.post(endpoint, { username: id, password }, { isHandled: true });
-      const { accessToken, refreshToken } = response.data;
+      const response = await axios.post(endpoint,
+        { username: id, password },
+        {
+          isHandled: true,
+          withCredentials: true // 쿠키를 받기 위해 필요
+        }
+      );
 
-      if (!accessToken || !refreshToken) {
+      const { accessToken } = response.data;
+
+      if (!accessToken) {
         setErrorMessage('서버 내부 오류가 발생했습니다.');
         return;
       }
 
-      sessionStorage.setItem('token', accessToken);
-      sessionStorage.setItem('refreshToken', refreshToken);
+      // Access Token은 메모리에만 저장
+      setAccessToken(accessToken);
+
+      // HTTP Only 쿠키로 Refresh Token을 받는 방식이므로 별도 저장 불필요
+
+      // 로그인 성공 시 리다이렉트
       navigate(redirectPath);
     } catch (error) {
+      console.error('로그인 오류:', error);
+
       if (error.response) {
         const { code, message } = error.response.data;
         if (code === 'USER_003') {
@@ -68,11 +93,13 @@ export const Login = ({ role }) => {
         } else if (code === 'COMMON_001') {
           setErrorMessage('아이디나 비밀번호를 입력해주세요.');
         } else {
-          setErrorMessage(message);
+          setErrorMessage(message || '로그인 중 오류가 발생했습니다.');
         }
       } else {
         setErrorMessage('서버와의 통신에 실패했습니다. 다시 시도해주세요.');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -115,6 +142,7 @@ export const Login = ({ role }) => {
               placeholder="ID"
               value={id}
               onChange={(e) => setId(e.target.value)}
+              disabled={isLoading}
             />
           </div>
 
@@ -136,6 +164,7 @@ export const Login = ({ role }) => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
             />
           </div>
 
@@ -143,9 +172,16 @@ export const Login = ({ role }) => {
 
           <button
             type="submit"
-            className={`${styles.inputContainer} h-[60px] rounded-[20px] bg-[#1e2d1f]/80 hover:bg-[#1e2d1f] transition-all duration-300 flex justify-center items-center ${styles.button} font-bold text-center text-white`}
+            disabled={isLoading}
+            className={`${styles.inputContainer} h-[60px] rounded-[20px] 
+            ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#1e2d1f]/80 hover:bg-[#1e2d1f]'} 
+            transition-all duration-300 flex justify-center items-center ${styles.button} font-bold text-center text-white`}
           >
-            {role === 'student' ? '수강생 로그인' : '관리자 로그인'}
+            {isLoading ? (
+              <span>로그인 중...</span>
+            ) : (
+              <span>{role === 'student' ? '수강생 로그인' : '관리자 로그인'}</span>
+            )}
           </button>
         </form>
 
