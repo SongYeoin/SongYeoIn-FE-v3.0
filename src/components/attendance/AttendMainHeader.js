@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import PrintDialog from './admin/PrintDialog';
 
-const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => {
+
+const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates, terms, selectedTerm,
+  attendancePrintData,
+  isLoading,
+  onTermSelect
+}) => {
 
   // 필터링 상태 관리
   const [filters, setFilters] = useState({
@@ -16,19 +22,9 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
     endDate: new Date().toISOString().split('T')[0], // 오늘 날짜를 기본값으로 설정
   });
 
-  /*   const filterRef = useRef(filters);
+  //const [printPages, setPrintPages] = useState([]);
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
 
-   /// 코스가 로드되면 첫 번째 코스 ID를 기본값으로 설정
- useEffect(() => {
-     if (courses.length > 0 && filterRef.current.courseId === '') {
-       const updatedFilters = {
-         ...filterRef.current,
-         courseId: courses[0].courseId,
-       };
-       setFilters(updatedFilters);
-       onFilterChange(updatedFilters);
-     }
-   }, [courses, onFilterChange]);*/
   useEffect(() => {
     if (courses.length > 0 && filters.courseId === "") {
       setFilters((prevFilters) => {
@@ -126,6 +122,43 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates }) => 
               </option>
             ))}
           </select>
+
+          {/* ADMIN일 때만 인쇄 다이얼로그 표시 */}
+          {role === 'admin' && (
+            <div>
+              {/* 출석부 목록 표시 */}
+              <button onClick={() => setIsPrintDialogOpen(true)}>
+                출석부 인쇄
+              </button>
+
+              {/* PrintDialog 컴포넌트 */}
+              <PrintDialog
+                isOpen={isPrintDialogOpen}
+                onClose={() => setIsPrintDialogOpen(false)}
+                //onPrint={handlePrint}
+                courseName={courses.find(
+                  c => c.courseId === filters.courseId)?.courseName}
+                terms={terms}
+                selectedTerm={selectedTerm}
+                attendanceData={attendancePrintData}
+                isLoading={isLoading}
+                onTermSelect={onTermSelect}
+              />
+            </div>
+          )}
+
+        {/* 출석부 인쇄 페이지 - 인쇄할 때만 표시 */}
+{/*        <div className="hidden print:block">
+        {printPages.map((pageDays, idx) => (
+              <AttendancePrintPage
+                key={idx}
+                days={pageDays}
+                pageNumber={idx + 1}
+                totalPages={printPages.length}
+                courseName={courses.find(c => c.courseId === filters.courseId)?.courseName}
+              />
+            ))}
+          </div>*/}
 
 
           <div className="flex items-center gap-4">
