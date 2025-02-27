@@ -1,119 +1,147 @@
-//import { Navigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-import { useUser } from '../components/common/UserContext';
+// src/api/ProtectedRoutes.js
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { parseJwt } from '../components/common/JwtDecoding';
+import { useUser } from '../components/common/UserContext';
+import { getAccessToken } from './axios';
+import { refreshSilently } from './memberApi';
 
 // 관리자 전용 라우트
 export const AdminProtectedRoute = ({ children }) => {
-  const { logout } = useUser(); // UserContext에서 로그아웃 함수 가져오기
-  const [isAuthorized, setIsAuthorized] = useState(false); // 권한 확인 상태
-  const [isLoading, setIsLoading] = useState(true); // 로딩 상태
-  const token = sessionStorage.getItem('token');
-  const hasAlerted = useRef(false); // 알림 표시 여부 플래그
+  const navigate = useNavigate();
+  const { logout, refreshSilently: contextRefreshSilently } = useUser();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const hasAlerted = useRef(false);
 
   useEffect(() => {
     const verifyAccess = async () => {
-      if (!token) {
-        if (!hasAlerted.current) {
-          alert('로그인이 필요합니다.');
-          hasAlerted.current = true; // 알림 표시 상태 설정
-        }
-        window.location.href = '/';
-        return;
-      }
       try {
-        const decoded = jwtDecode(token); // 토큰 디코드
+        // 메모리에서 토큰 가져오기
+        let token = getAccessToken();
+
+        // 토큰이 없으면 자동 갱신 시도
+        if (!token) {
+          const success = await refreshSilently();
+          if (!success) {
+            if (!hasAlerted.current) {
+              alert('로그인이 필요합니다.');
+              hasAlerted.current = true;
+            }
+            navigate('/', { replace: true });
+            return;
+          }
+          token = getAccessToken(); // 갱신된 토큰 가져오기
+        }
+
+        // 토큰 디코딩
+        const decoded = parseJwt(token);
         const role = decoded.role;
 
         if (role !== 'ADMIN') {
           if (!hasAlerted.current) {
             alert('관리자만 접근 가능한 페이지입니다.');
-            hasAlerted.current = true; // 알림 표시 상태 설정
+            hasAlerted.current = true;
           }
-          logout(); // 상태와 세션 스토리지 초기화
-          window.location.href = '/';
+          logout();
+          navigate('/', { replace: true });
           return;
         }
 
-        setIsAuthorized(true); // 권한 확인 완료
+        setIsAuthorized(true);
       } catch (error) {
-        console.error('토큰 디코드 중 오류 발생:', error);
+        console.error('토큰 검증 오류:', error);
         if (!hasAlerted.current) {
-          alert('유효하지 않은 토큰입니다.');
-          hasAlerted.current = true; // 알림 표시 상태 설정
+          alert('인증 오류가 발생했습니다. 다시 로그인해 주세요.');
+          hasAlerted.current = true;
         }
-        window.location.href = '/';
+        logout();
+        navigate('/', { replace: true });
       } finally {
-        setIsLoading(false); // 로딩 종료
+        setIsLoading(false);
       }
     };
 
     verifyAccess();
-  }, [token, logout]);
+  }, [logout, navigate, contextRefreshSilently]);
 
   // 권한 확인 전 로딩 상태를 표시
   if (isLoading) {
-    return <div>로딩 중...</div>;
+    return <div className="flex items-center justify-center h-screen">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#1e2d1f]"></div>
+      <p className="ml-4 text-lg text-[#1e2d1f]">로딩 중...</p>
+    </div>;
   }
-
 
   // 권한 확인 완료 후 자식 컴포넌트 렌더링
   return isAuthorized ? children : null;
 };
 
-
 // 학생 전용 라우트
 export const StudentProtectedRoute = ({ children }) => {
-  const { logout } = useUser(); // UserContext에서 로그아웃 함수 가져오기
-  const [isAuthorized, setIsAuthorized] = useState(false); // 권한 확인 상태
-  const [isLoading, setIsLoading] = useState(true); // 로딩 상태
-  const token = sessionStorage.getItem('token');
-  const hasAlerted = useRef(false); // 알림 표시 여부 플래그
+  const navigate = useNavigate();
+  const { logout, refreshSilently: contextRefreshSilently } = useUser();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const hasAlerted = useRef(false);
 
   useEffect(() => {
-    const verifyAccess = () => {
-      if (!token) {
-        if (!hasAlerted.current) {
-          alert('로그인이 필요합니다.');
-          hasAlerted.current = true; // 알림 표시 상태 설정
-        }
-        window.location.href = '/';
-        return;
-      }
-
+    const verifyAccess = async () => {
       try {
-        const decoded = jwtDecode(token); // 토큰 디코드
-        const role = decoded.role;
+        // 메모리에서 토큰 가져오기
+        let token = getAccessToken();
+
+        // 토큰이 없으면 자동 갱신 시도
+        if (!token) {
+          const success = await refreshSilently();
+          if (!success) {
+            if (!hasAlerted.current) {
+              alert('로그인이 필요합니다.');
+              hasAlerted.current = true;
+            }
+            navigate('/', { replace: true });
+            return;
+          }
+          token = getAccessToken(); // 갱신된 토큰 가져오기
+        }
+
+        // 토큰 디코딩
+        const decoded = parseJwt(token);
+        const role = decoded?.role;
 
         if (role !== 'STUDENT') {
           if (!hasAlerted.current) {
             alert('학생만 접근 가능한 페이지입니다.');
-            hasAlerted.current = true; // 알림 표시 상태 설정
+            hasAlerted.current = true;
           }
-          logout(); // 상태와 세션 스토리지 초기화
-          window.location.href = '/';
+          logout();
+          navigate('/', { replace: true });
           return;
         }
 
-        setIsAuthorized(true); // 권한 확인 완료
+        setIsAuthorized(true);
       } catch (error) {
-        console.error('토큰 디코드 중 오류 발생:', error);
+        console.error('토큰 검증 오류:', error);
         if (!hasAlerted.current) {
-          alert('유효하지 않은 토큰입니다.');
-          hasAlerted.current = true; // 알림 표시 상태 설정
+          alert('인증 오류가 발생했습니다. 다시 로그인해 주세요.');
+          hasAlerted.current = true;
         }
-        window.location.href = '/';
+        logout();
+        navigate('/', { replace: true });
       } finally {
-        setIsLoading(false); // 로딩 종료
+        setIsLoading(false);
       }
     };
 
     verifyAccess();
-  }, [token, logout]);
+  }, [logout, navigate, contextRefreshSilently]);
 
   // 권한 확인 전 로딩 상태를 표시
   if (isLoading) {
-    return <div>로딩 중...</div>;
+    return <div className="flex items-center justify-center h-screen">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#1e2d1f]"></div>
+      <p className="ml-4 text-lg text-[#1e2d1f]">로딩 중...</p>
+    </div>;
   }
 
   // 권한 확인 완료 후 자식 컴포넌트 렌더링

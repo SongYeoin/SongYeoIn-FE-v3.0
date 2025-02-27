@@ -1,55 +1,206 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+} from 'react';
 import { parseJwt } from './JwtDecoding';
+import axios, {
+  getAccessToken,
+  clearAccessToken,
+  setAccessToken,
+  initializeTokenSystem,
+} from '../../api/axios';
+import { refreshToken } from '../../api/memberApi';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [tokenExpiry, setTokenExpiry] = useState(null);
+  const [tokenRemainingSeconds, setTokenRemainingSeconds] = useState(null);
+  const [isExtendingToken, setIsExtendingToken] = useState(false);
 
+  // 앱 초기화 시 토큰 시스템 초기화
   useEffect(() => {
-    const token = sessionStorage.getItem('token');
-    const storedUser = sessionStorage.getItem('user');
+    initializeTokenSystem();
+  }, []);
 
-    if (storedUser) {
-      // 먼저 세션 스토리지의 사용자 정보 사용
-      setUser(JSON.parse(storedUser));
-      setLoading(false);
-    }
-    else if (token) {
-      try {
-        const decodedUser = parseJwt(token);
-        console.log('Decoded User:', decodedUser); // 디코딩된 사용자 정보 확인
-        setUser(decodedUser);
-        setLoading(false);
-      } catch (error) {
-        console.error('JWT 디코딩 오류:', error);
-        setLoading(false);
-      }
-    }else{
-      setLoading(false);
+  // 토큰으로부터 사용자 정보 파싱
+  const parseUserFromToken = useCallback((token) => {
+    try {
+      if (!token) return null;
+
+      const decodedUser = parseJwt(token);
+
+      // 토큰의 만료 시간 추출
+      const expiryTime = decodedUser.exp * 1000;
+      setTokenExpiry(new Date(expiryTime));
+
+      const now = new Date().getTime();
+      const remainingSeconds = Math.floor((expiryTime - now) / 1000);
+      setTokenRemainingSeconds(remainingSeconds > 0 ? remainingSeconds : 0);
+
+      return decodedUser;
+    } catch (error) {
+      console.error('JWT 디코딩 오류:', error);
+      return null;
     }
   }, []);
 
-  // useEffect(() => {
-  //   // user 정보가 있을 때 sessionStorage에 저장, 없으면 삭제
-  //   if (user) {
-  //     sessionStorage.setItem('user', JSON.stringify(user));
-  //   } else {
-  //     sessionStorage.removeItem('user');
-  //   }
-  // }, [user]);
+  // Access Token 만료 시간 주기적 체크 및 자동 로그아웃
+  useEffect(() => {
+    if (!tokenExpiry) return;
 
-  // 로그아웃 메서드
-  const logout = () => {
-    setUser(null); // 사용자 상태 초기화
-    sessionStorage.removeItem('token'); // 토큰 삭제
-    sessionStorage.removeItem('refreshToken'); // 리프레시 토큰 삭제
-    sessionStorage.removeItem('user'); // 사용자 정보 삭제
-    window.location.href = '/';
+    const checkExpiryInterval = setInterval(() => {
+      const now = new Date().getTime();
+      const expiryTime = tokenExpiry.getTime();
+      const remainingSeconds = Math.floor((expiryTime - now) / 1000);
+
+      setTokenRemainingSeconds(remainingSeconds > 0 ? remainingSeconds : 0);
+
+      // 토큰이 만료되었다면 자동 로그아웃 및 메인 페이지로 이동
+      if (remainingSeconds <= 0) {
+        clearInterval(checkExpiryInterval);
+        logout();
+
+        // 메인 페이지로 리디렉션 (이미 로그인/메인 페이지인 경우 제외)
+        if (!window.location.pathname.includes('/login')
+          && window.location.pathname !== '/') {
+          alert('세션이 만료되었습니다. 메인 페이지로 이동합니다.');
+          window.location.href = '/';
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(checkExpiryInterval);
+  }, [tokenExpiry]);
+
+  // 초기 로드 시 사용자 정보 설정 및 토큰 자동 갱신
+  useEffect(() => {
+    const initializeUser = async () => {
+      try {
+        setLoading(true);
+        // 메모리에서 토큰 가져오기
+        const token = getAccessToken();
+
+        if (!token) {
+          // 토큰이 없으면 자동 갱신 시도
+          try {
+            await refreshSilently();
+          } catch (error) {
+            // 갱신 실패해도 계속 진행 (로그인 필요 상태)
+            setUser(null);
+            setLoading(false);
+            return;
+          }
+        } else {
+          // 토큰이 있으면 사용자 정보 설정
+          updateUserFromToken(token);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('사용자 초기화 오류:', error);
+        setLoading(false);
+      }
+    };
+
+    initializeUser();
+  }, [parseUserFromToken]);
+
+  // 새 토큰에서 사용자 정보 업데이트
+  const updateUserFromToken = (token) => {
+    const decodedUser = parseUserFromToken(token);
+    if (decodedUser) {
+      setUser(decodedUser);
+      sessionStorage.setItem('user', JSON.stringify(decodedUser));
+    }
   };
 
-  return <UserContext.Provider value={{user, loading, setUser, logout}}>{children}</UserContext.Provider>;
+  // 무음 갱신 - 새로고침 시 자동 갱신
+  const refreshSilently = async () => {
+    try {
+      const newToken = await refreshToken();
+      if (newToken) {
+        setAccessToken(newToken);
+        updateUserFromToken(newToken);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('자동 토큰 갱신 실패:', error);
+      return false;
+    }
+  };
+
+  // 토큰 연장 함수
+  const extendToken = async () => {
+    if (isExtendingToken) return false;
+
+    setIsExtendingToken(true);
+    try {
+      const newToken = await refreshToken();
+      if (!newToken) {
+        throw new Error('토큰 연장 실패');
+      }
+
+      // 새 토큰 저장
+      setAccessToken(newToken);
+      updateUserFromToken(newToken);
+
+      return true;
+    } catch (error) {
+      console.error('토큰 연장 실패:', error);
+      return false;
+    } finally {
+      setIsExtendingToken(false);
+    }
+  };
+
+  // 로그아웃 메서드
+  const logout = async () => {
+    try {
+      // 백엔드 로그아웃 API 호출
+      await axios.post(`${process.env.REACT_APP_API_URL}/member/logout`);
+    } catch (error) {
+      console.error('로그아웃 API 호출 실패:', error);
+    } finally {
+      // 사용자 상태 초기화
+      setUser(null);
+      setTokenExpiry(null);
+      setTokenRemainingSeconds(null);
+
+      // 메모리에서 액세스 토큰 제거
+      clearAccessToken();
+
+      // 세션 스토리지 정리
+      sessionStorage.removeItem('user');
+
+      // 리디렉션
+      window.location.href = '/';
+    }
+  };
+
+  return (
+    <UserContext.Provider
+      value={{
+        user,
+        loading,
+        setUser,
+        logout,
+        tokenRemainingSeconds,
+        tokenExpiry,
+        extendToken,
+        isExtendingToken,
+        refreshSilently
+      }}
+    >
+      {children}
+    </UserContext.Provider>
+  );
 };
 
 export const useUser = () => useContext(UserContext);
