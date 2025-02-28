@@ -82,6 +82,55 @@ const AdminClubDetail = ({ club, onClose, user, onUpdateSuccess }) => {
     setIsEditing(false);
   };
 
+  // 파일명 추출 헬퍼 함수
+  const extractFilenameFromContentDisposition = (contentDisposition) => {
+    if (!contentDisposition) return null;
+
+    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+    const matches = filenameRegex.exec(contentDisposition);
+    if (matches && matches[1]) {
+      return matches[1].replace(/['"]/g, '');
+    }
+    return null;
+  };
+
+  // 파일 다운로드 핸들러
+  const handleFileDownload = async (e, club) => {
+
+    if (!club.file || !club.file.fileId) {
+        alert('다운로드할 파일이 없습니다.');
+        return;
+      }
+
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/files/${club.file.fileId}`, {responseType: 'blob',});
+
+      // 응답 헤더에서 파일 이름 추출
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = extractFilenameFromContentDisposition(contentDisposition) || club.file.originalName || `club_file_${club.clubId}.pdf`;
+
+      // 파일명 디코딩 (문제 발생 시 원본 값 사용)
+      try {
+        filename = decodeURIComponent(filename);
+      } catch (e) {
+        console.warn('Filename decoding failed, using original value', e);
+      }
+
+      // 파일 다운로드 처리
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', filename); // 다운로드할 파일명 설정
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl); // Blob URL 해제
+
+    } catch (err) {
+      console.error('File download error:', err);
+      alert('파일 다운로드에 실패했습니다.');
+    }
+  };
 
 return(
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto">
@@ -258,13 +307,13 @@ return(
                   <label className="text-sm text-gray-600 font-bold">첨부파일</label>
                   <div className="w-full px-3 py-2 border rounded-lg bg-gray-100 flex items-center justify-between">
                     {club.file ? (
-                      <>
-                      <a
-                        href={`https://${process.env.REACT_APP_S3_BUCKET_URL}/api/files/download/${encodeURIComponent(club.file.fileName)}`}
-                        download={club.file.originalName} // 다운로드 시 파일 이름 지정
-                        className="text-blue-500 underline"
-                      >{club.file.originalName}</a>
-                      </>
+
+                      <div
+                        onClick={(e) => handleFileDownload(e, club)}
+                        className="text-blue-500 underline cursor-pointer"
+                        //className="cursor-pointer hover:text-blue-500 file-download-btn"
+                      >{club.file.originalName}</div>
+
                       ) : (
                           <span>첨부된 파일 없음</span>
                         )}
