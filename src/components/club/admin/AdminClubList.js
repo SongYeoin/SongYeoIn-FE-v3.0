@@ -1302,11 +1302,6 @@ const AdminClubList = () => {
               {downloadLoading ? '다운로드 중...' : `선택한 파일 다운로드 (${selectedItems.length})`}
             </button>
           </div>
-
-          {/* 페이지 정보 표시 */}
-          <div className="text-sm text-gray-600">
-            총 {pageInfo.totalElements}개 항목 중 {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, pageInfo.totalElements)}
-          </div>
         </div>
 
         {/* Data Table Section */}
