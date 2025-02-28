@@ -56,10 +56,10 @@ const handleChange = (e) => {
               <select className="w-80 text-center px-4 py-2 text-sm text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   value={selectedCourse || ''} // 선택된 값 반영
                                   onChange={handleChange}
-                                  disabled={courses.length === 0}
+                                  disabled={!courses || courses.length === 0}
               >
-                {courses.length === 0 ? (
-                  <option disabled>교육 과정이 없습니다.</option>
+                {!courses || courses.length === 0 ? (
+                  <option value="" disabled>교육 과정이 없습니다.</option>
                 ) : (
                   courses.map((course) => (
                     <option key={course.courseId} value={course.courseId} className="text-sm text-black">
