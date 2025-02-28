@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../../styles/print.css';
 
 // 인쇄용 출석부 컴포넌트
 const AttendancePrintPage = ({
@@ -41,27 +42,17 @@ const AttendancePrintPage = ({
     }
   };
 
-  // 인쇄용 페이지 생성
-  const printPages = pages || [];
-
   // 인쇄용 출력물
   return (
     <div className="print-content">
       {/* 출석부 페이지들 (5일씩 구분) */}
-      {printPages.map((page, pageIdx) => (
-        <div key={`print-page-${pageIdx}`} className="page-break-after">
-          <div style={{ width: '100%', border: '1px solid #333', maxWidth: '297mm' }}>
+      {(pages || []).map((page, pageIdx) => (
+        <div key={`print-page-${pageIdx}`} className="page-break">
+          <div className="attendance-sheet">
             {/* 헤더 영역 */}
-            <div style={{ width: '100%', padding: '10px' }}>
-              <div style={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center' }}>출 석 부</div>
-              <div style={{
-                width: "100%",
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '10px',
-                fontSize: '12px',
-                textAlign: 'left'
-              }}>
+            <div className="header">
+              <div className="title">출 석 부</div>
+              <div className="info-grid">
                 <div>센터명: {centerName}</div>
                 <div>과정명: {courseName}</div>
                 <div>기간: {startDate} - {endDate}</div>
@@ -70,54 +61,45 @@ const AttendancePrintPage = ({
             </div>
 
             {/* 출석부 테이블 */}
-            <table style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              border: '1px solid #333',
-              tableLayout: 'fixed'
-            }}>
-              {/* 날짜 헤더 */}
+            <table className="attendance-table">
               <thead>
-              <tr style={{ borderBottom: '1px solid #333' }}>
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '30px', textAlign: 'center', verticalAlign: 'middle' }}>번호</th>
-                <th style={{ border: '1px solid #333', textAlign: 'center', width: '60px', height: '24px', verticalAlign: 'middle' }}>날짜</th>
+              <tr>
+                <th rowSpan="3" className="number-col">번호</th>
+                <th className="date-header">날짜</th>
                 {page.students[0]?.dailyAttendance.map((day) => (
-                  <th key={`print-date-${day.date}`} colSpan="8" style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle' }}>
+                  <th key={`date-${day.date}`} colSpan="8" className="date-col">
                     {formatDate(day.date)}
                   </th>
                 ))}
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>소정출석일</th>
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>실제출석일</th>
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>결석</th>
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>지각</th>
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>조퇴</th>
-                <th rowSpan="3" style={{ border: '1px solid #333', width: '24px', height: '70px', textAlign: 'center', verticalAlign: 'middle', writingMode: 'vertical-rl' }}>확인</th>
+                <th rowSpan="3" className="vertical-text">소정출석일</th>
+                <th rowSpan="3" className="vertical-text">실제출석일</th>
+                <th rowSpan="3" className="vertical-text">결석</th>
+                <th rowSpan="3" className="vertical-text">지각</th>
+                <th rowSpan="3" className="vertical-text">조퇴</th>
+                <th rowSpan="3" className="vertical-text">확인</th>
               </tr>
               <tr>
-                <th style={{ border: '1px solid #333', textAlign: 'center', width: '60px', height: '24px', verticalAlign: 'middle' }}>결재</th>
+                <th className="approval-header">결재</th>
                 {page.students[0]?.dailyAttendance.map((day, idx) => (
-                  <th colSpan="8" key={`print-approval-${idx}`} style={{ border: '1px solid #333', height: '24px' }}></th>
+                  <th key={`approval-${idx}`} colSpan="8" className="approval-col"></th>
                 ))}
               </tr>
-              {/* 교시 헤더 */}
-              <tr style={{ borderBottom: '1px solid #333' }}>
-                <th style={{ border: '1px solid #333', width: '60px', textAlign: 'center', height: '24px', verticalAlign: 'middle' }}>성명</th>
+              <tr>
+                <th className="name-header">성명</th>
                 {page.students[0]?.dailyAttendance.map((day) =>
                   Array.from({ length: 8 }, (_, i) => i + 1).map((num) => (
-                    <th key={`print-period-${day.date}-${num}`} style={{ border: '1px solid #333', width: '15px', textAlign: 'center', fontSize: '10px', verticalAlign: 'middle' }}>
+                    <th key={`period-${day.date}-${num}`} className="period-col">
                       {num}
                     </th>
                   ))
                 )}
               </tr>
               </thead>
-
-              {/* 학생 목록 및 출석 체크 영역 */}
               <tbody>
               {page.students?.map((student, idx) => (
-                <tr key={`print-student-${idx}-${student.studentId}`} style={{ borderBottom: '1px solid #333' }}>
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle' }}>{idx + 1}</td>
-                  <td style={{ border: '1px solid #333', textAlign: 'center', width: '60px', verticalAlign: 'middle' }}>{student.studentName}</td>
+                <tr key={`student-${idx}-${student.studentId}`}>
+                  <td className="number-cell">{idx + 1}</td>
+                  <td className="name-cell">{student.studentName}</td>
                   {student.dailyAttendance.map((day) => {
                     // 각 날짜별로 모든 교시(1-8)에 대한 셀을 생성
                     const periodMap = {};
@@ -127,88 +109,79 @@ const AttendancePrintPage = ({
 
                     return Array.from({ length: 8 }, (_, i) => i + 1).map(
                       periodNum => (
-                        <td key={`print-status-${day.date}-${periodNum}`} style={{ border: '1px solid #333', textAlign: 'center', width: '15px', verticalAlign: 'middle', fontSize: '10px' }}>
+                        <td key={`status-${day.date}-${periodNum}`} className="status-cell">
                           {getStatusIcon(periodMap[periodNum] || '-')}
                         </td>
                       )
                     );
                   })}
                   {/* 통계 열 추가 */}
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}>{student.processedDays}</td>
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}>{student.realAttendDays}</td>
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}>{student.absentCount}</td>
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}>{student.lateCount}</td>
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}>{student.earlyLeaveCount}</td>
-                  <td style={{ border: '1px solid #333', padding: '4px', textAlign: 'center', verticalAlign: 'middle', fontSize: '10px' }}></td>
+                  <td className="stat-cell">{student.processedDays}</td>
+                  <td className="stat-cell">{student.realAttendDays}</td>
+                  <td className="stat-cell">{student.absentCount}</td>
+                  <td className="stat-cell">{student.lateCount}</td>
+                  <td className="stat-cell">{student.earlyLeaveCount}</td>
+                  <td className="stat-cell"></td>
                 </tr>
               ))}
               </tbody>
             </table>
 
-            {/* 페이지 번호 */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', marginBottom: '10px' }}>
-              <div style={{ padding: '4px 12px', fontSize: '12px' }}>
-                {pageIdx + 1} / {printPages.length + 1}
-              </div>
+            {/* 페이지 번호 (절대 위치로 바닥에 고정) */}
+            <div className="page-number">
+              {pageIdx + 1} / {pages.length + 1}
             </div>
           </div>
         </div>
       ))}
 
       {/* 요약 페이지 (마지막 페이지) */}
-      <div className="page-break-after">
-        <div style={{ width: '100%', maxWidth: '297mm', margin: '0 auto', border: '1px solid #333' }}>
-          <div style={{ marginBottom: '16px', padding: '10px' }}>
-            <div style={{ textAlign: 'center', fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>출석 요약</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', fontSize: '12px', marginBottom: '16px' }}>
-              <div style={{ padding: '8px' }}>센터명: {centerName}</div>
-              <div style={{ padding: '8px' }}>과정명: {courseName}</div>
-              <div style={{ padding: '8px' }}>기간: {startDate} - {endDate}</div>
-              <div style={{ padding: '8px' }}>{termLabel}: {termStartDate} - {termEndDate}</div>
+      <div className="page-break">
+        <div className="summary-sheet">
+          <div className="header">
+            <div className="title">출석 요약</div>
+            <div className="info-grid">
+              <div>센터명: {centerName}</div>
+              <div>과정명: {courseName}</div>
+              <div>기간: {startDate} - {endDate}</div>
+              <div>{termLabel}: {termStartDate} - {termEndDate}</div>
             </div>
           </div>
 
-          <table style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            border: '1px solid #333',
-            fontSize: '12px'
-          }}>
+          <table className="summary-table">
             <thead>
-            <tr style={{ backgroundColor: '#f9fafb' }}>
-              <th style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>번호</th>
-              <th style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>학생명</th>
-              <th style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>과목명</th>
-              <th style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>소정출석일수</th>
-              <th style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>실제출석일수</th>
-              <th style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>결석</th>
-              <th style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>지각</th>
-              <th style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>조퇴</th>
-              <th style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>출석률</th>
+            <tr>
+              <th>번호</th>
+              <th>학생명</th>
+              <th>과목명</th>
+              <th>소정출석일수</th>
+              <th>실제출석일수</th>
+              <th>결석</th>
+              <th>지각</th>
+              <th>조퇴</th>
+              <th>출석률</th>
             </tr>
             </thead>
             <tbody>
             {summaryPage?.studentSummaries.map((student, idx) => (
-              <tr key={`print-summary-${student.studentId}`}>
-                <td style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>{idx + 1}</td>
-                <td style={{ padding: '12px', border: '1px solid #333', verticalAlign: 'middle' }}>{student.studentName}</td>
-                <td style={{ padding: '12px', border: '1px solid #333', verticalAlign: 'middle' }}>{courseName}</td>
-                <td style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>{student.totalWorkingDays}일</td>
-                <td style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>{student.attendanceDays}일</td>
-                <td style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>{student.absentDays}일</td>
-                <td style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>{student.lateDays}회</td>
-                <td style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>{student.earlyLeaveDays}회</td>
-                <td style={{ padding: '12px', border: '1px solid #333', textAlign: 'center', verticalAlign: 'middle' }}>{student.attendanceRate.toFixed(1)}%</td>
+              <tr key={`summary-${student.studentId}`}>
+                <td>{idx + 1}</td>
+                <td>{student.studentName}</td>
+                <td>{courseName}</td>
+                <td>{student.totalWorkingDays}일</td>
+                <td>{student.attendanceDays}일</td>
+                <td>{student.absentDays}일</td>
+                <td>{student.lateDays}회</td>
+                <td>{student.earlyLeaveDays}회</td>
+                <td>{student.attendanceRate.toFixed(1)}%</td>
               </tr>
             ))}
             </tbody>
           </table>
 
-          {/* 페이지 번호 */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px', marginBottom: '10px' }}>
-            <div style={{ padding: '4px 12px', fontSize: '12px' }}>
-              {printPages.length + 1} / {printPages.length + 1}
-            </div>
+          {/* 페이지 번호 (절대 위치로 바닥에 고정) */}
+          <div className="page-number">
+            {(pages || []).length + 1} / {(pages || []).length + 1}
           </div>
         </div>
       </div>

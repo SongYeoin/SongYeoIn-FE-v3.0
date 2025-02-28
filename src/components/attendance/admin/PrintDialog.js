@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Printer } from 'lucide-react';
 import AttendancePrintPage from './AttendancePrintPage';
 
+
 const PrintDialog = ({
   isOpen,
   onClose,
@@ -66,12 +67,35 @@ const PrintDialog = ({
       });
     }
 
+    // 요약 데이터 생성 (이 부분이 추가됨)
+    const summaryPage = {
+      studentSummaries: data.students.map(student => ({
+        studentId: student.studentId,
+        studentName: student.studentName,
+        totalWorkingDays: student.processedDays || 0,
+        attendanceDays: student.realAttendDays || 0,
+        absentDays: student.absentCount || 0,
+        lateDays: student.lateCount || 0,
+        earlyLeaveDays: student.earlyLeaveCount || 0,
+        attendanceRate: student.attendanceRate ||
+          ((student.realAttendDays / (student.processedDays || 1)) * 100) || 0
+      }))
+    };
+
     return {
       ...data,
       courseName,
-      pages
+      termLabel: selectedTerm['차수'] || '1차', // 기본값 설정
+      startDate: data.startDate || selectedTerm['시작일'],
+      endDate: data.endDate || selectedTerm['종료일'],
+      termStartDate: selectedTerm['시작일'],
+      termEndDate: selectedTerm['종료일'],
+      pages,
+      summaryPage
     };
   };
+
+
 
   // 전체 페이지 수 계산
   const totalPages = attendancePrintData?.pages?.length
@@ -489,80 +513,7 @@ const PrintDialog = ({
         </div>
       )}
 
-      {/* 인쇄 전용 스타일 */}
-      <style>
-        {`
-          @media print {
-            @page {
-              size: A4 landscape;
-              margin: 10mm;
-            }
-            
-            body * {
-              visibility: hidden;
-            }
-            
-            .print-only, .print-only * {
-              visibility: visible !important;
-              display: block !important;
-            }
-            
-            .print-content {
-              width: 297mm; /* A4 가로 크기 */
-              max-width: 100%;
-              height: auto !important;
-            }
-            
-            .print-only {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-            }
-            
-            .print-hide {
-              display: none !important;
-            }
-            
-            .page-break-after {
-              page-break-after: always;
-              margin-bottom: 0;
-              padding-bottom: 0;
-            }
 
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              table-layout: fixed;
-            }
-
-            th, td {
-              border: 1px solid #333;
-              padding: 4px;
-              text-align: center;
-              vertical-align: middle;
-              font-size: 10px;
-              overflow: visible;
-            }
-
-            th {
-              background-color: #f3f4f6;
-            }
-            
-            /* 교시 셀 너비 조정 */
-            th[colSpan="8"] {
-              width: auto;
-            }
-            
-            /* 세로 텍스트 */
-            th[rowSpan="3"] {
-              writing-mode: vertical-rl;
-              text-orientation: mixed;
-              width: 24px !important;
-            }
-          }
-        `}
-      </style>
     </div>
   );
 };
