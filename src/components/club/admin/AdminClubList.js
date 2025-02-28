@@ -1419,6 +1419,7 @@ const AdminClubList = () => {
             onClose={() => setIsDetailModalOpen(false)}
             user={user}
             onUpdateSuccess={fetchClubList}
+            courseId={selectedCourse}
           />
         )}
     </AdminLayout>
