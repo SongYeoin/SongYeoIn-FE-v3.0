@@ -213,7 +213,9 @@ export const AttendanceList = () => {
                             }}
           />
 
-          <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
+          <div className="flex flex-col w-full bg-white rounded-xl shadow-sm relative">
+            <div className="absolute top-0 bottom-0 w-0.5 bg-gray-500"
+                 style={{ left: 'calc(11 * (100% / 13) - 2px)' }}></div>
             {/* Table Header */}
             <div className="border-b border-gray-200 bg-gray-50">
               <div className="grid grid-cols-[repeat(13,1fr)] gap-4 px-6 py-4">
@@ -230,10 +232,8 @@ export const AttendanceList = () => {
                     className="text-sm font-bold text-gray-800 uppercase tracking-wider">날짜</span>
                 </div>
                 {ALL_PERIODS.map((period, index) => (
-                  <div key={index}
-                       className="flex flex-col items-center justify-center">
-                    <span
-                      className="text-sm font-bold text-gray-800 uppercase tracking-wider">{period}</span>
+                  <div key={index} className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">{period}</span>
                   </div>
                 ))}
                 <div className="flex flex-col items-center justify-center">
@@ -270,23 +270,25 @@ export const AttendanceList = () => {
                         {getStatusIcon(row.students[period] || '-')}
                       </div>
                     ))}
-                    {/* TODO: border-l  주기 */}
                     <div
                       className="text-sm text-gray-600 text-center">
-                      {attendanceRates[row.studentId]?.overallAttendanceRate !== undefined
-                      ? `${attendanceRates[row.studentId].overallAttendanceRate}%`
-                      : "없음"}
+                      {attendanceRates[row.studentId]?.overallAttendanceRate
+                      !== undefined
+                        ? `${attendanceRates[row.studentId].overallAttendanceRate}%`
+                        : '없음'}
                     </div>
                     <div
                       className="text-sm text-gray-600 text-center">
-                      {attendanceRates[row.studentId]?.twentyDayRate !== undefined
-                      ? `${attendanceRates[row.studentId].twentyDayRate}%`
-                      : "없음"}
+                      {attendanceRates[row.studentId]?.twentyDayRate
+                      !== undefined
+                        ? `${attendanceRates[row.studentId].twentyDayRate}%`
+                        : '없음'}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-sm text-center text-gray-500 py-4">출석 데이터가 없습니다.</div>
+                <div className="text-sm text-center text-gray-500 py-4">출석 데이터가
+                  없습니다.</div>
               )}
             </div>
           </div>
