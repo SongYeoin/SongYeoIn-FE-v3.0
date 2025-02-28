@@ -1425,7 +1425,6 @@ const AdminClubList = () => {
     </AdminLayout>
   );
 };
-
 export default AdminClubList;
 
 

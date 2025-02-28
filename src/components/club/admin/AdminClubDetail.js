@@ -775,5 +775,4 @@ return(
           </div>
   );
  };
-
  export default AdminClubDetail;
