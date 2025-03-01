@@ -73,10 +73,10 @@ const AdminLayout = ({ children, ...props }) => {
  ];
 
  return (
-   <div className="w-full h-screen flex flex-col bg-white">
+   <div className="w-full min-h-screen flex flex-col bg-white">
      <Header />
      <MenuBar items={menuItems} />
-     <main className={`flex-1 overflow-y-auto py-6 ${mainClass}`}>
+     <main className={`flex-1 overflow-y-auto py-6 ${mainClass} pb-20`}>
        {children}
      </main>
      {!props.hideFooter && <Footer {...props} />}

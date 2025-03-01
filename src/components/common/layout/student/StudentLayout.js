@@ -5,7 +5,7 @@ import Footer from '../../Footer';
 import MenuBar from '../../MenuBar';
 import { useResponsive } from '../../ResponsiveWrapper';
 
-const StudentLayout = ({ children, currentPage, totalPages, onPageChange }) => {
+const StudentLayout = ({ children, currentPage, totalPages, onPageChange}) => {
  const { isMobile, isTablet } = useResponsive();
  const mainClass = isMobile ? 'px-4' : isTablet ? 'px-[60px]' : 'px-[180px]';
 
@@ -64,10 +64,10 @@ const StudentLayout = ({ children, currentPage, totalPages, onPageChange }) => {
  ];
 
  return (
-   <div className="w-full h-screen flex flex-col bg-white">
+   <div className="w-full min-h-screen flex flex-col bg-white">
      <Header />
      <MenuBar items={menuItems} />
-     <main className={`flex-1 overflow-y-auto py-6 ${mainClass}`}>
+     <main className={`flex-1 overflow-y-auto py-6 ${mainClass} pb-20`}>
        {children}
      </main>
      <Footer
