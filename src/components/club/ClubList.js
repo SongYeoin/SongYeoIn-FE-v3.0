@@ -23,6 +23,9 @@ const ClubList = () => {
   const {user} = useUser();
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [filterKeyword, setFilterKeyword] = useState('');
+  const [filteredClubs, setFilteredClubs] = useState([]);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -51,6 +54,8 @@ const ClubList = () => {
       const timestamp = new Date().getTime();
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/club/${selectedCourse}/list`, {
         params: { pageNum: currentPage,
+                  type: filterType !== '' ? filterType : undefined,
+                  keyword: filterKeyword !== '' ? filterKeyword : undefined,
                   _t: timestamp // 캐시 방지 파라미터
         }
       });
@@ -83,17 +88,28 @@ const ClubList = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedCourse, currentPage]);
+  }, [selectedCourse, currentPage, filterType, filterKeyword]);
 
   useEffect(() => {
     fetchClubList();
-  }, [fetchClubList, selectedCourse, currentPage]);
+  }, [fetchClubList, selectedCourse, currentPage, filterType, filterKeyword]);
 
   // 항목 생성 후 처리
   const handleCreateSuccess = async () => {
     // 새 항목 추가 후 항상 첫 페이지로 이동하여 최신 항목을 볼 수 있게 함
     setCurrentPage(1);
     await fetchClubList();
+  };
+
+useEffect(() => {
+  setFilteredClubs(clubs);
+}, [clubs]);
+
+// 필터 변경 핸들러
+  const handleFilterChange = (type, keyword) => {
+    setFilterType(type);
+    setFilterKeyword(keyword);
+    setCurrentPage(1);
   };
 
   const fetchClubDetails = async (clubId) => {
@@ -204,6 +220,9 @@ const ClubList = () => {
             setCurrentPage(1); // 코스가 변경되면 페이지를 1로 리셋
           }}
           onApplyClick={() => setIsCreateModalOpen(true)}
+          filterType={filterType} // 필터 상태 전달
+          filterKeyword={filterKeyword}
+                              onFilterChange={handleFilterChange} // 필터 변경 핸들러 전달
         />
 
         {/* Data Table Section */}
@@ -244,8 +263,8 @@ const ClubList = () => {
               <div className="text-sm text-center text-gray-500 py-4">데이터를 불러오는 중입니다...</div>
             ) : error ? (
               <div className="text-sm text-center text-red-500 py-4">{error}</div>
-            ) : clubs.length > 0 ? (
-              clubs.map((club, index) => (
+            ) : filteredClubs.length > 0 ? (
+              filteredClubs.map((club, index) => (
                 <div
                   key={club.clubId}
                   onClick={(e) => handleRowAreaClick(e, club)}
