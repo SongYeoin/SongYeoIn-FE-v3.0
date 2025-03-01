@@ -1,13 +1,25 @@
 import React from 'react';
 //import { CourseContext } from '../common/CourseContext';
 
-const ClubHeader = ({ courses, onApplyClick, selectedCourse, courseChange }) => {
+const ClubHeader = ({ courses, onApplyClick, selectedCourse, courseChange, filterType, filterKeyword, onFilterChange }) => {
 //const { courses = [] } = useContext(CourseContext);
 
 const handleChange = (e) => {
       const courseId = e.target.value;
       courseChange(courseId);
   };
+
+  const handleTypeChange = (e) => {
+      const selectedType = e.target.value;
+      // 필터 타입만 바꿀 때, 키워드는 그대로 두고 페이지를 리셋
+      onFilterChange(selectedType, filterKeyword);
+    };
+
+    const handleKeywordChange = (e) => {
+      const keyword = e.target.value;
+      // 검색어만 변경 시 필터 타입은 그대로 두고 페이지 리셋
+      onFilterChange(filterType, keyword);
+    };
 
   return (
     <>
@@ -69,11 +81,11 @@ const handleChange = (e) => {
                 )}
               </select>
               <div className="flex items-center gap-4">
-                <div className="flex justify-start items-center w-50 h-10 gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300">
-                  <select className="text-sm text-left text-black" defaultValue="작성자">
-                    <option value="작성자">작성자</option>
-                    <option value="참여자">참여자</option>
-                    <option value="승인상태">승인상태</option>
+                <div className="flex justify-start items-center w-50 h-10 gap-2 px-3 py-2 rounded-lg bg-white border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500">
+                  <select className="w-full text-sm text-left text-black focus:outline-none" defaultValue="W" value={filterType} onChange={handleTypeChange}>
+                    <option value="W">작성자</option>
+                    <option value="P">참여자</option>
+                    <option value="CN">동아리명</option>
                   </select>
                 </div>
 
@@ -91,6 +103,8 @@ const handleChange = (e) => {
                   <input
                     type="text"
                     className="w-full text-gray-600 focus:outline-none"
+                    value={filterKeyword}
+                    onChange={handleKeywordChange}
                     placeholder="검색할 내용을 입력하세요."
                   />
                 </div>

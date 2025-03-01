@@ -30,6 +30,9 @@ const AdminClubList = () => {
     hasPrevious: false
   });
 
+const [filteredClubs, setFilteredClubs] = useState([]);
+const [filterStatus, setFilterStatus] = useState('ALL');
+
   const {user} = useUser();
   const [courses, setCourses] = useState([]);
 
@@ -68,6 +71,7 @@ const AdminClubList = () => {
       const timestamp = new Date().getTime();
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/club/${selectedCourse}/list`, {
         params: { pageNum: currentPage,
+                  status: filterStatus !== 'ALL' ? filterStatus : undefined, // 필터 상태
                   _t: timestamp // 캐시 방지 파라미터
         }
       });
@@ -115,11 +119,41 @@ const AdminClubList = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedCourse, currentPage]);
+  }, [selectedCourse, currentPage, filterStatus]);
 
   useEffect(() => {
     fetchClubList();
-  }, [fetchClubList, selectedCourse, currentPage]);
+    setSelectedItems([]);
+      setSelectAll(false);
+  }, [fetchClubList, selectedCourse, currentPage, filterStatus]);
+
+//// 필터링 처리 로직 추가
+//  useEffect(() => {
+//    if (clubs.length > 0) {
+//      if (filterStatus === 'ALL') {
+//        setFilteredClubs(clubs);
+//      } else {
+//        const filtered = clubs.filter(club => club.checkStatus === filterStatus);
+//        setFilteredClubs(filtered);
+//      }
+//    } else {
+//      setFilteredClubs([]);
+//    }
+//    // 필터링할 때 선택 항목 초기화
+//    setSelectedItems([]);
+//    setSelectAll(false);
+//  }, [clubs, filterStatus]);
+
+useEffect(() => {
+  setFilteredClubs(clubs);
+}, [clubs]);
+
+  // 필터 변경 핸들러
+  const handleFilterChange = (status) => {
+    setFilterStatus(status);
+    setCurrentPage(1);
+  };
+
 
   const fetchClubDetails = async (clubId) => {
     try{
@@ -159,7 +193,7 @@ const AdminClubList = () => {
       setSelectedItems([]);
     } else {
       // 파일이 있는 항목만 선택
-      const clubsWithFiles = clubs.filter(club => club.file).map(club => club.clubId);
+      const clubsWithFiles = filteredClubs.filter(club => club.file).map(club => club.clubId);
       setSelectedItems(clubsWithFiles);
     }
     setSelectAll(!selectAll);
@@ -240,7 +274,7 @@ const AdminClubList = () => {
 
     // 파일이 1개만 선택된 경우 단일 파일 다운로드 처리
     if (selectedItems.length === 1) {
-      const selectedClub = clubs.find(club => club.clubId === selectedItems[0]);
+      const selectedClub = filteredClubs.find(club => club.clubId === selectedItems[0]);
       if (selectedClub && selectedClub.file && selectedClub.file.fileId) {
         // 단일 파일 다운로드 로직
         await handleFileDownload({ stopPropagation: () => {} }, selectedClub);
@@ -251,7 +285,7 @@ const AdminClubList = () => {
      // 선택된 파일 ID 배열 생성
      const fileIds = selectedItems
        .map(clubId => {
-         const club = clubs.find(c => c.clubId === clubId);
+         const club = filteredClubs.find(c => c.clubId === clubId);
          return club && club.file ? club.file.fileId : null;
        })
        .filter(fileId => fileId !== null);
@@ -287,7 +321,7 @@ const AdminClubList = () => {
        if (err.response && err.response.status === 404) {
          alert('일괄 다운로드 기능을 사용할 수 없어 개별 파일을 차례로 다운로드합니다.');
          for (const clubId of selectedItems) {
-           const club = clubs.find(c => c.clubId === clubId);
+           const club = filteredClubs.find(c => c.clubId === clubId);
            if (club && club.file) {
              await handleFileDownload({ stopPropagation: () => {} }, club);
            }
@@ -335,6 +369,8 @@ const AdminClubList = () => {
           selectedItems={selectedItems} // 선택된 항목 배열 전달
             downloadSelectedFiles={handleSelectedFilesDownload} // 다운로드 함수 전달
             downloadLoading={downloadLoading} // 다운로드 상태 전달
+            filterStatus={filterStatus} // 필터 상태 전달
+                    onFilterChange={handleFilterChange} // 필터 변경 핸들러 전달
         />
 
         {/* Data Table Section */}
@@ -383,8 +419,8 @@ const AdminClubList = () => {
               <div className="text-sm text-center text-gray-500 py-4">데이터를 불러오는 중입니다...</div>
             ) : error ? (
               <div className="text-sm text-center text-red-500 py-4">{error}</div>
-            ) : clubs.length > 0 ? (
-              clubs.map((club, index) => (
+            ) : filteredClubs.length > 0 ? (
+              filteredClubs.map((club, index) => (
                 <div
                   key={club.clubId}
                   onClick={(e) => handleRowAreaClick(e, club)}
@@ -432,7 +468,7 @@ const AdminClubList = () => {
               ))
             ) : (
               <div className="text-sm text-center text-gray-500 py-4">
-                조회된 내용이 없습니다.
+                {filterStatus !== 'ALL' ? `${filterStatus === 'Y' ? '승인' : filterStatus === 'N' ? '미승인' : '대기'} 상태의 항목이 없습니다.` : '조회된 내용이 없습니다.'}
               </div>
             )}
           </div>
