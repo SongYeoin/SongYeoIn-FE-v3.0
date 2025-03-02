@@ -238,11 +238,11 @@ export const AttendanceList = () => {
                 ))}
                 <div className="flex flex-col items-center justify-center">
                   <span
-                    className="text-sm font-bold text-gray-800 uppercase tracking-wider">전체 출석률</span>
+                    className="text-sm font-bold text-gray-800 uppercase tracking-wider text-center">전체<br/>출석률</span>
                 </div>
                 <div className="flex flex-col items-center justify-center">
                   <span
-                    className="text-sm font-bold text-gray-800 uppercase tracking-wider">한 달 출석률</span>
+                    className="text-sm font-bold text-gray-800 uppercase tracking-wider text-center">한 달<br />출석률</span>
                 </div>
               </div>
             </div>
