@@ -214,7 +214,7 @@ export const AttendanceList = () => {
           />
 
           <div className="flex flex-col w-full bg-white rounded-xl shadow-sm relative">
-            <div className="absolute top-0 bottom-0 w-0.5 bg-gray-500"
+            <div className="absolute top-0 bottom-0 w-0.5 bg-gray-200"
                  style={{ left: 'calc(11 * (100% / 13) - 2px)' }}></div>
             {/* Table Header */}
             <div className="border-b border-gray-200 bg-gray-50">
