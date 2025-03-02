@@ -60,72 +60,75 @@ const AttendancePrintPage = ({
               </div>
             </div>
 
-            {/* 출석부 테이블 */}
-            <table className="attendance-table">
-              <thead>
-              <tr>
-                <th rowSpan="3" className="number-col">번호</th>
-                <th className="date-header">날짜</th>
-                {page.students[0]?.dailyAttendance.map((day) => (
-                  <th key={`date-${day.date}`} colSpan="8" className="date-col">
-                    {formatDate(day.date)}
-                  </th>
-                ))}
-                <th rowSpan="3" className="vertical-text">소정출석일</th>
-                <th rowSpan="3" className="vertical-text">실제출석일</th>
-                <th rowSpan="3" className="vertical-text">결석</th>
-                <th rowSpan="3" className="vertical-text">지각</th>
-                <th rowSpan="3" className="vertical-text">조퇴</th>
-                <th rowSpan="3" className="vertical-text">확인</th>
-              </tr>
-              <tr>
-                <th className="approval-header">결재</th>
-                {page.students[0]?.dailyAttendance.map((day, idx) => (
-                  <th key={`approval-${idx}`} colSpan="8" className="approval-col"></th>
-                ))}
-              </tr>
-              <tr>
-                <th className="name-header">성명</th>
-                {page.students[0]?.dailyAttendance.map((day) =>
-                  Array.from({ length: 8 }, (_, i) => i + 1).map((num) => (
-                    <th key={`period-${day.date}-${num}`} className="period-col">
-                      {num}
+            {/* 테이블 컨테이너 추가 */}
+            <div className="table-container">
+              {/* 출석부 테이블 */}
+              <table className={`attendance-table ${page.students?.length > 12 ? 'many-students' : ''}`}>
+                <thead>
+                <tr>
+                  <th rowSpan="3" className="number-col">번호</th>
+                  <th className="date-header">날짜</th>
+                  {page.students[0]?.dailyAttendance.map((day) => (
+                    <th key={`date-${day.date}`} colSpan="8" className="date-col">
+                      {formatDate(day.date)}
                     </th>
-                  ))
-                )}
-              </tr>
-              </thead>
-              <tbody>
-              {page.students?.map((student, idx) => (
-                <tr key={`student-${idx}-${student.studentId}`}>
-                  <td className="number-cell">{idx + 1}</td>
-                  <td className="name-cell">{student.studentName}</td>
-                  {student.dailyAttendance.map((day) => {
-                    // 각 날짜별로 모든 교시(1-8)에 대한 셀을 생성
-                    const periodMap = {};
-                    day.periods.forEach(period => {
-                      periodMap[period.period] = period.status;
-                    });
-
-                    return Array.from({ length: 8 }, (_, i) => i + 1).map(
-                      periodNum => (
-                        <td key={`status-${day.date}-${periodNum}`} className="status-cell">
-                          {getStatusIcon(periodMap[periodNum] || '-')}
-                        </td>
-                      )
-                    );
-                  })}
-                  {/* 통계 열 추가 */}
-                  <td className="stat-cell">{student.processedDays}</td>
-                  <td className="stat-cell">{student.realAttendDays}</td>
-                  <td className="stat-cell">{student.absentCount}</td>
-                  <td className="stat-cell">{student.lateCount}</td>
-                  <td className="stat-cell">{student.earlyLeaveCount}</td>
-                  <td className="stat-cell"></td>
+                  ))}
+                  <th rowSpan="3" className="vertical-text">소정출석일</th>
+                  <th rowSpan="3" className="vertical-text">실제출석일</th>
+                  <th rowSpan="3" className="vertical-text">결석</th>
+                  <th rowSpan="3" className="vertical-text">지각</th>
+                  <th rowSpan="3" className="vertical-text">조퇴</th>
+                  <th rowSpan="3" className="vertical-text">확인</th>
                 </tr>
-              ))}
-              </tbody>
-            </table>
+                <tr>
+                  <th className="approval-header">결재</th>
+                  {page.students[0]?.dailyAttendance.map((day, idx) => (
+                    <th key={`approval-${idx}`} colSpan="8" className="approval-col"></th>
+                  ))}
+                </tr>
+                <tr>
+                  <th className="name-header">성명</th>
+                  {page.students[0]?.dailyAttendance.map((day) =>
+                    Array.from({ length: 8 }, (_, i) => i + 1).map((num) => (
+                      <th key={`period-${day.date}-${num}`} className="period-col">
+                        {num}
+                      </th>
+                    ))
+                  )}
+                </tr>
+                </thead>
+                <tbody>
+                {page.students?.map((student, idx) => (
+                  <tr key={`student-${idx}-${student.studentId}`}>
+                    <td className="number-cell">{idx + 1}</td>
+                    <td className="name-cell">{student.studentName}</td>
+                    {student.dailyAttendance.map((day) => {
+                      // 각 날짜별로 모든 교시(1-8)에 대한 셀을 생성
+                      const periodMap = {};
+                      day.periods.forEach(period => {
+                        periodMap[period.period] = period.status;
+                      });
+
+                      return Array.from({ length: 8 }, (_, i) => i + 1).map(
+                        periodNum => (
+                          <td key={`status-${day.date}-${periodNum}`} className="status-cell">
+                            {getStatusIcon(periodMap[periodNum] || '-')}
+                          </td>
+                        )
+                      );
+                    })}
+                    {/* 통계 열 추가 */}
+                    <td className="stat-cell">{student.processedDays}</td>
+                    <td className="stat-cell">{student.realAttendDays}</td>
+                    <td className="stat-cell">{student.absentCount}</td>
+                    <td className="stat-cell">{student.lateCount}</td>
+                    <td className="stat-cell">{student.earlyLeaveCount}</td>
+                    <td className="stat-cell"></td>
+                  </tr>
+                ))}
+                </tbody>
+              </table>
+            </div>
 
             {/* 페이지 번호 (절대 위치로 바닥에 고정) */}
             <div className="page-number">
@@ -148,36 +151,38 @@ const AttendancePrintPage = ({
             </div>
           </div>
 
-          <table className="summary-table">
-            <thead>
-            <tr>
-              <th>번호</th>
-              <th>학생명</th>
-              <th>과목명</th>
-              <th>소정출석일수</th>
-              <th>실제출석일수</th>
-              <th>결석</th>
-              <th>지각</th>
-              <th>조퇴</th>
-              <th>출석률</th>
-            </tr>
-            </thead>
-            <tbody>
-            {summaryPage?.studentSummaries.map((student, idx) => (
-              <tr key={`summary-${student.studentId}`}>
-                <td>{idx + 1}</td>
-                <td>{student.studentName}</td>
-                <td>{courseName}</td>
-                <td>{student.totalWorkingDays}일</td>
-                <td>{student.attendanceDays}일</td>
-                <td>{student.absentDays}일</td>
-                <td>{student.lateDays}회</td>
-                <td>{student.earlyLeaveDays}회</td>
-                <td>{student.attendanceRate.toFixed(1)}%</td>
+          <div className="table-container">
+            <table className="summary-table">
+              <thead>
+              <tr>
+                <th>번호</th>
+                <th>학생명</th>
+                <th>과목명</th>
+                <th>소정출석일수</th>
+                <th>실제출석일수</th>
+                <th>결석</th>
+                <th>지각</th>
+                <th>조퇴</th>
+                <th>출석률</th>
               </tr>
-            ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+              {summaryPage?.studentSummaries.map((student, idx) => (
+                <tr key={`summary-${student.studentId}`}>
+                  <td>{idx + 1}</td>
+                  <td>{student.studentName}</td>
+                  <td>{courseName}</td>
+                  <td>{student.totalWorkingDays}일</td>
+                  <td>{student.attendanceDays}일</td>
+                  <td>{student.absentDays}일</td>
+                  <td>{student.lateDays}회</td>
+                  <td>{student.earlyLeaveDays}회</td>
+                  <td>{student.attendanceRate.toFixed(1)}%</td>
+                </tr>
+              ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* 페이지 번호 (절대 위치로 바닥에 고정) */}
           <div className="page-number">
