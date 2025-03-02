@@ -215,9 +215,6 @@ const NoticeDetail = ({ noticeId, onClose, onDelete, refreshNoticeList  }) => {
         await axios.delete(
           `${process.env.REACT_APP_API_URL}/admin/notice/${noticeId}`,
           {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
           }
         );
         alert("공지사항이 삭제되었습니다.");
