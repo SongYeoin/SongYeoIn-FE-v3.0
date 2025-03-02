@@ -722,7 +722,7 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
   const isOwner = user?.name === club.writer;
 
   const [participantList, setParticipantList] = useState([]);
-  const [contactError, setContactError] = useState('');
+  const [contactNumberError, setcontactNumberError] = useState('');
   const [dateError, setDateError] = useState('');
   const [timeError, setTimeError] = useState('');
   const [classmates, setClassmates] = useState([]);
@@ -808,8 +808,8 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
                   name === 'endTime' ? value : formData.endTime);
     }
 
-    if (name === 'contact') {
-      validateContact(value);
+    if (name === 'contactNumber') {
+      validatecontactNumber(value);
     }
 
     if (name === 'studyDate') {
@@ -869,19 +869,19 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
     return true;
   };
 
-  const validateContact = (contact) => {
-    if (!contact) {
-      setContactError('');
+  const validatecontactNumber = (contactNumber) => {
+    if (!contactNumber) {
+      setcontactNumberError('');
       return true;
     }
 
     const phoneRegex = /^010-\d{4}-\d{4}$/;
-    const isValid = phoneRegex.test(contact);
+    const isValid = phoneRegex.test(contactNumber);
 
     if (!isValid) {
-      setContactError('연락처 형식이 올바르지 않습니다. 010-XXXX-XXXX 형식으로 입력');
+      setcontactNumberError('연락처 형식이 올바르지 않습니다. 010-XXXX-XXXX 형식으로 입력');
     } else {
-      setContactError('');
+      setcontactNumberError('');
     }
 
     return isValid;
@@ -941,11 +941,20 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
     if (club.checkStatus === 'Y') {
       try {
         const newFormData = new FormData();
-        const clubData = { ...formData };
+        const clubData = {
+        participants: formData.participants,
+              participantCount: formData.participantCount,
+              content: formData.content,
+              studyDate: formData.studyDate,
+              startTime: formData.startTime,
+              endTime: formData.endTime,
+              clubName: formData.clubName,
+              contactNumber: formData.contactNumber
+               };
 
         // Only include the file in the update for approved clubs
         newFormData.append("club", new Blob([JSON.stringify(clubData)], { type: "application/json" }));
-
+        // 파일이 있는 경우에만 추가
         if (formData.file && formData.file.size > 0) {
           newFormData.append("file", formData.file);
         }
@@ -972,7 +981,7 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
       return;
     }
 
-    if (formData.contact && !validateContact(formData.contact)) {
+    if (formData.contactNumber && !validatecontactNumber(formData.contactNumber)) {
       alert('연락처 형식이 올바르지 않습니다. 010-XXXX-XXXX 형식으로 입력해주세요.');
       return;
     }
@@ -1009,7 +1018,7 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
         startTime: formData.startTime,
         endTime: formData.endTime,
         clubName: formData.clubName,
-        contact: formData.contact
+        contactNumber: formData.contactNumber
       };
       newFormData.append("club", new Blob([JSON.stringify(clubData)], { type: "application/json" }));
 
@@ -1186,15 +1195,15 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
               <label className="text-sm text-gray-600 font-bold">대표연락처</label>
               <input
                 type="text"
-                value={isEditing ? formData.contact || "" : club.contact || ""}
-                name="contact"
+                value={isEditing ? formData.contactNumber || "" : club.contactNumber || ""}
+                name="contactNumber"
                 onChange={handleInputChange}
                 disabled={!isEditing || club.checkStatus === 'Y'}
-                className={`w-full px-3 py-2 border rounded-lg ${(!isEditing || club.checkStatus === 'Y') ? 'bg-gray-100' : 'bg-white'} ${contactError ? 'border-red-500' : ''}`}
+                className={`w-full px-3 py-2 border rounded-lg ${(!isEditing || club.checkStatus === 'Y') ? 'bg-gray-100' : 'bg-white'} ${contactNumberError ? 'border-red-500' : ''}`}
                 placeholder="010-0000-0000"
               />
-              {isEditing && club.checkStatus === 'W' && contactError && (
-                <p className="text-red-500 text-xs mt-1">{contactError}</p>
+              {isEditing && club.checkStatus === 'W' && contactNumberError && (
+                <p className="text-red-500 text-xs mt-1">{contactNumberError}</p>
               )}
             </div>
           </div>
@@ -1418,7 +1427,7 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
                     setFormData(originalClub);
                     setParticipantList([]);
                     setIsEditing(false);
-                    setContactError('');
+                    setcontactNumberError('');
                     setDateError('');
                     setTimeError('');
                   }}
