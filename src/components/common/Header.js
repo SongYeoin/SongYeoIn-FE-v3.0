@@ -43,7 +43,13 @@ const Header = () => {
       if (success) {
         alert('로그인이 연장되었습니다.');
       } else {
-        alert('로그인 연장에 실패했습니다. 다시 로그인해주세요.');
+        // 중복 알림 방지 로직 추가
+        const lastAlertTime = parseInt(sessionStorage.getItem('lastLoginAlertTime') || '0');
+        const now = Date.now();
+        if (now - lastAlertTime > 60000) {
+          sessionStorage.setItem('lastLoginAlertTime', now.toString());
+          alert('로그인 연장에 실패했습니다. 다시 로그인해주세요.');
+        }
         logout();
       }
     } catch (error) {
