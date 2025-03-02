@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { studentSupportApi } from '../../api/supportApi';
 import { useUser } from '../common/UserContext';
 import { parseJwt } from '../common/JwtDecoding';
+import { getAccessToken } from '../../api/axios';
 
 const SupportCreate = ({ isOpen, onClose, refreshList }) => {
   const { user } = useUser();
@@ -15,8 +16,7 @@ const SupportCreate = ({ isOpen, onClose, refreshList }) => {
 
   // 컴포넌트가 마운트될 때 한번만 실행
     useEffect(() => {
-      // 세션 스토리지에서 직접 토큰을 가져와서 파싱
-      const token = sessionStorage.getItem('token');
+      const token = getAccessToken();
       if (token) {
         try {
           const decodedUser = parseJwt(token);
