@@ -151,16 +151,14 @@ useEffect(() => {
     // 이벤트 버블링 방지
     e.stopPropagation();
 
-    if (!club.file || !club.file.fileId) {
+    if (!club.file || !club.file.id) {
       alert('다운로드할 파일이 없습니다.');
       return;
     }
 
     try {
       // 파일 다운로드 API 호출
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/files/${club.file.fileId}`, {
-        responseType: 'blob'
-      });
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/club/${club.clubId}/download`, {responseType: 'blob',});
 
       // 파일 다운로드 처리
       const contentDisposition = response.headers['content-disposition'];
