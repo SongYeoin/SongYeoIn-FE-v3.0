@@ -127,7 +127,9 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates, terms
           {role === 'admin' && (
             <div>
               {/* 출석부 목록 표시 */}
-              <button onClick={() => setIsPrintDialogOpen(true)}>
+              <button
+                className="bg-gray-200 hover:cursor-pointer px-4 py-2 rounded transition-colors duration-200 "
+                onClick={() => setIsPrintDialogOpen(true)}>
                 출석부 인쇄
               </button>
 
