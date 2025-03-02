@@ -127,23 +127,6 @@ const [filterStatus, setFilterStatus] = useState('ALL');
       setSelectAll(false);
   }, [fetchClubList, selectedCourse, currentPage, filterStatus]);
 
-//// 필터링 처리 로직 추가
-//  useEffect(() => {
-//    if (clubs.length > 0) {
-//      if (filterStatus === 'ALL') {
-//        setFilteredClubs(clubs);
-//      } else {
-//        const filtered = clubs.filter(club => club.checkStatus === filterStatus);
-//        setFilteredClubs(filtered);
-//      }
-//    } else {
-//      setFilteredClubs([]);
-//    }
-//    // 필터링할 때 선택 항목 초기화
-//    setSelectedItems([]);
-//    setSelectAll(false);
-//  }, [clubs, filterStatus]);
-
 useEffect(() => {
   setFilteredClubs(clubs);
 }, [clubs]);
@@ -212,9 +195,12 @@ useEffect(() => {
   };
 
   // 파일 다운로드 공통 함수
-  const downloadFile = async (url, defaultFilename) => {
+  const downloadFile = async (url, defaultFilename, downloadType = 'batch') => {
     try {
-      setDownloadLoading(true);
+      if (downloadType === 'batch') {
+            setDownloadLoading(true);
+          }
+
       const response = await axios.get(url, {
         responseType: 'blob'
       });
@@ -230,14 +216,14 @@ useEffect(() => {
         console.warn('Filename decoding failed, using original value', e);
       }
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
-      link.href = url;
+      link.href = blobUrl;
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(blobUrl);
 
       return true;
     } catch (err) {
@@ -245,7 +231,9 @@ useEffect(() => {
       alert('파일 다운로드에 실패했습니다.');
       return false;
     } finally {
-      setDownloadLoading(false);
+      if (downloadType === 'batch') {
+            setDownloadLoading(false);
+          }
     }
   };
 
@@ -254,14 +242,15 @@ useEffect(() => {
     // 이벤트 버블링 방지
     e.stopPropagation();
 
-    if (!club.file || !club.file.fileId) {
+    if (!club.file || !club.file.id) {
       alert('다운로드할 파일이 없습니다.');
       return;
     }
 
     await downloadFile(
-      `${process.env.REACT_APP_API_URL}/api/files/${club.file.fileId}`,
-      club.file.originalName || `club_file_${club.clubId}.pdf`
+      `${process.env.REACT_APP_API_URL}/admin/club/${club.clubId}/download`,
+      club.file.originalName || `club_file_${club.clubId}.pdf`,
+      'single'
     );
   };
 
@@ -275,22 +264,26 @@ useEffect(() => {
     // 파일이 1개만 선택된 경우 단일 파일 다운로드 처리
     if (selectedItems.length === 1) {
       const selectedClub = filteredClubs.find(club => club.clubId === selectedItems[0]);
-      if (selectedClub && selectedClub.file && selectedClub.file.fileId) {
-        // 단일 파일 다운로드 로직
-        await handleFileDownload({ stopPropagation: () => {} }, selectedClub);
+      if (selectedClub && selectedClub.file && selectedClub.file.id) {
+        // 일괄 다운로드 상태를 사용하여 다운로드
+        await downloadFile(
+                `${process.env.REACT_APP_API_URL}/admin/club/${selectedClub.clubId}/download`,
+                selectedClub.file.originalName || `club_file_${selectedClub.clubId}.pdf`,
+                'batch'
+              );
         return;
       }
     }
 
      // 선택된 파일 ID 배열 생성
-     const fileIds = selectedItems
+     const clubIds = selectedItems
        .map(clubId => {
          const club = filteredClubs.find(c => c.clubId === clubId);
-         return club && club.file ? club.file.fileId : null;
+         return club && club.file ? club.clubId : null;
        })
-       .filter(fileId => fileId !== null);
+       .filter(clubId => clubId !== null);
 
-     if (fileIds.length === 0) {
+     if (clubIds.length === 0) {
        alert('선택한 항목 중 다운로드 가능한 파일이 없습니다.');
        return;
      }
@@ -299,8 +292,8 @@ useEffect(() => {
        setDownloadLoading(true);
        // 다중 파일 다운로드 API 호출
        const response = await axios.post(
-         `${process.env.REACT_APP_API_URL}/api/files/download/batch`,
-         { fileIds },
+         `${process.env.REACT_APP_API_URL}/admin/club/download-batch`,
+         clubIds,
          { responseType: 'blob' }
        );
        const contentDisposition = response.headers['content-disposition'];

@@ -366,13 +366,6 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
     fetchCourseDetails(courseId);
   };
 
-  // Check if edit button should be shown for approved clubs
-  const shouldShowEditButton = () => {
-    if (club.checkStatus !== 'Y') return true;
-    return isWithinCoursePeriod;
-  };
-
-
   // 파일명 추출 헬퍼 함수
   const extractFilenameFromContentDisposition = (contentDisposition) => {
     if (!contentDisposition) return null;
@@ -683,29 +676,35 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
         {isOwner && (
           <div className="flex justify-end gap-2 mt-4">
             {!isEditing ? (
-              club.checkStatus === 'W' ? (
+              <>
+              {isWithinCoursePeriod && (
                 <>
-                  <button
-                    onClick={handleDelete}
-                    className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
-                  >
-                    삭제
-                  </button>
+                {club.checkStatus === 'W' ? (
+                  <>
+                    <button
+                      onClick={handleDelete}
+                      className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
+                    >
+                      삭제
+                    </button>
+                    <button
+                      onClick={handleEditClick}
+                      className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
+                    >
+                      수정
+                    </button>
+                  </>
+                ) : (club.checkStatus === 'Y' && (
                   <button
                     onClick={handleEditClick}
                     className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
                   >
                     수정
                   </button>
+                ))}
                 </>
-              ) : (club.checkStatus === 'Y' && shouldShowEditButton()) && (
-                <button
-                  onClick={handleEditClick}
-                  className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
-                >
-                  수정
-                </button>
-              )
+              )}
+              </>
             ) : (
               <>
                 <button
