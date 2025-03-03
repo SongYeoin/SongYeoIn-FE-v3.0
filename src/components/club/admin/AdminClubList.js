@@ -39,7 +39,7 @@ const [filterStatus, setFilterStatus] = useState('ALL');
   useEffect(() => {
     const fetchCourses = async () => {
         try {
-          const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/admin/course/list`);
+          const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`);
           setCourses(data);
 
           if (data.length > 0 && !selectedCourse) {
