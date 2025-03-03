@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { ArrowDownTrayIcon } from '@heroicons/react/20/solid';
 
-const AdminJournalHeader = ({ courses, onFilterChange, selectedIds, handleDownloadZip }) => {
+const AdminJournalHeader = ({
+  courses,
+  onFilterChange,
+  selectedIds,
+  handleDownloadZip,
+  downloadLoading
+}) => {
   const [filters, setFilters] = useState({
     courseId: '',
     studentName: '',
@@ -12,7 +19,7 @@ const AdminJournalHeader = ({ courses, onFilterChange, selectedIds, handleDownlo
     if (courses.length > 0) {
       const updatedFilters = {
         ...filters,
-        courseId: courses[0].id,  // courseId -> id
+        courseId: courses[0].id,
       };
       setFilters(updatedFilters);
       onFilterChange(updatedFilters);
@@ -40,33 +47,28 @@ const AdminJournalHeader = ({ courses, onFilterChange, selectedIds, handleDownlo
       <div className="flex flex-col w-full gap-6 p-6">
         <div className="flex justify-between items-center min-h-[40px]">
           <h1 className="text-xl md:text-2xl lg:text-3xl text-[#16161b]">교육일지 관리</h1>
-          <div
-            className="flex justify-center items-center flex-grow-0 flex-shrink-0 h-10 relative gap-1 px-4 py-2 rounded-lg bg-[#225930] hover:cursor-pointer transform transition-transform duration-300 will-change-transform"
-            style={{ textRendering: 'optimizeLegibility' }}
+
+          <button
             onClick={selectedIds?.length > 0 ? handleDownloadZip : undefined}
+            disabled={selectedIds?.length === 0 || downloadLoading}
+            className={`flex items-center px-4 py-2 rounded-lg ${
+              selectedIds?.length === 0 || downloadLoading
+                ? 'bg-gray-200 text-gray-500 cursor-default'
+                : 'bg-[#225930] text-white hover:bg-[#1e4d27]'
+            } transition-colors duration-200`}
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="flex-grow-0 flex-shrink-0 w-6 h-6 relative"
-              preserveAspectRatio="none"
-            >
-              <path
-                d="M12 5V19M5 12H19"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <p className="flex-grow-0 flex-shrink-0 text-sm text-left text-white">
-              {selectedIds?.length > 0 ? "선택 항목 다운로드" : "선택된 항목이 없습니다"}
-            </p>
-          </div>
+            {downloadLoading ? (
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
+            )}
+            {downloadLoading ? '다운로드 중...' : `선택한 파일 다운로드 (${selectedIds?.length})`}
+          </button>
         </div>
+
         <div className="flex flex-wrap gap-4 justify-between items-center">
           {/* 교육 과정 필터 */}
           <select
