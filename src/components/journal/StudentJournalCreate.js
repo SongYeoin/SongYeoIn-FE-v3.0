@@ -144,7 +144,7 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
             <div>
               <label className="text-sm text-gray-600 font-bold">작성일</label>
               <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
-                {new Date().toLocaleDateString()}
+                {new Date().toISOString().split('T')[0]}
               </p>
             </div>
           </div>
