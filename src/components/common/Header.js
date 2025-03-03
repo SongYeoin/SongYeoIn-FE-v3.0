@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
 import MyPageModal from 'components/member/MypageModal';
@@ -7,6 +7,22 @@ const Header = () => {
   const navigate = useNavigate();
   const { user, logout, tokenRemainingSeconds, extendToken, isExtendingToken } = useUser();
   const [showMyPageModal, setShowMyPageModal] = useState(false);
+  const [localRemainingSeconds, setLocalRemainingSeconds] = useState(tokenRemainingSeconds);
+
+  // UserContext에서 받은 초기값을 로컬 상태에 설정하고, 로컬에서 1초마다 카운트다운
+  useEffect(() => {
+    setLocalRemainingSeconds(tokenRemainingSeconds);
+
+    // 로컬 타이머 설정 (백엔드 호출 없이 프론트에서 계산)
+    const timer = setInterval(() => {
+      setLocalRemainingSeconds(prev => {
+        if (prev <= 0) return 0;
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [tokenRemainingSeconds]); // tokenRemainingSeconds가 변경될 때만 재설정
 
   // 남은 시간 포맷팅 함수
   const formatRemainingTime = (seconds) => {
@@ -55,9 +71,9 @@ const Header = () => {
 
   // 시간에 따른 색상 설정
   const getTimeColor = () => {
-    if (tokenRemainingSeconds === null) return 'text-gray-600';
-    if (tokenRemainingSeconds <= 60) return 'text-red-600 font-bold animate-pulse';
-    if (tokenRemainingSeconds <= 300) return 'text-orange-500';
+    if (localRemainingSeconds === null) return 'text-gray-600';
+    if (localRemainingSeconds <= 60) return 'text-red-600 font-bold animate-pulse';
+    if (localRemainingSeconds <= 300) return 'text-orange-500';
     return 'text-gray-600';
   };
 
@@ -105,7 +121,7 @@ const Header = () => {
           {tokenRemainingSeconds !== null && (
             <div className="flex items-center mr-4">
               <span className={`text-sm mr-2 ${getTimeColor()}`}>
-                세션 만료: {formatRemainingTime(tokenRemainingSeconds)}
+                세션 만료: {formatRemainingTime(localRemainingSeconds)}
               </span>
               <button
                 onClick={handleExtendToken}

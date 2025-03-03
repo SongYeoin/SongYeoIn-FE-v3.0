@@ -12,7 +12,7 @@ import axios, {
   setAccessToken,
   initializeTokenSystem,
 } from '../../api/axios';
-import { refreshToken } from '../../api/memberApi';
+import { refreshToken, refreshSilently as apiRefreshSilently, validateToken } from '../../api/memberApi';
 
 const UserContext = createContext();
 
@@ -35,8 +35,17 @@ export const UserProvider = ({ children }) => {
 
       const decodedUser = parseJwt(token);
 
-      // 토큰의 만료 시간 추출
-      const expiryTime = decodedUser.exp * 1000;
+      // 세션 스토리지에서 기존 만료 시간 가져오기
+      const storedExpiry = sessionStorage.getItem('tokenExpiry');
+      let expiryTime;
+
+      if (storedExpiry) {
+        expiryTime = parseInt(storedExpiry);
+      } else {
+        // 저장된 만료 시간이 없으면 토큰에서 추출
+        expiryTime = decodedUser.exp * 1000;
+      }
+
       setTokenExpiry(new Date(expiryTime));
 
       const now = new Date().getTime();
@@ -97,8 +106,13 @@ export const UserProvider = ({ children }) => {
             return;
           }
         } else {
-          // 토큰이 있으면 사용자 정보 설정
-          updateUserFromToken(token);
+          // 토큰이 있으면 유효성 검증 후 사용자 정보 설정
+          const validation = await validateToken();
+          if (validation.valid) {
+            updateUserFromToken(token);
+          } else {
+            await refreshSilently();
+          }
         }
 
         setLoading(false);
@@ -122,18 +136,14 @@ export const UserProvider = ({ children }) => {
 
   // 무음 갱신 - 새로고침 시 자동 갱신
   const refreshSilently = async () => {
-    try {
-      const newToken = await refreshToken();
-      if (newToken) {
-        setAccessToken(newToken);
-        updateUserFromToken(newToken);
-        return true;
+    const success = await apiRefreshSilently();
+    if (success) {
+      const token = getAccessToken();
+      if (token) {
+        updateUserFromToken(token);
       }
-      return false;
-    } catch (error) {
-      console.error('자동 토큰 갱신 실패:', error);
-      return false;
     }
+    return success;
   };
 
   // 토큰 연장 함수
@@ -147,7 +157,8 @@ export const UserProvider = ({ children }) => {
         throw new Error('토큰 연장 실패');
       }
 
-      // 새 토큰 저장
+      // 연장 버튼 클릭 시에는 기존 만료 시간을 무시하고 새 토큰의 만료 시간 사용
+      // 오버라이드 파라미터를 전달하지 않아 토큰에서 추출된 새 만료 시간(30분)이 사용됨
       setAccessToken(newToken);
       updateUserFromToken(newToken);
 

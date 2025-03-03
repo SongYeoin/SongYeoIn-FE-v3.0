@@ -56,14 +56,22 @@ export const getAccessToken = () => inMemoryToken;
 export const getDeviceFingerprint = () => deviceFingerprint;
 
 // Access Token을 메모리에 저장하는 함수
-export const setAccessToken = (token) => {
+export const setAccessToken = (token, expiryTimeOverride) => {
   inMemoryToken = token;
 
   // 토큰에서 만료 시간 추출하여 자동 로그아웃 설정
   try {
     if (token) {
-      const tokenData = JSON.parse(atob(token.split('.')[1]));
-      const expiryTime = tokenData.exp * 1000; // JWT exp는 초 단위
+      let expiryTime;
+
+      // 만료 시간 오버라이드가 제공되면 사용
+      if (expiryTimeOverride) {
+        expiryTime = expiryTimeOverride;
+      } else {
+        // 그렇지 않으면 토큰에서 추출
+        const tokenData = JSON.parse(atob(token.split('.')[1]));
+        expiryTime = tokenData.exp * 1000; // JWT exp는 초 단위
+      }
 
       // 토큰 자체는 저장하지 않고 만료 시간만 sessionStorage에 저장
       sessionStorage.setItem('tokenExpiry', expiryTime.toString());
@@ -204,6 +212,10 @@ axios.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        // 세션 스토리지에서 기존 만료 시간 가져오기
+        const storedExpiry = sessionStorage.getItem('tokenExpiry');
+        const originalExpiryTime = storedExpiry ? parseInt(storedExpiry) : null;
+
         // 토큰 갱신 시도 (/token/refresh 엔드포인트 사용)
         const response = await axios.post('/token/refresh', {},
           {
@@ -218,8 +230,12 @@ axios.interceptors.response.use(
 
         const newToken = response.data.accessToken || response.data;
 
-        // 새 토큰 저장
-        setAccessToken(newToken);
+        // 새 토큰 저장 - 기존 만료 시간 유지
+        if (originalExpiryTime && originalExpiryTime > Date.now()) {
+          setAccessToken(newToken, originalExpiryTime);
+        } else {
+          setAccessToken(newToken);
+        }
 
         // 대기 중인 요청들 처리
         processQueue(null, newToken);

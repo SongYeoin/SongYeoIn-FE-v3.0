@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { parseJwt } from '../components/common/JwtDecoding';
 import { useUser } from '../components/common/UserContext';
 import { getAccessToken } from './axios';
-import { refreshSilently } from './memberApi';
+import { refreshSilently, validateToken } from './memberApi';
 
 // 관리자 전용 라우트
 export const AdminProtectedRoute = ({ children }) => {
@@ -14,9 +14,25 @@ export const AdminProtectedRoute = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const hasAlerted = useRef(false);
 
+  // 마지막 검증 시간을 저장하는 ref 추가
+  const lastVerificationTime = useRef(0);
+  const VERIFICATION_INTERVAL = 30000; // 30초
+
   useEffect(() => {
     const verifyAccess = async () => {
       try {
+        // 일정 시간 내에 이미 검증된 경우 중복 검증 방지
+        const now = Date.now();
+        if (now - lastVerificationTime.current < VERIFICATION_INTERVAL) {
+          // 이미 최근에 검증되었다면 로딩 상태 해제하고 함수 종료
+          if (isLoading) {
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        lastVerificationTime.current = now;
+
         // 메모리에서 토큰 가져오기
         let token = getAccessToken();
 
@@ -32,6 +48,22 @@ export const AdminProtectedRoute = ({ children }) => {
             return;
           }
           token = getAccessToken(); // 갱신된 토큰 가져오기
+        } else {
+          // 토큰 유효성 검증
+          const validation = await validateToken();
+          if (!validation.valid) {
+            // 유효하지 않으면 갱신 시도
+            const success = await refreshSilently();
+            if (!success) {
+              if (!hasAlerted.current) {
+                alert('로그인이 필요합니다.');
+                hasAlerted.current = true;
+              }
+              navigate('/', { replace: true });
+              return;
+            }
+            token = getAccessToken(); // 갱신된 토큰 가져오기
+          }
         }
 
         // 토큰 디코딩
@@ -63,7 +95,7 @@ export const AdminProtectedRoute = ({ children }) => {
     };
 
     verifyAccess();
-  }, [logout, navigate, contextRefreshSilently]);
+  }, [logout, navigate, contextRefreshSilently, isLoading]);
 
   // 권한 확인 전 로딩 상태를 표시
   if (isLoading) {
@@ -85,9 +117,25 @@ export const StudentProtectedRoute = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const hasAlerted = useRef(false);
 
+  // 마지막 검증 시간을 저장하는 ref 추가
+  const lastVerificationTime = useRef(0);
+  const VERIFICATION_INTERVAL = 30000; // 30초
+
   useEffect(() => {
     const verifyAccess = async () => {
       try {
+        // 일정 시간 내에 이미 검증된 경우 중복 검증 방지
+        const now = Date.now();
+        if (now - lastVerificationTime.current < VERIFICATION_INTERVAL) {
+          // 이미 최근에 검증되었다면 로딩 상태 해제하고 함수 종료
+          if (isLoading) {
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        lastVerificationTime.current = now;
+
         // 메모리에서 토큰 가져오기
         let token = getAccessToken();
 
@@ -103,6 +151,22 @@ export const StudentProtectedRoute = ({ children }) => {
             return;
           }
           token = getAccessToken(); // 갱신된 토큰 가져오기
+        } else {
+          // 토큰 유효성 검증
+          const validation = await validateToken();
+          if (!validation.valid) {
+            // 유효하지 않으면 갱신 시도
+            const success = await refreshSilently();
+            if (!success) {
+              if (!hasAlerted.current) {
+                alert('로그인이 필요합니다.');
+                hasAlerted.current = true;
+              }
+              navigate('/', { replace: true });
+              return;
+            }
+            token = getAccessToken(); // 갱신된 토큰 가져오기
+          }
         }
 
         // 토큰 디코딩
@@ -134,7 +198,7 @@ export const StudentProtectedRoute = ({ children }) => {
     };
 
     verifyAccess();
-  }, [logout, navigate, contextRefreshSilently]);
+  }, [logout, navigate, contextRefreshSilently, isLoading]);
 
   // 권한 확인 전 로딩 상태를 표시
   if (isLoading) {

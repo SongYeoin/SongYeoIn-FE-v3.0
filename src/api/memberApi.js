@@ -1,6 +1,11 @@
 // src/api/memberApi.js
 import axios, { getAccessToken, setAccessToken, getDeviceFingerprint } from './axios';
 
+// 캐싱 변수 추가
+let lastValidationResult = null;
+let lastValidationTime = 0;
+const VALIDATION_CACHE_TIME = 5000; // 5초 캐싱
+
 // 회원 정보 조회
 export const getMemberInfo = async () => {
   try {
@@ -58,6 +63,33 @@ export const checkTokenExpiry = async () => {
   }
 };
 
+// 토큰 유효성 검증 - 캐싱 추가
+export const validateToken = async () => {
+  try {
+    const token = getAccessToken();
+    if (!token) return { valid: false };
+
+    // 캐싱: 마지막 검증 이후 5초 이내면 재검증 하지 않음
+    const now = Date.now();
+    if (lastValidationResult && now - lastValidationTime < VALIDATION_CACHE_TIME) {
+      return lastValidationResult;
+    }
+
+    const response = await axios.post('/token/validate', {}, {
+      isHandled: true
+    });
+
+    // 결과 캐싱
+    lastValidationResult = response.data;
+    lastValidationTime = now;
+
+    return response.data;
+  } catch (error) {
+    console.error('토큰 검증 실패:', error);
+    return { valid: false };
+  }
+};
+
 // 토큰 갱신 (연장)
 export const refreshToken = async () => {
   try {
@@ -75,6 +107,11 @@ export const refreshToken = async () => {
     });
 
     const newToken = response.data.accessToken || response.data;
+
+    // 캐싱 무효화 - 토큰이 갱신되었으므로
+    lastValidationResult = null;
+    lastValidationTime = 0;
+
     return newToken;
   } catch (error) {
     console.error('토큰 갱신 실패:', error);
@@ -85,20 +122,27 @@ export const refreshToken = async () => {
 // 자동 토큰 갱신 (새로고침 시)
 export const refreshSilently = async () => {
   try {
+    // 세션 스토리지에서 기존 만료 시간 가져오기
+    const storedExpiry = sessionStorage.getItem('tokenExpiry');
+    const originalExpiryTime = storedExpiry ? parseInt(storedExpiry) : null;
+
     // 이미 메모리에 유효한 토큰이 있으면 갱신하지 않음
     const existingToken = getAccessToken();
     if (existingToken) {
-      try {
-        // 토큰 유효성 확인
-        const tokenInfo = await checkTokenExpiry();
+      // 토큰 유효성 확인
+      const validation = await validateToken();
+
+      if (validation.valid) {
+        // 토큰이 유효하면 기존 만료 시간 유지
+        if (originalExpiryTime && originalExpiryTime > Date.now()) {
+          setAccessToken(existingToken, originalExpiryTime);
+          return true;
+        }
 
         // 만료 임박(30초 이내)한 경우에만 갱신
-        if (tokenInfo.secondsRemaining > 30) {
+        if (validation.secondsRemaining > 30) {
           return true; // 이미 유효한 토큰이 있음
         }
-      } catch (error) {
-        // 토큰이 유효하지 않음, 갱신 시도
-        console.log('기존 토큰 만료, 갱신 시도');
       }
     }
 
@@ -106,12 +150,21 @@ export const refreshSilently = async () => {
     const newToken = await refreshToken();
 
     if (newToken) {
-      // 새 토큰 저장
-      setAccessToken(newToken);
-      return newToken;
+      // 새 토큰 저장 (기존 만료 시간 유지)
+      if (originalExpiryTime && originalExpiryTime > Date.now()) {
+        setAccessToken(newToken, originalExpiryTime);
+      } else {
+        setAccessToken(newToken);
+      }
+
+      // 캐싱 무효화 - 토큰이 갱신되었으므로
+      lastValidationResult = null;
+      lastValidationTime = 0;
+
+      return true;
     }
 
-    return null;
+    return false;
   } catch (error) {
     console.error('자동 토큰 갱신 실패:', error);
     return null;
@@ -142,6 +195,10 @@ export const login = async (username, password, role = 'student') => {
       }
     );
 
+    // 캐싱 무효화 - 새로운 로그인이므로
+    lastValidationResult = null;
+    lastValidationTime = 0;
+
     return response.data;
   } catch (error) {
     console.error('로그인 오류:', error);
@@ -167,6 +224,11 @@ export const logout = async () => {
     await axios.post('/member/logout', {}, {
       withCredentials: true // 쿠키 전송 보장
     });
+
+    // 캐싱 무효화 - 로그아웃되었으므로
+    lastValidationResult = null;
+    lastValidationTime = 0;
+
     return true;
   } catch (error) {
     console.error('로그아웃 실패:', error);
