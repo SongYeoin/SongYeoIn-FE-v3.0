@@ -73,6 +73,9 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
 
         await studentJournalApi.update(journalId, formData);
 
+        // 성공 알림창 추가
+        alert('교육일지가 수정되었습니다.');
+
         // 수정 후 상세 정보 다시 조회
         const response = await studentJournalApi.getDetail(journalId);
         setJournal(response.data);
