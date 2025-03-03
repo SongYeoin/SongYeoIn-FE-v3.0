@@ -8,8 +8,8 @@ const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
   const [discordContent, setDiscordContent] = useState('');
   const [additionalComment, setAdditionalComment] = useState('');
 
-  // 디스코드 웹훅 URL (실제 웹훅 URL로 교체 필요)
-  const discordWebhookUrl = "https://discord.com/api/webhooks/1346149643456741520/E55mtZiwnQRx6rMQt3IyVbMei5gzp3HcMDSpIQsXRHuXfFvgw_OffevP_UaTv3Fm0JFT";
+  // 환경변수에서 디스코드 웹훅 URL 가져오기
+  const discordWebhookUrl = process.env.REACT_APP_DISCORD_WEBHOOK_URL;
 
   useEffect(() => {
     const fetchSupportDetail = async () => {
