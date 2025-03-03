@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PrintDialog from './admin/PrintDialog';
 
-
-const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates, terms, selectedTerm,
+const AttendMainHeader = ({ role, courses, onFilterChange, attendanceRates, terms, selectedTerm,
   attendancePrintData,
   isLoading,
   onTermSelect
@@ -22,7 +21,6 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates, terms
     endDate: new Date().toISOString().split('T')[0], // 오늘 날짜를 기본값으로 설정
   });
 
-  //const [printPages, setPrintPages] = useState([]);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -35,7 +33,6 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates, terms
       });
     }
   }, [courses, filters.courseId, onFilterChange]);
-
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -67,12 +64,11 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates, terms
     onFilterChange(updatedFilters);
   };
 
-
   return (
     <div className="bg-white">
       <div className="flex flex-col w-full gap-6 p-6">
-        {/* Header Title */}
-        <div className="flex justify-between items-center">
+        {/* Header Title and Print Button */}
+        <div className="flex justify-between items-center min-h-[40px]">
           <h1 className="text-xl md:text-2xl lg:text-3xl text-[#16161b]">
             {role === 'admin' ? '출석 관리' : '출석'}
           </h1>
@@ -101,7 +97,17 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates, terms
               </div>
             </div>
           )}
+
+          {/* ADMIN일 때만 인쇄 버튼 표시 - 상단 우측에 배치 */}
+          {role === 'admin' && (
+            <button
+              className="flex items-center px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors duration-200"
+              onClick={() => setIsPrintDialogOpen(true)}>
+              출석부 인쇄
+            </button>
+          )}
         </div>
+
         <div className="flex flex-wrap gap-4 justify-between items-center">
           {/* 교육 과정 필터 */}
           <select
@@ -123,46 +129,7 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates, terms
             ))}
           </select>
 
-          {/* ADMIN일 때만 인쇄 다이얼로그 표시 */}
-          {role === 'admin' && (
-            <div>
-              {/* 출석부 목록 표시 */}
-              <button
-                className="bg-gray-200 hover:cursor-pointer px-4 py-2 rounded transition-colors duration-200 "
-                onClick={() => setIsPrintDialogOpen(true)}>
-                출석부 인쇄
-              </button>
-
-              {/* PrintDialog 컴포넌트 */}
-              <PrintDialog
-                isOpen={isPrintDialogOpen}
-                onClose={() => setIsPrintDialogOpen(false)}
-                //onPrint={handlePrint}
-                courseName={courses.find(
-                  c => c.courseId === filters.courseId)?.courseName}
-                terms={terms}
-                selectedTerm={selectedTerm}
-                attendanceData={attendancePrintData}
-                isLoading={isLoading}
-                onTermSelect={onTermSelect}
-              />
-            </div>
-          )}
-
-        {/* 출석부 인쇄 페이지 - 인쇄할 때만 표시 */}
-{/*        <div className="hidden print:block">
-        {printPages.map((pageDays, idx) => (
-              <AttendancePrintPage
-                key={idx}
-                days={pageDays}
-                pageNumber={idx + 1}
-                totalPages={printPages.length}
-                courseName={courses.find(c => c.courseId === filters.courseId)?.courseName}
-              />
-            ))}
-          </div>*/}
-
-
+          {/* 필터링 요소들 우측 정렬 */}
           <div className="flex items-center gap-4">
             {/* 날짜 Filter */}
             <div>
@@ -270,8 +237,23 @@ const AttendMainHeader = ({ role, courses, onFilterChange,attendanceRates, terms
           </div>
         </div>
       </div>
-      </div>
-      );
-      };
 
-      export default AttendMainHeader;
+      {/* PrintDialog 컴포넌트 */}
+      {role === 'admin' && (
+        <PrintDialog
+          isOpen={isPrintDialogOpen}
+          onClose={() => setIsPrintDialogOpen(false)}
+          courseName={courses.find(
+            c => c.courseId === filters.courseId)?.courseName}
+          terms={terms}
+          selectedTerm={selectedTerm}
+          attendanceData={attendancePrintData}
+          isLoading={isLoading}
+          onTermSelect={onTermSelect}
+        />
+      )}
+    </div>
+  );
+};
+
+export default AttendMainHeader;

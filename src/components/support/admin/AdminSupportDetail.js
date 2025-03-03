@@ -274,7 +274,7 @@ ${support.content}
                 <textarea
                   value={additionalComment}
                   onChange={(e) => setAdditionalComment(e.target.value)}
-                  placeholder="개발팀에게 전달할 추가 메시지를 입력하세요."
+                  placeholder="개발팀에게 전달할 추가 메시지를 입력하세요"
                   className="w-full px-3 py-2 border rounded-lg bg-white h-20 resize-none focus:outline-none focus:border-2 focus:border-black"
                 />
               </div>
