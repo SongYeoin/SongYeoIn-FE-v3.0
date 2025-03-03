@@ -4,11 +4,12 @@ import { adminSupportApi } from "../../../api/supportApi";
 const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
   const [support, setSupport] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [emailContent, setEmailContent] = useState({ subject: '', body: '' });
+  const [showDiscordModal, setShowDiscordModal] = useState(false);
+  const [discordContent, setDiscordContent] = useState('');
+  const [additionalComment, setAdditionalComment] = useState('');
 
-  // 개발팀 이메일 주소
-  const devTeamEmail = "devteam@songyeoin.com";
+  // 디스코드 웹훅 URL (실제 웹훅 URL로 교체 필요)
+  const discordWebhookUrl = "https://discord.com/api/webhooks/1346149643456741520/E55mtZiwnQRx6rMQt3IyVbMei5gzp3HcMDSpIQsXRHuXfFvgw_OffevP_UaTv3Fm0JFT";
 
   useEffect(() => {
     const fetchSupportDetail = async () => {
@@ -31,7 +32,6 @@ const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
     try {
       const updatedSupport = await adminSupportApi.confirmSupport(supportId);
       setSupport(updatedSupport);
-      alert("문의가 확인 처리되었습니다.");
       refreshList();
     } catch (error) {
       console.error("Error confirming support:", error);
@@ -44,7 +44,6 @@ const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
     try {
       const updatedSupport = await adminSupportApi.unconfirmSupport(supportId);
       setSupport(updatedSupport);
-      alert("문의 확인이 취소되었습니다.");
       refreshList();
     } catch (error) {
       console.error("Error unconfirming support:", error);
@@ -66,32 +65,67 @@ const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
     }
   };
 
-  // 개발팀에 이메일로 전달하는 함수
-  const handleSendToDev = () => {
-    if (!support) return;
-
-    // 이메일 제목과 본문 설정
-    const subject = `[시스템 장애 문의] ${support.title}`;
-    const body = `
-문의 ID: ${support.id}
-작성자: ${support.memberName}
-등록일시: ${support.regDate}
-확인여부: ${support.isConfirmed ? '확인완료' : '미확인'}
-
-문의내용:
-${support.content}
-    `;
-
-    setEmailContent({ subject, body });
-    setShowEmailModal(true);
-  };
-
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  // 개발팀에 디스코드로 전달하는 함수
+  const handleSendToDiscord = () => {
+    if (!support) return;
+
+    // 디스코드 메시지 내용 설정
+    const content = `
+**[시스템 장애 문의]** ${support.title}
+> 문의 ID: ${support.id}
+> 작성자: ${support.memberName}
+> 등록일시: ${support.regDate}
+> 확인여부: ${support.isConfirmed ? '확인완료' : '미확인'}
+
+**문의내용:**
+\`\`\`
+${support.content}
+\`\`\`
+    `;
+
+    setDiscordContent(content);
+    setAdditionalComment('');
+    setShowDiscordModal(true);
+  };
+
+  // 디스코드로 메시지 전송하는 함수
+  const sendToDiscord = async () => {
+    // 전송 전 확인 창 표시
+    if (!window.confirm("해당 문의글을 개발팀에게 전송하시겠습니까?")) {
+      return; // 사용자가 취소를 누르면 함수 실행 중단
+    }
+
+    try {
+      // 기본 컨텐츠와 추가 코멘트를 합친 내용
+      let finalContent = discordContent;
+
+      if (additionalComment.trim() !== '') {
+        finalContent += `\n**관리자 코멘트:**\n${additionalComment}`;
+      }
+
+      await fetch(discordWebhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: finalContent,
+        }),
+      });
+      alert("디스코드로 문의가 전송되었습니다.");
+      setShowDiscordModal(false);
+    } catch (error) {
+      console.error("디스코드 전송 오류:", error);
+      alert("디스코드로 전송 중 오류가 발생했습니다.");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -119,13 +153,45 @@ ${support.content}
         <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg my-10">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">관리자 문의 상세</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200"
-            >
-              ✕
-            </button>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold">관리자 문의 상세</h2>
+              <span className={`px-2 py-1 rounded-full text-xs ${
+                support.isConfirmed
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                {support.isConfirmed ? '확인완료' : '미확인'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSendToDiscord}
+                className="px-2 py-1 bg-indigo-600 text-white text-xs rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+              >
+                개발팀에게 전달
+              </button>
+              {!support.isConfirmed ? (
+                <button
+                  onClick={handleConfirm}
+                  className="px-2 py-1 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors duration-200"
+                >
+                  확인 처리하기
+                </button>
+              ) : (
+                <button
+                  onClick={handleUnconfirm}
+                  className="px-2 py-1 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition-colors duration-200"
+                >
+                  확인 취소하기
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="ml-4 text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200"
+              >
+                ✕
+              </button>
+            </div>
           </div>
 
           <div className="mb-6 border border-gray-300 rounded-lg p-4">
@@ -151,41 +217,7 @@ ${support.content}
               </div>
             </div>
 
-            <div className="mb-4">
-              <div className="flex justify-between items-center">
-                <label className="text-sm text-gray-600 font-bold">상태</label>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleSendToDev}
-                    className="px-2 py-1 bg-green-800 text-white text-xs rounded-lg hover:bg-green-900 transition-colors duration-200"
-                  >
-                    개발팀 전달하기
-                  </button>
-                  {!support.isConfirmed ? (
-                    <button
-                      onClick={handleConfirm}
-                      className="px-2 py-1 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors duration-200"
-                    >
-                      확인 처리하기
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleUnconfirm}
-                      className="px-2 py-1 bg-orange-500 text-white text-xs rounded-lg hover:bg-orange-600 transition-colors duration-200"
-                    >
-                      확인 취소하기
-                    </button>
-                  )}
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    support.isConfirmed
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {support.isConfirmed ? '확인완료' : '미확인'}
-                  </span>
-                </div>
-              </div>
-            </div>
+
 
             <div>
               <label className="text-sm text-gray-600 font-bold">내용</label>
@@ -213,14 +245,14 @@ ${support.content}
         </div>
       </div>
 
-      {/* 이메일 정보 모달 */}
-      {showEmailModal && (
+      {/* 디스코드 정보 모달 */}
+      {showDiscordModal && (
         <div className="fixed inset-0 flex items-start justify-center bg-black bg-opacity-50 z-[60] overflow-y-auto">
           <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg my-10">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold">개발팀 전달 정보</h3>
+              <h3 className="text-2xl font-bold">개발팀 전달</h3>
               <button
-                onClick={() => setShowEmailModal(false)}
+                onClick={() => setShowDiscordModal(false)}
                 className="text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200"
               >
                 ✕
@@ -229,50 +261,37 @@ ${support.content}
 
             <div className="mb-6 border border-gray-300 rounded-lg p-4">
               <div className="mb-4">
-                <label className="text-sm text-gray-600 font-bold">개발팀 이메일</label>
-                <div className="flex items-center">
-                  <input
-                    readOnly
-                    value={devTeamEmail}
-                    className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default focus:outline-none"
-                  />
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(devTeamEmail);
-                      alert("이메일 주소가 복사되었습니다.");
-                    }}
-                    className="ml-2 bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 min-w-[80px]"
-                  >
-                    복사
-                  </button>
-                </div>
+                <label className="text-sm text-gray-600 font-bold">문의 내용</label>
+                <textarea
+                  value={discordContent}
+                  readOnly
+                  className="w-full px-3 py-2 border rounded-lg bg-gray-100 h-72 resize-none focus:outline-none cursor-default"
+                />
               </div>
 
               <div>
-                <label className="text-sm text-gray-600 font-bold">이메일 내용</label>
+                <label className="text-sm text-gray-600 font-bold">추가 메시지 (선택사항)</label>
                 <textarea
-                  readOnly
-                  value={`${emailContent.subject}\n\n${emailContent.body}`}
-                  className="w-full px-3 py-2 border rounded-lg bg-gray-100 h-60 resize-none cursor-default focus:outline-none"
+                  value={additionalComment}
+                  onChange={(e) => setAdditionalComment(e.target.value)}
+                  placeholder="개발팀에게 전달할 추가 메시지를 입력하세요."
+                  className="w-full px-3 py-2 border rounded-lg bg-white h-20 resize-none focus:outline-none focus:border-2 focus:border-black"
                 />
               </div>
             </div>
 
             <div className="flex justify-end gap-2 mt-4">
               <button
-                onClick={() => {
-                  navigator.clipboard.writeText(`${emailContent.subject}\n\n${emailContent.body}`);
-                  alert("내용이 복사되었습니다.");
-                }}
+                onClick={() => setShowDiscordModal(false)}
                 className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
               >
-                내용 복사
+                취소
               </button>
               <button
-                onClick={() => setShowEmailModal(false)}
+                onClick={sendToDiscord}
                 className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
               >
-                닫기
+                전송
               </button>
             </div>
           </div>
