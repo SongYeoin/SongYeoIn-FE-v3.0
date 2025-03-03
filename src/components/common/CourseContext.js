@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'api/axios';
+import { refreshSilently } from '../../api/memberApi';
 
 // Context 생성
 export const CourseContext = createContext();
@@ -12,6 +13,7 @@ export const CourseProvider = ({ children }) => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
+        await refreshSilently();
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`); // 서버 요청
         console.log(response.data);  // 응답 데이터 확인
         setCourses(response.data); // 서버 데이터 설정

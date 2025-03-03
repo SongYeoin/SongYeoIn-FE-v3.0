@@ -1,84 +1,147 @@
-import React, {useCallback, useEffect, useState, useContext} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import axios from 'api/axios';
 import AdminLayout from '../../common/layout/admin/AdminLayout';
+import { CheckIcon } from '@heroicons/react/20/solid';
+import { BsPaperclip } from "react-icons/bs";
 import {useUser} from '../../common/UserContext';
-import { CourseContext } from '../../common/CourseContext';
 import AdminClubHeader from './AdminClubHeader';
+import AdminClubDetail from './AdminClubDetail';
 
 const AdminClubList = () => {
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  // const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [selectedClub, setSelectedClub] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [downloadLoading, setDownloadLoading] = useState(false);
+  const [pageInfo, setPageInfo] = useState({
+    totalElements: 0,
+    totalPages: 0,
+    currentPage: 1,
+    pageSize: 20,
+    hasNext: false,
+    hasPrevious: false
+  });
 
-  const [formData, setFormData] = useState();
-  const [selectedCourseId, setSelectedCourseId] = useState(null); // 선택된 Course ID
+const [filteredClubs, setFilteredClubs] = useState([]);
+const [filterStatus, setFilterStatus] = useState('ALL');
 
-  const {user, loading:userLoading} = useUser();
-  const [originalClub, setOriginalClub] = useState(null);
-  const { courses = [] } = useContext(CourseContext);
+  const {user} = useUser();
+  const [courses, setCourses] = useState([]);
 
-  // courses가 변경되었을 때 기본값 설정
   useEffect(() => {
-    if (Array.isArray(courses) && courses.length > 0) {
-      setSelectedCourseId(courses[0].id); // 첫 번째 코스를 기본값으로 설정
-    }
-    console.log('현재 로그인한 사용자 정보:', user);
-    console.log('현재 로딩상태:', userLoading);
-  }, [courses, user, userLoading]);
+    const fetchCourses = async () => {
+        try {
+          const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`);
+          setCourses(data);
 
-  const handleChange = (e) => {
-      setSelectedCourseId(e.target.value); // 선택된 Course ID 업데이트
-  };
+          if (data.length > 0 && !selectedCourse) {
+            setSelectedCourse(data[0].id);
+          }
 
-  // Pagination change handler
+        } catch (error) {
+          console.error('Error fetching courses:', error);
+        }
+      };
+    fetchCourses();
+  }, [selectedCourse]);
+
+  // 페이지네이션 핸들러
   const handlePageChange = (page) => {
+    if (page < 1 || page > pageInfo.totalPages) return;
     setCurrentPage(page);
+    // Reset selections when changing pages
+    setSelectedItems([]);
+    setSelectAll(false);
   };
 
-  const fetchClubList = useCallback (async() => {
-    if(!selectedCourseId) return; // courseId가 없으면 실행하지 않음
+  // 클럽 리스트 가져오기
+  const fetchClubList = useCallback(async() => {
+    if(!selectedCourse) return;
     setLoading(true);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/club/${selectedCourseId}/list`, {
-        params: {
-          //courseId: courseId,
-          pageNum: currentPage
+      // 항상 최신 데이터를 확인하기 위해 서버에 요청할 때 캐시를 방지하는 타임스탬프
+      const timestamp = new Date().getTime();
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/club/${selectedCourse}/list`, {
+        params: { pageNum: currentPage,
+                  status: filterStatus !== 'ALL' ? filterStatus : undefined, // 필터 상태
+                  _t: timestamp // 캐시 방지 파라미터
         }
-        // headers: {
-        //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        // }
       });
 
-      console.log("Fetched club list:", response.data.list);
-      setClubs(response.data.list);
-      setTotalPages(response.data.pageInfo.totalPages);
-      setLoading(false);
+      // 클럽 리스트 정렬: regDate와 studyDate 기준 내림차순
+      const sortedClubs = response.data.list.sort((a, b) => {
+        // 먼저 작성일(regDate) 기준으로 비교
+        const dateA = new Date(a.regDate);
+        const dateB = new Date(b.regDate);
+
+        // 작성일이 동일하면 활동일(studyDate) 기준으로 비교
+        if (dateB - dateA !== 0) {
+          return dateB - dateA;  // 작성일 내림차순
+        }
+
+        // 작성일이 동일하면 활동일(studyDate)로 내림차순 정렬
+        const studyDateA = new Date(a.studyDate || 0); // studyDate가 없으면 기본값 0 (즉, 1970-01-01)
+        const studyDateB = new Date(b.studyDate || 0);
+        return studyDateB - studyDateA;  // 활동일 내림차순
+      });
+
+      setClubs(sortedClubs);
+
+      // 페이지 정보 저장
+      const receivedPageInfo = response.data.pageInfo;
+      setPageInfo({
+        totalElements: receivedPageInfo.totalElements,
+        totalPages: receivedPageInfo.totalPages,
+        currentPage: receivedPageInfo.currentPage,
+        pageSize: receivedPageInfo.pageSize,
+        hasNext: receivedPageInfo.hasNext,
+        hasPrevious: receivedPageInfo.hasPrevious
+      });
+
+      setTotalPages(receivedPageInfo.totalPages);
+      setTotalItems(receivedPageInfo.totalElements);
+      setItemsPerPage(receivedPageInfo.pageSize);
+
+      // Reset selections when fetching new data
+      setSelectedItems([]);
+      setSelectAll(false);
     } catch (err) {
+      console.error('Error fetching club list:', err);
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
+    } finally {
       setLoading(false);
     }
-  }, [selectedCourseId, currentPage]);
+  }, [selectedCourse, currentPage, filterStatus]);
 
-  // useEffect에서 fetchClubList 호출
   useEffect(() => {
     fetchClubList();
-  }, [fetchClubList, selectedCourseId, currentPage]);
+    setSelectedItems([]);
+      setSelectAll(false);
+  }, [fetchClubList, selectedCourse, currentPage, filterStatus]);
+
+useEffect(() => {
+  setFilteredClubs(clubs);
+}, [clubs]);
+
+  // 필터 변경 핸들러
+  const handleFilterChange = (status) => {
+    setFilterStatus(status);
+    setCurrentPage(1);
+  };
+
 
   const fetchClubDetails = async (clubId) => {
     try{
       console.log("fetchClubDetails 호출 - Club ID: ", clubId);
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/club/${clubId}/detail`, {
-        // headers: {
-        //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        // }
-      });
-      console.log("받은 클럽 상세 데이터: ", response.data);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/club/${clubId}/detail`);
       setSelectedClub(response.data);
     } catch(err){
       console.error('Error fetching club details', err);
@@ -86,132 +149,236 @@ const AdminClubList = () => {
     }
   };
 
-  // 동아리 상세 정보 (참여자, 내용 포함)
+  // 상세보기 모달 열기
   const openDetailModal = (club) => {
     if (!club.clubId) {
-      console.error("club.clubId가 유효하지 않습니다.", club); // club.id가 없으면 에러 로그
+      console.error("club.clubId가 유효하지 않습니다.", club);
       return;
     }
-    console.log("Club ID 전달: ", club.clubId);
     fetchClubDetails(club.clubId);
     setIsDetailModalOpen(true);
   };
 
-  // Close modal
-  // const closeModal = () => {
-  //   setIsModalOpen(false);
-  // };
-
-  // Handle form input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    // Prevent changing writer and regDate
-    if (name === 'writer' || name === 'regDate') return;
-
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  // 체크박스 핸들러
+  const handleCheckboxChange = (clubId) => {
+    setSelectedItems(prev => {
+      if (prev.includes(clubId)) {
+        return prev.filter(id => id !== clubId);
+      } else {
+        return [...prev, clubId];
+      }
+    });
   };
 
+  // 모든 항목 선택/해제 핸들러
+  const handleSelectAllChange = () => {
+    if (selectAll) {
+      setSelectedItems([]);
+    } else {
+      // 파일이 있는 항목만 선택
+      const clubsWithFiles = filteredClubs.filter(club => club.file).map(club => club.clubId);
+      setSelectedItems(clubsWithFiles);
+    }
+    setSelectAll(!selectAll);
+  };
 
-  // 저장 버튼 클릭 핸들러
-  const handleSaveEdit = async () => {
-    // 필수 항목 체크
-    if (formData.checkStatus === 'W' || !formData.checkMessage) {
-      alert('승인 상태와 승인 메시지는 필수 항목입니다. 입력해주세요.');
+  // 파일명 추출 헬퍼 함수
+  const extractFilenameFromContentDisposition = (contentDisposition) => {
+    if (!contentDisposition) return null;
+
+    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+    const matches = filenameRegex.exec(contentDisposition);
+    if (matches && matches[1]) {
+      return matches[1].replace(/['"]/g, '');
+    }
+    return null;
+  };
+
+  // 파일 다운로드 공통 함수
+  const downloadFile = async (url, defaultFilename, downloadType = 'batch') => {
+    try {
+      if (downloadType === 'batch') {
+            setDownloadLoading(true);
+          }
+
+      const response = await axios.get(url, {
+        responseType: 'blob'
+      });
+
+      // 파일 다운로드 처리
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = extractFilenameFromContentDisposition(contentDisposition) || defaultFilename;
+
+      // URL 디코딩 처리
+      try {
+        filename = decodeURIComponent(filename);
+      } catch (e) {
+        console.warn('Filename decoding failed, using original value', e);
+      }
+
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+
+      return true;
+    } catch (err) {
+      console.error('File download error:', err);
+      alert('파일 다운로드에 실패했습니다.');
+      return false;
+    } finally {
+      if (downloadType === 'batch') {
+            setDownloadLoading(false);
+          }
+    }
+  };
+
+  // 단일 파일 다운로드 핸들러
+  const handleFileDownload = async (e, club) => {
+    // 이벤트 버블링 방지
+    e.stopPropagation();
+
+    if (!club.file || !club.file.id) {
+      alert('다운로드할 파일이 없습니다.');
       return;
     }
 
-    try {
-      const payload = {
-        checkStatus: formData.checkStatus,
-        checkMessage: formData.checkMessage
-      };
-
-      console.log("수정 데이터 전송:", payload);
-
-      await axios.put(`/admin/club/${selectedClub.clubId}`, payload, {
-        // headers: {
-        //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        // }
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      alert('수정이 완료되었습니다.');
-      setIsEditing(false); // 수정 모드 비활성화
-      setIsDetailModalOpen(false); // 모달 닫기
-      fetchClubList(); // 리스트 갱신
-    } catch (err) {
-      console.error('수정 실패:', err);
-      alert('수정에 실패했습니다.');
-      setIsEditing(false); // 수정 모드 비활성화
-      setIsDetailModalOpen(false); // 모달 닫기
-    }
+    await downloadFile(
+      `${process.env.REACT_APP_API_URL}/admin/club/${club.clubId}/download`,
+      club.file.originalName || `club_file_${club.clubId}.pdf`,
+      'single'
+    );
   };
 
-
-  //삭제
-  const handleDelete = async () => {
-    if (!selectedClub || !selectedClub.clubId) return;
-
-    try {
-      await axios.delete(`/admin/club/${selectedClub.clubId}`, {
-        // headers: {
-        //   'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        // }
-      });
-      alert('삭제되었습니다.');
-      setIsDetailModalOpen(false); // 모달 닫기
-      fetchClubList(); // 리스트 갱신
-    } catch (err) {
-      console.error('삭제 실패:', err);
-      alert('삭제에 실패했습니다.');
-      setIsDetailModalOpen(false); // 모달 닫기
-    }
-  };
-
-  //수정 버튼 클릭 핸들러
-  const handleEditClick = () => {
-    if (!user) {
-      console.error('사용자 정보가 없습니다. user 객체:', user);
+  // 선택된 파일 다운로드 핸들러
+  const handleSelectedFilesDownload = async () => {
+    if (selectedItems.length === 0) {
+      alert('다운로드할 파일을 선택해주세요.');
       return;
     }
 
-    setOriginalClub({...selectedClub});
+    // 파일이 1개만 선택된 경우 단일 파일 다운로드 처리
+    if (selectedItems.length === 1) {
+      const selectedClub = filteredClubs.find(club => club.clubId === selectedItems[0]);
+      if (selectedClub && selectedClub.file && selectedClub.file.id) {
+        // 일괄 다운로드 상태를 사용하여 다운로드
+        await downloadFile(
+                `${process.env.REACT_APP_API_URL}/admin/club/${selectedClub.clubId}/download`,
+                selectedClub.file.originalName || `club_file_${selectedClub.clubId}.pdf`,
+                'batch'
+              );
+        return;
+      }
+    }
 
-    // 승인자 정보 설정
-    setSelectedClub((prev) => ({
-      ...prev,
-      checker: user?.name // 승인자 정보에 관리자 이름 추가
-    }));
+     // 선택된 파일 ID 배열 생성
+     const clubIds = selectedItems
+       .map(clubId => {
+         const club = filteredClubs.find(c => c.clubId === clubId);
+         return club && club.file ? club.clubId : null;
+       })
+       .filter(clubId => clubId !== null);
 
-    setIsEditing(true); // 수정 모드 활성화
-    setFormData(selectedClub);
+     if (clubIds.length === 0) {
+       alert('선택한 항목 중 다운로드 가능한 파일이 없습니다.');
+       return;
+     }
+
+     try {
+       setDownloadLoading(true);
+       // 다중 파일 다운로드 API 호출
+       const response = await axios.post(
+         `${process.env.REACT_APP_API_URL}/admin/club/download-batch`,
+         clubIds,
+         { responseType: 'blob' }
+       );
+       const contentDisposition = response.headers['content-disposition'];
+       let filename = extractFilenameFromContentDisposition(contentDisposition) || '선택된_파일들.zip';
+
+       const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+       const link = document.createElement('a');
+       link.href = blobUrl;
+       link.setAttribute('download', filename);
+       document.body.appendChild(link);
+       link.click();
+       link.remove();
+       window.URL.revokeObjectURL(blobUrl);
+     } catch (err) {
+       console.error('파일 일괄 다운로드 실패:', err);
+
+       // 서버에 배치 다운로드 API가 없는 경우 개별 파일 다운로드로 대체
+       if (err.response && err.response.status === 404) {
+         alert('일괄 다운로드 기능을 사용할 수 없어 개별 파일을 차례로 다운로드합니다.');
+         for (const clubId of selectedItems) {
+           const club = filteredClubs.find(c => c.clubId === clubId);
+           if (club && club.file) {
+             await handleFileDownload({ stopPropagation: () => {} }, club);
+           }
+         }
+       } else {
+         alert('파일 다운로드에 실패했습니다.');
+       }
+     } finally {
+       setDownloadLoading(false);
+     }
   };
 
-  //취소 버튼 클릭 핸들러
-  const handleCancelEdit = () => {
-    setSelectedClub(originalClub);
-    setIsEditing(false);
+  // 항목 클릭 핸들러 (체크박스와 상세보기 분리)
+  const handleRowClick = (club) => {
+    openDetailModal(club);
   };
 
+  // 항목 클릭 영역 핸들러 (체크박스를 제외한 영역)
+  const handleRowAreaClick = (e, club) => {
+    // 체크박스 클릭에서는 상세보기 열지 않음
+    if (e.target.type !== 'checkbox' && !e.target.closest('.checkbox-area') && !e.target.closest('.file-download-btn')) {
+      handleRowClick(club);
+    }
+  };
+
+  // 행 번호 계산 함수
+  const calculateRowNumber = (index) => {
+    // 전체 아이템 수에서 현재 페이지에 해당하는 아이템 인덱스를 뺌
+    return totalItems - ((currentPage - 1) * itemsPerPage + index);
+  };
 
   return (
-    <AdminLayout currentPage={currentPage}
-                   totalPages={totalPages}
-                   onPageChange={handlePageChange}
+    <AdminLayout
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
     >
-        <AdminClubHeader selectedCourseId={selectedCourseId}
-                         handleChange={handleChange}
+        <AdminClubHeader
+          courses={courses}
+          selectedCourse={selectedCourse}
+          courseChange={(courseId) => {
+            setSelectedCourse(courseId);
+            setCurrentPage(1); // 코스가 변경되면 페이지를 1로 리셋
+          }}
+          selectedItems={selectedItems} // 선택된 항목 배열 전달
+            downloadSelectedFiles={handleSelectedFilesDownload} // 다운로드 함수 전달
+            downloadLoading={downloadLoading} // 다운로드 상태 전달
+            filterStatus={filterStatus} // 필터 상태 전달
+                    onFilterChange={handleFilterChange} // 필터 변경 핸들러 전달
         />
 
         {/* Data Table Section */}
-        <div className="flex flex-col w-full bg-white rounded-xl shadow-sm mt-6">
+        <div className="flex flex-col w-full bg-white rounded-xl shadow-sm mt-2">
           {/* Table Header */}
           <div className="border-b border-gray-200 bg-gray-50">
-            <div className="grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr_2fr_2fr] gap-4 px-6 py-4">
+            <div className="grid grid-cols-[0.5fr_1fr_2fr_2fr_2fr_2fr_2fr_2fr_2fr] gap-4 px-6 py-4">
+              <div className="flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                  className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+              </div>
               <div className="flex flex-col items-center justify-center">
                 <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">번호</span>
               </div>
@@ -245,19 +412,28 @@ const AdminClubList = () => {
               <div className="text-sm text-center text-gray-500 py-4">데이터를 불러오는 중입니다...</div>
             ) : error ? (
               <div className="text-sm text-center text-red-500 py-4">{error}</div>
-            ) : clubs.length > 0 ? (
-              clubs.map((club, index) => (
+            ) : filteredClubs.length > 0 ? (
+              filteredClubs.map((club, index) => (
                 <div
                   key={club.clubId}
-                  onClick={() => openDetailModal(club)}
-                  className="grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr_2fr_2fr] gap-4 px-6 py-4 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
+                  onClick={(e) => handleRowAreaClick(e, club)}
+                  className="grid grid-cols-[0.5fr_1fr_2fr_2fr_2fr_2fr_2fr_2fr_2fr] gap-4 px-6 py-4 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
                 >
-                  <div className="text-sm font-medium text-gray-900 text-center">{index + 1}</div>
+                  <div className="flex items-center justify-center checkbox-area" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.includes(club.clubId)}
+                      onChange={() => handleCheckboxChange(club.clubId)}
+                      disabled={!club.file}
+                      className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="text-sm font-medium text-gray-900 text-center">{calculateRowNumber(index)}</div>
                   <div className="text-sm text-gray-600 text-center">{club.writer}</div>
                   <div className="text-sm text-gray-600 text-center">{club.checker || '-'}</div>
                   <div className="text-sm text-center">
                     <span className={`${
-                      club.checkStatus === 'Y' ? 'text-green-500' : 'text-gray-600'
+                      club.checkStatus === 'Y' ? 'text-green-600' : club.checkStatus === 'N' ? 'text-red-600' : 'text-gray-600'
                     }`}>
                       {club.checkStatus === 'W' ? '대기' :
                        club.checkStatus === 'Y' ? '승인' : '미승인'}
@@ -266,193 +442,45 @@ const AdminClubList = () => {
                   <div className="text-sm text-gray-600 text-center">{club.checkMessage || '-'}</div>
                   <div className="text-sm text-gray-600 text-center">{club.studyDate}</div>
                   <div className="text-sm text-gray-600 text-center">{club.regDate}</div>
-                  <div className="text-sm text-gray-600 text-center">{club.attachmentFileName || '-'}</div>
+                  <div className="text-sm text-gray-600 text-center">
+                    {club.file ? (
+                      <div className="flex justify-center space-x-2">
+                        <div
+                          onClick={(e) => handleFileDownload(e, club)}
+                          className="cursor-pointer hover:text-blue-500 file-download-btn"
+                        >
+                          <BsPaperclip className="h-6 w-6 rotate-0" />
+                        </div>
+                        {selectedItems.includes(club.clubId) && (
+                          <CheckIcon className="h-5 w-5 text-green-500" />
+                        )}
+                      </div>
+                    ) : '-'}
+                  </div>
                 </div>
               ))
             ) : (
               <div className="text-sm text-center text-gray-500 py-4">
-                조회된 내용이 없습니다.
+                {filterStatus !== 'ALL' ? `${filterStatus === 'Y' ? '승인' : filterStatus === 'N' ? '미승인' : '대기'} 상태의 항목이 없습니다.` : '조회된 내용이 없습니다.'}
               </div>
             )}
           </div>
         </div>
 
         {isDetailModalOpen && selectedClub && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto">
-            <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg my-10">
-              {/* Modal Header */}
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">신청내역 상세보기</h2>
-                <button
-                  onClick={() => setIsDetailModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Modal Content */}
-              <div className="mb-6 border border-gray-300 rounded-lg p-4">
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="text-sm text-gray-600 font-bold">번호</label>
-                    <input
-                      type="text"
-                      value={selectedClub.clubId}
-                      name="clubId"
-                      disabled
-                      className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-600 font-bold">작성자/승인자</label>
-                    <input
-                      type="text"
-                      value={`${selectedClub.writer || ""} / ${selectedClub.checker || ""}`}
-                      disabled
-                      className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-                    />
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <label className="text-sm text-gray-600 font-bold">참여자</label>
-                  <input
-                    type="text"
-                    value={selectedClub.participants}
-                    name="participants"
-                    disabled
-                    className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="text-sm text-gray-600 font-bold">내용</label>
-                  <div className="w-full px-3 py-2 border rounded-lg bg-gray-100 whitespace-pre-wrap min-h-[42px]">
-                    {selectedClub.content}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="text-sm text-gray-600 font-bold">승인상태</label>
-                    {!isEditing ? (
-                      <p className={`w-full px-3 py-2 border rounded-lg bg-gray-100 ${
-                        selectedClub.checkStatus === 'Y' ? 'text-green-600' : 'text-gray-600'
-                      }`}>
-                        {selectedClub.checkStatus === 'Y' ? '승인' :
-                         selectedClub.checkStatus === 'N' ? '미승인' : '대기'}
-                      </p>
-                    ) : (
-                      <div className="flex items-center space-x-4 mt-2">
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            value="Y"
-                            name="checkStatus"
-                            checked={formData.checkStatus === 'Y'}
-                            onChange={handleInputChange}
-                            className="mr-1 w-4 h-4"
-                          />
-                          승인
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            value="N"
-                            name="checkStatus"
-                            checked={formData.checkStatus === 'N'}
-                            onChange={handleInputChange}
-                            className="mr-1 w-4 h-4"
-                          />
-                          미승인
-                        </label>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-600 font-bold">승인메시지</label>
-                    <input
-                      type="text"
-                      value={isEditing ? formData.checkMessage || "" : selectedClub.checkMessage || ""}
-                      name="checkMessage"
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className={`w-full px-3 py-2 border rounded-lg ${!isEditing ? 'bg-gray-100' : 'bg-white'}`}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="text-sm text-gray-600 font-bold">활동일</label>
-                    <input
-                      type="date"
-                      value={selectedClub.studyDate}
-                      disabled
-                      className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-600 font-bold">작성일</label>
-                    <input
-                      type="date"
-                      value={selectedClub.regDate}
-                      disabled
-                      className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm text-gray-600 font-bold">첨부파일</label>
-                  <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
-                    {selectedClub.attachmentFileName || "첨부된 파일 없음"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex justify-end gap-2">
-                {!isEditing ? (
-                  <>
-                    {selectedClub.checkStatus === 'W' && (
-                      <button
-                        onClick={handleDelete}
-                        className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
-                      >
-                        삭제
-                      </button>
-                    )}
-                    <button
-                      onClick={handleEditClick}
-                      className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
-                    >
-                      수정
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={handleCancelEdit}
-                      className="w-full py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
-                    >
-                      취소
-                    </button>
-                    <button
-                      onClick={handleSaveEdit}
-                      className="w-full py-2 bg-green-800 text-white rounded-lg hover:bg-green-900"
-                    >
-                      저장
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+          <AdminClubDetail
+            club={selectedClub}
+            onClose={() => setIsDetailModalOpen(false)}
+            user={user}
+            onUpdateSuccess={fetchClubList}
+            courseId={selectedCourse}
+          />
         )}
     </AdminLayout>
   );
 };
 
 export default AdminClubList;
+
+
+

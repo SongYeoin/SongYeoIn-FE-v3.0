@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -145,17 +145,17 @@ const AdminSidebar = () => {
               ? 'bg-white'
               : 'hover:bg-white'}`}
           >
-            <a
-              href={item.link}
+            <Link
+              to={item.link}
               className={`flex items-center justify-start gap-5 ml-4 ${
                 location.pathname === item.link
-                ? 'text-black opacity-100'
-                : 'opacity-75 hover:opacity-100'
+                  ? 'text-black opacity-100'
+                  : 'opacity-75 hover:opacity-100'
               }`}
             >
               {item.icon}
               <span className="text-base font-bold text-left">{item.name}</span>
-            </a>
+            </Link>
           </div>
         ))}
       </nav>

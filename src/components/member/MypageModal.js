@@ -111,7 +111,7 @@ const MyPageModal = ({ onClose }) => {
   };
 
   const handleWithdraw = async () => {
-    if (window.confirm('정말 탈퇴하시겠습니까?\n탈퇴 후에는 복구가 불가능합니다.')) {
+    if (window.confirm('정말 탈퇴하시겠습니까?')) {
       try {
         await withdrawMember();
         alert('회원 탈퇴가 완료되었습니다.');

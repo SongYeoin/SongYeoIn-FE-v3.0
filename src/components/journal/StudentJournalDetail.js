@@ -5,6 +5,11 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
   const [journal, setJournal] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState(null);
+  const [errors, setErrors] = useState({
+    title: false,
+    educationDate: false,
+    file: false
+  });
 
   useEffect(() => {
     const fetchJournalDetail = async () => {
@@ -35,12 +40,26 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('파일 다운로드 실패:', error);
-      alert('파일 다운로드에 실패했습니다.');
+      alert(error.message || '파일 다운로드에 실패했습니다.'); // error.message를 사용
     }
   };
 
   const handleEdit = async () => {
     if (isEditing) {
+      // 유효성 검사
+      const newErrors = {
+        title: !editedData.title.trim(),
+        educationDate: !editedData.educationDate,
+        file: !editedData.file && !journal.file
+      };
+
+      setErrors(newErrors);
+
+      // 에러가 하나라도 있으면 제출하지 않음
+      if (Object.values(newErrors).some(error => error)) {
+        return;
+      }
+
       try {
         const formData = new FormData();
         formData.append('courseId', courseId);
@@ -82,6 +101,11 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
   const handleCancel = () => {
     setIsEditing(false);
     setEditedData(journal);
+    setErrors({
+      title: false,
+      educationDate: false,
+      file: false
+    });
   };
 
   const handleChange = (e) => {
@@ -91,10 +115,18 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
         ...editedData,
         newFile: files[0]
       });
+      setErrors({
+        ...errors,
+        file: false
+      });
     } else {
       setEditedData({
         ...editedData,
         [name]: value
+      });
+      setErrors({
+        ...errors,
+        [name]: false
       });
     }
   };
@@ -115,28 +147,32 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
           </div>
 
         <div className="mb-6 border border-gray-300 rounded-lg p-4">
-                  <div>
-                    <label className="text-sm text-gray-600 font-bold">제목</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        name="title"
-                        value={editedData.title}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg bg-white mb-4"
-                      />
-                    ) : (
-                      <p className="w-full px-3 py-2 border rounded-lg bg-gray-100 mb-4">
-                        {journal.title}
-                      </p>
-                    )}
-                  </div>
+          <div>
+            <label className="text-sm text-gray-600 font-bold">
+              제목 {isEditing && <span className="text-red-500">*</span>}
+            </label>
+            {isEditing ? (
+              <>
+                <input
+                  type="text"
+                  name="title"
+                  value={editedData.title}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border rounded-lg bg-white mb-1"
+                />
+                {errors.title && <p className="text-red-500 text-sm mb-4">제목을 입력해주세요.</p>}
+              </>
+            ) : (
+              <p className="w-full px-3 py-2 border rounded-lg bg-gray-100 mb-4">
+                {journal.title}
+              </p>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="text-sm text-gray-600 font-bold">작성자</label>
-              <p
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100">{journal.memberName}</p>
+              <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">{journal.memberName}</p>
             </div>
             <div>
               <label className="text-sm text-gray-600 font-bold">작성일</label>
@@ -148,16 +184,21 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
 
           {/* 교육일자 필드 추가 */}
           <div className="mb-4">
-            <label className="text-sm text-gray-600 font-bold">교육일자</label>
+            <label className="text-sm text-gray-600 font-bold">
+              교육일자 {isEditing && <span className="text-red-500">*</span>}
+            </label>
             {isEditing ? (
-              <input
-                type="date"
-                name="educationDate"
-                value={editedData.educationDate}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded-lg bg-white"
-                max={new Date().toISOString().split('T')[0]}
-              />
+              <>
+                <input
+                  type="date"
+                  name="educationDate"
+                  value={editedData.educationDate}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border rounded-lg bg-white"
+                  max={new Date().toISOString().split('T')[0]}
+                />
+                {errors.educationDate && <p className="text-red-500 text-sm mt-1">교육일자를 선택해주세요.</p>}
+              </>
             ) : (
               <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
                 {new Date(journal.educationDate).toLocaleDateString()}
@@ -186,21 +227,30 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
               </div>
             )}
           </div>
-          </div>
-
+        </div>
 
         {journal.file && (
           <div
             className="mt-4 p-4 bg-gray-50 rounded cursor-pointer hover:bg-gray-200 transition-colors duration-200"
             onClick={!isEditing ? handleDownload : undefined}  // 수정 모드가 아닐 때만 다운로드 가능
           >
-            <p className="font-medium">첨부파일</p>
+            <p className="font-medium">
+              첨부파일 {isEditing && <span className="text-red-500">*</span>}
+            </p>
             <p className="text-blue-500 hover:text-blue-700">
               {journal.file.originalName}
             </p>
-            {isEditing &&
-              <input type="file" name="file" onChange={handleChange}
-                     className="mt-2" />}
+            {isEditing && (
+              <>
+                <input
+                  type="file"
+                  name="file"
+                  onChange={handleChange}
+                  className="mt-2"
+                />
+                {errors.file && <p className="text-red-500 text-sm mt-1">파일을 첨부해주세요.</p>}
+              </>
+            )}
           </div>
         )}
 
@@ -234,7 +284,6 @@ const StudentJournalDetail = ({ journalId, courseId, onClose }) => {
               >
                 수정
               </button>
-
             </>
           )}
         </div>

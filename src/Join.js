@@ -150,20 +150,12 @@ export const Join = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-
       const [usernameCheck, emailCheck] = await Promise.all([
         axios.get(
           `${process.env.REACT_APP_API_URL}/member/check-username?username=${formData.username}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
         ),
         axios.get(
           `${process.env.REACT_APP_API_URL}/member/check-email?email=${formData.email}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
         ),
       ]);
 
@@ -187,10 +179,7 @@ export const Join = () => {
 
       await axios.post(
         `${process.env.REACT_APP_API_URL}/member/register`,
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        formData
       );
 
       alert('회원가입이 완료되었습니다.');

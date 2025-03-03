@@ -21,6 +21,10 @@ export const AttendanceList = () => {
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [attendanceRates, setAttendanceRates] = useState({});
+  const [terms,setTerms] = useState({});
+  const [selectedTerm, setSelectedTerm] = useState(null);
+  const [attendancePrintData, setAttendancePrintData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // periodHeaders 상태 제거
 
@@ -57,11 +61,67 @@ export const AttendanceList = () => {
     }
   }, [filters.courseId]);
 
+  // 출석부 조건을 사용하기 위해 조회하는 차수 리스트 List<Map<String, Object>>
+  const fetchAttendanceTwentyTerms = useCallback( async () => {
+    try {
+      if (!filters.courseId) return;
+
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/attendance/course/${filters.courseId}/terms`);
+
+      console.log('서버에서 받은 terms 데이터:', response.data);
+
+      // 서버에서 바로 배열 형태로 오는 경우
+      if (Array.isArray(response.data)) {
+        setTerms(response.data);
+
+        // 1차 데이터 찾기
+       /* if (response.data.length > 0) {
+          const firstTerm = response.data.find(term => term["차수"] === "1차" || term["차수"] === 1);
+          //setSelectedTerm(firstTerm || response.data[0]);
+        }*/
+      } else {
+        console.warn('서버에서 받은 데이터가 배열이 아닙니다:', response.data);
+      }
+      /*      setTerms(prev => ({ ...prev, ...response.data }));
+            setSelectedTerm(response.data[0]["차"]==="1차"); // 첫 번째 차수 기본 선택*/
+    } catch (error) {
+      console.error('20일 단위 차수를 불러오는 중 오류 발생:', error);
+    }
+  }, [filters.courseId]);
+
   useEffect(() => {
     if (filters.courseId) {
       fetchAttendanceRates();
+      fetchAttendanceTwentyTerms();
     }
-  }, [fetchAttendanceRates,filters.courseId]); // ✅ useCallback을 의존성으로 추가
+  }, [fetchAttendanceRates,fetchAttendanceTwentyTerms,filters.courseId]); // useCallback을 의존성으로 추가
+
+  // 출석부 데이터 조회 함수
+  const fetchAttendancePrintData = useCallback(async (courseId, term) => {
+    setIsLoading(true);
+    try {
+      if (!term) {
+        console.error('선택된 차수 정보가 없습니다.');
+        return;
+      }
+
+      const termValue = term["차수"] || term["차"] || '';
+      console.log('요청할 차수 값:', termValue);
+
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/attendance/course/${filters.courseId}/print`, {
+        params: {
+          courseId,
+          term:termValue
+        }
+      });
+      setAttendancePrintData(response.data);
+    } catch (error) {
+      console.error('출석 인쇄에 대한 데이터를 불러오는 중 오류 발생:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  },[filters.courseId, setIsLoading,setAttendancePrintData]);
+
 
   const fetchAttendanceData = useCallback(async () => {
 
@@ -140,9 +200,22 @@ export const AttendanceList = () => {
     <AdminLayout currentPage={currentPage} totalPages={totalPages} onPageChange={(page) => setCurrentPage(page)}>
       <div className="flex flex-col h-full">
         <div className="flex-shrink-0">
-          <AttendMainHeader role="admin" courses={courses} onFilterChange={handleFilterChange} />
+          <AttendMainHeader role="admin"
+                            courses={courses}
+                            onFilterChange={handleFilterChange}
+                            terms={terms}
+                            selectedTerm={selectedTerm}
+                            attendancePrintData={attendancePrintData}
+                            isLoading={isLoading}
+                            onTermSelect={(term) => {
+                              setSelectedTerm(term);
+                              fetchAttendancePrintData(filters.courseId,term);
+                            }}
+          />
 
-          <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
+          <div className="flex flex-col w-full bg-white rounded-xl shadow-sm relative">
+            <div className="absolute top-0 bottom-0 w-0.5 bg-gray-200"
+                 style={{ left: 'calc(11 * (100% / 13) - 2px)' }}></div>
             {/* Table Header */}
             <div className="border-b border-gray-200 bg-gray-50">
               <div className="grid grid-cols-[repeat(13,1fr)] gap-4 px-6 py-4">
@@ -159,19 +232,17 @@ export const AttendanceList = () => {
                     className="text-sm font-bold text-gray-800 uppercase tracking-wider">날짜</span>
                 </div>
                 {ALL_PERIODS.map((period, index) => (
-                  <div key={index}
-                       className="flex flex-col items-center justify-center">
-                    <span
-                      className="text-sm font-bold text-gray-800 uppercase tracking-wider">{period}</span>
+                  <div key={index} className="flex flex-col items-center justify-center">
+                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">{period}</span>
                   </div>
                 ))}
                 <div className="flex flex-col items-center justify-center">
                   <span
-                    className="text-sm font-bold text-gray-800 uppercase tracking-wider">전체 출석률</span>
+                    className="text-sm font-bold text-gray-800 uppercase tracking-wider text-center">전체<br/>출석률</span>
                 </div>
                 <div className="flex flex-col items-center justify-center">
                   <span
-                    className="text-sm font-bold text-gray-800 uppercase tracking-wider">한 달 출석률</span>
+                    className="text-sm font-bold text-gray-800 uppercase tracking-wider text-center">한 달<br />출석률</span>
                 </div>
               </div>
             </div>
@@ -199,23 +270,25 @@ export const AttendanceList = () => {
                         {getStatusIcon(row.students[period] || '-')}
                       </div>
                     ))}
-
                     <div
                       className="text-sm text-gray-600 text-center">
-                      {attendanceRates[row.studentId]?.overallAttendanceRate !== undefined
-                      ? `${attendanceRates[row.studentId].overallAttendanceRate}%`
-                      : "없음"}
+                      {attendanceRates[row.studentId]?.overallAttendanceRate
+                      !== undefined
+                        ? `${attendanceRates[row.studentId].overallAttendanceRate}%`
+                        : '없음'}
                     </div>
                     <div
                       className="text-sm text-gray-600 text-center">
-                      {attendanceRates[row.studentId]?.twentyDayRate !== undefined
-                      ? `${attendanceRates[row.studentId].twentyDayRate}%`
-                      : "없음"}
+                      {attendanceRates[row.studentId]?.twentyDayRate
+                      !== undefined
+                        ? `${attendanceRates[row.studentId].twentyDayRate}%`
+                        : '없음'}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-sm text-center text-gray-500 py-4">출석 데이터가 없습니다.</div>
+                <div className="text-sm text-center text-gray-500 py-4">출석 데이터가
+                  없습니다.</div>
               )}
             </div>
           </div>

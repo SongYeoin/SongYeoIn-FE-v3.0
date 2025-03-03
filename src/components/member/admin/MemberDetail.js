@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'api/axios';
 import { Copy, Check } from 'lucide-react';
+import { useUser } from '../../common/UserContext';
 //import { FaTrash } from 'react-icons/fa';
 
 const MemberDetail = ({ memberId, onClose }) => {
+  const { user: currentAdmin } = useUser();
   const [member, setMember] = useState(null);
   const [history, setHistory] = useState([]);
   const [availableCourses, setAvailableCourses] = useState([]);
@@ -12,8 +14,11 @@ const MemberDetail = ({ memberId, onClose }) => {
   const [contentHeight, setContentHeight] = useState(0);
   const contentRef = useRef(null);
   const [showResetDialog, setShowResetDialog] = useState(false);
+  const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [temporaryPassword, setTemporaryPassword] = useState('');
   const [showCopySuccess, setShowCopySuccess] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedMember, setEditedMember] = useState(null);
 
   // 모달창 높이 체크
   useEffect(() => {
@@ -39,7 +44,7 @@ const MemberDetail = ({ memberId, onClose }) => {
         );
         setMember(response.data);
       } catch (error) {
-        console.error('Error fetching member details:', error);
+        alert('회원 정보를 가져오는 중 오류가 발생했습니다.');
       }
     };
 
@@ -50,7 +55,7 @@ const MemberDetail = ({ memberId, onClose }) => {
         );
         setHistory(response.data);
       } catch (error) {
-        console.error('Error fetching history:', error);
+        alert('수강 이력을 가져오는 중 오류가 발생했습니다.');
       }
     };
 
@@ -61,7 +66,7 @@ const MemberDetail = ({ memberId, onClose }) => {
         );
         setAvailableCourses(response.data);
       } catch (error) {
-        console.error('Error fetching available courses:', error);
+        alert('과정 목록을 가져오는 중 오류가 발생했습니다.');
       }
     };
 
@@ -73,6 +78,38 @@ const MemberDetail = ({ memberId, onClose }) => {
 
     fetchData();
   }, [memberId]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditedMember({ ...member });
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditedMember(member);
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/admin/member/update/${memberId}`,
+        editedMember
+      );
+      setMember(response.data);
+      setIsEditing(false);
+      alert('회원 정보가 수정되었습니다.');
+    } catch (error) {
+      alert('회원 정보 수정에 실패했습니다.');
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditedMember(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleEnroll = async () => {
     if (!selectedCourseId) {
@@ -91,7 +128,6 @@ const MemberDetail = ({ memberId, onClose }) => {
       );
       setHistory(updatedHistory.data);
     } catch (error) {
-      console.error('Error enrolling course:', error);
       alert('수강 신청에 실패했습니다. 다시 시도해주세요.');
     }
   };
@@ -108,7 +144,6 @@ const MemberDetail = ({ memberId, onClose }) => {
       );
       setHistory(updatedHistory.data);
     } catch (error) {
-      console.error('Error deleting enrollment:', error);
       alert('수강 신청 삭제에 실패했습니다. 다시 시도해주세요.');
     }
   };
@@ -122,16 +157,35 @@ const MemberDetail = ({ memberId, onClose }) => {
       setTemporaryPassword(response.data.temporaryPassword);
       setShowResetDialog(false);
     } catch (error) {
-      console.error('Error resetting password:', error);
       alert('비밀번호 초기화에 실패했습니다.');
     }
   };
 
   // 비밀번호 복사
   const handleCopyPassword = () => {
-    navigator.clipboard.writeText(temporaryPassword);
-    setShowCopySuccess(true);
-    setTimeout(() => setShowCopySuccess(false), 2000);
+    try {
+      navigator.clipboard.writeText(temporaryPassword);
+      setShowCopySuccess(true);
+      setTimeout(() => setShowCopySuccess(false), 2000);
+    } catch (error) {
+      alert('비밀번호 복사에 실패했습니다. 수동으로 복사해주세요.');
+    }
+  };
+
+  // 탈퇴
+  const handleWithdraw = async () => {
+    try {
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/admin/member/withdraw/${memberId}`,
+        { adminId: currentAdmin.sub }
+      );
+      const updatedMember = { ...member, deletedBy: currentAdmin.sub };
+      setMember(updatedMember);
+      alert('회원이 탈퇴 처리되었습니다.');
+      setShowWithdrawDialog(false);
+    } catch (error) {
+      alert('회원 탈퇴 처리에 실패했습니다.');
+    }
   };
 
   if (isLoading) {
@@ -149,13 +203,22 @@ const MemberDetail = ({ memberId, onClose }) => {
       <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <p>회원 정보를 가져올 수 없습니다.</p>
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+            >
+              닫기
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto">
       <div
         ref={contentRef}
         className="bg-white w-full max-w-4xl p-6 rounded-2xl shadow-lg my-10"
@@ -184,58 +247,110 @@ const MemberDetail = ({ memberId, onClose }) => {
               <label className="text-sm text-gray-600 font-bold">이름</label>
               <input
                 type="text"
-                value={member.name || ''}
-                readOnly
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default select-none focus:outline-none"
+                name="name"
+                value={isEditing ? editedMember.name : (member.name || '')}
+                onChange={handleInputChange}
+                readOnly={!isEditing}
+                className={`w-full px-3 py-2 border rounded-lg ${
+                  isEditing
+                    ? 'bg-white border-gray-500 focus:border-black focus:ring-1 focus:ring-black'
+                    : 'bg-gray-100 cursor-default select-none'
+                } focus:outline-none`}
               />
             </div>
             <div>
               <label className="text-sm text-gray-600 font-bold">아이디</label>
               <input
                 type="text"
-                value={member.username}
-                readOnly
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default select-none focus:outline-none"
+                name="username"
+                value={isEditing ? editedMember.username : member.username}
+                onChange={handleInputChange}
+                readOnly={!isEditing}
+                className={`w-full px-3 py-2 border rounded-lg ${
+                  isEditing
+                    ? 'bg-white border-gray-500 focus:border-black focus:ring-1 focus:ring-black'
+                    : 'bg-gray-100 cursor-default select-none'
+                } focus:outline-none`}
               />
             </div>
             <div>
               <label className="text-sm text-gray-600 font-bold">생년월일</label>
               <input
                 type="text"
-                value={member.birthday || ''}
-                readOnly
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default select-none focus:outline-none"
+                name="birthday"
+                value={isEditing ? editedMember.birthday : (member.birthday || '')}
+                onChange={handleInputChange}
+                readOnly={!isEditing}
+                className={`w-full px-3 py-2 border rounded-lg ${
+                  isEditing
+                    ? 'bg-white border-gray-500 focus:border-black focus:ring-1 focus:ring-black'
+                    : 'bg-gray-100 cursor-default select-none'
+                } focus:outline-none`}
               />
             </div>
             <div>
               <label className="text-sm text-gray-600 font-bold">이메일</label>
               <input
                 type="text"
-                value={member.email || ''}
-                readOnly
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default select-none focus:outline-none"
+                name="email"
+                value={isEditing ? editedMember.email : (member.email || '')}
+                onChange={handleInputChange}
+                readOnly={!isEditing}
+                className={`w-full px-3 py-2 border rounded-lg ${
+                  isEditing
+                    ? 'bg-white border-gray-500 focus:border-black focus:ring-1 focus:ring-black'
+                    : 'bg-gray-100 cursor-default select-none'
+                } focus:outline-none`}
               />
             </div>
             <div>
               <label className="text-sm text-gray-600 font-bold">역할</label>
-              <input
-                type="text"
-                value={member.role === 'ADMIN' ? '관리자' : '학생'}
-                readOnly
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default select-none focus:outline-none"
-              />
+              {isEditing ? (
+                <select
+                  name="role"
+                  value={editedMember.role}
+                  onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-lg bg-white border-gray-500 focus:border-black focus:ring-1 focus:ring-black focus:outline-none"
+                >
+                  <option value="STUDENT">수강생</option>
+                  <option value="ADMIN">관리자</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={member.role === 'ADMIN' ? '관리자' : '수강생'}
+                  readOnly
+                  className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default select-none focus:outline-none"
+                />
+              )}
             </div>
             <div>
-              <label className="text-sm text-gray-600 font-bold">상태</label>
-              <input
-                type="text"
-                value={member.checkStatus === 'Y' ? '활성' : '비활성'}
-                readOnly
-                className={`w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default select-none focus:outline-none ${
-                  member.checkStatus === 'Y' ? 'text-green-600'
-                    : 'text-gray-600'
-                }`}
-              />
+              <label className="text-sm text-gray-600 font-bold">승인</label>
+              {isEditing ? (
+                <select
+                  name="checkStatus"
+                  value={editedMember.checkStatus}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-lg bg-white border-gray-500 focus:border-black focus:ring-1 focus:ring-black focus:outline-none"
+                >
+                  <option value="Y">승인</option>
+                  <option value="N">미승인</option>
+                  <option value="W">대기</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={
+                    member.checkStatus === 'Y' ? '승인' :
+                      member.checkStatus === 'N' ? '미승인' : '대기'
+                  }
+                  readOnly
+                  className={`w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default select-none focus:outline-none ${
+                    member.checkStatus === 'Y' ? 'text-green-600' :
+                      member.checkStatus === 'N' ? 'text-red-600' : 'text-yellow-600'
+                  }`}
+                />
+              )}
             </div>
             <div>
               <label className="text-sm text-gray-600 font-bold">가입일</label>
@@ -246,16 +361,62 @@ const MemberDetail = ({ memberId, onClose }) => {
                 className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-default select-none focus:outline-none"
               />
             </div>
+
             {member.role !== 'ADMIN' && (
               <div>
-                <label className="text-sm text-gray-600 font-bold">보안</label>
+              <label className="text-sm text-gray-600 font-bold">상태</label>
+              <button
+                onClick={() => setShowWithdrawDialog(true)}
+                disabled={member.checkStatus === 'N'}
+                className={`w-full px-3 py-2 rounded-lg transition-colors duration-200 ${
+                  member.deletedBy !== null
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'border-2 border-red-400 text-red-600 hover:bg-red-50'
+                }`}
+              >
+                {member.deletedBy === null ? '회원 탈퇴' : '탈퇴 완료'}
+              </button>
+            </div>
+            )}
+          </div>
+
+          {/* 하단 버튼 영역 */}
+          <div className="mt-6 flex justify-between items-center">
+            {member.role !== 'ADMIN' && (
+              <button
+              onClick={() => setShowResetDialog(true)}
+              className="px-4 py-2 border-2 border-red-400 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+            >
+              비밀번호 초기화
+            </button>
+            )}
+
+            {member.role !== 'ADMIN' && (
+              <div className="flex gap-2">
+              {!isEditing ? (
                 <button
-                  className="w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200"
-                  onClick={() => setShowResetDialog(true)}
+                  onClick={handleEdit}
+                  className="px-4 py-2 bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors duration-200"
                 >
-                  비밀번호 초기화
+                  수정
                 </button>
-              </div>
+              ) : (
+                <>
+                  <button
+                    onClick={handleCancel}
+                    className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    className="px-4 py-2 bg-green-800 text-white rounded-lg hover:bg-green-900 transition-colors duration-200"
+                  >
+                    저장
+                  </button>
+                </>
+              )}
+            </div>
             )}
           </div>
         </div>
@@ -381,6 +542,38 @@ const MemberDetail = ({ memberId, onClose }) => {
                 </button>
                 <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg" onClick={handlePasswordReset}>
                   초기화
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 회원 탈퇴 확인 다이얼로그 */}
+        {showWithdrawDialog && (
+          <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <h3 className="text-lg font-bold">회원 탈퇴</h3>
+              <div className="mt-2">
+                <p className="mb-2">정말 이 회원을 탈퇴 처리하시겠습니까?</p>
+                <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                  <li>• 해당 회원의 모든 수강 정보가 삭제됩니다.</li>
+                  <li>• 이 작업은 되돌릴 수 없습니다.</li>
+                  <li>• 진행 중인 수업이 있다면, 종료 후 탈퇴하는 것을 권장합니다.</li>
+                </ul>
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg"
+                  onClick={() => setShowWithdrawDialog(false)}
+                >
+                  취소
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                  onClick={handleWithdraw}
+                >
+                  탈퇴
                 </button>
               </div>
             </div>

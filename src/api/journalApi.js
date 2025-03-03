@@ -66,10 +66,38 @@ export const studentJournalApi = {
     axios.delete(`${process.env.REACT_APP_API_URL}/journals/${journalId}`),
 
   // 파일 다운로드 API 추가
-  downloadFile: (journalId) =>
-    axios.get(`${process.env.REACT_APP_API_URL}/journals/${journalId}/download`, {
-        responseType: 'blob'
-    })
+  downloadFile: async (journalId) => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/journals/${journalId}/download`, {
+        responseType: 'blob',
+        validateStatus: function (status) {
+          return status < 500;
+        }
+      });
+
+      // 성공적인 응답인 경우만 반환
+      if (response.status === 200) {
+        return response;
+      }
+
+      // 에러 응답 처리
+      if (response.data instanceof Blob) {
+        const text = await response.data.text();
+        const errorData = JSON.parse(text);
+        throw new Error(errorData.message); // 백엔드 에러 메시지 사용
+      }
+
+    } catch (error) {
+      // error.response가 있고 데이터가 Blob인 경우
+      if (error.response?.data instanceof Blob) {
+        const text = await error.response.data.text();
+        const errorData = JSON.parse(text);
+        throw new Error(errorData.message); // 백엔드 에러 메시지 사용
+      }
+      // 그 외의 에러는 원본 에러 메시지 그대로 전달
+      throw error;
+    }
+  }
 };
 
 // 관리자용 교육일지 API
@@ -87,15 +115,68 @@ export const adminJournalApi = {
     axios.get(`${process.env.REACT_APP_API_URL}/enrollments/my`),
 
   // 파일 다운로드 API
-  downloadFile: (journalId) =>
-    axios.get(`${process.env.REACT_APP_API_URL}/admin/journals/${journalId}/download`, {
-        responseType: 'blob'
-    }),
+  downloadFile: async (journalId) => {
+      try {
+          const response = await axios.get(
+              `${process.env.REACT_APP_API_URL}/admin/journals/${journalId}/download`,
+              {
+                  responseType: 'blob',
+                  validateStatus: null, // 모든 상태 코드를 처리하기 위해 제거
+                  headers: {
+                      'Accept': 'application/json, application/octet-stream'
+                  }
+              }
+          );
+
+          // 성공적인 응답이 아닌 경우 에러 처리
+          if (response.status !== 200) {
+              const text = await response.data.text();
+              const errorData = JSON.parse(text);
+              throw new Error(errorData.message);
+          }
+
+          return response;
+      } catch (error) {
+          if (error.response?.data instanceof Blob) {
+              const text = await error.response.data.text();
+              const errorData = JSON.parse(text);
+              throw new Error(errorData.message);
+          }
+          throw error;
+      }
+  },
 
   // 일괄 다운로드
-  downloadZip: (journalIds) =>
-    axios.post(`${process.env.REACT_APP_API_URL}/admin/journals/zip-download`, journalIds, {
-      responseType: 'blob'
-    })
+  downloadZip: async (journalIds) => {
+      try {
+          const response = await axios.post(
+              `${process.env.REACT_APP_API_URL}/admin/journals/zip-download`,
+              journalIds,
+              {
+                  responseType: 'blob',
+                  validateStatus: null, // 모든 상태 코드 허용
+                  headers: {
+                      'Accept': 'application/json, application/octet-stream'
+                  }
+              }
+          );
+
+          // 성공적인 응답이 아닌 경우 에러 처리
+          if (response.status !== 200) {
+              const text = await response.data.text();
+              const errorData = JSON.parse(text);
+              throw new Error(errorData.message || '파일 다운로드에 실패했습니다.');
+          }
+
+          return response;
+      } catch (error) {
+          if (error.response?.data instanceof Blob) {
+              const text = await error.response.data.text();
+              const errorData = JSON.parse(text);
+              throw new Error(errorData.message || '파일 다운로드에 실패했습니다.');
+          }
+          throw error;
+      }
+  }
 
 };

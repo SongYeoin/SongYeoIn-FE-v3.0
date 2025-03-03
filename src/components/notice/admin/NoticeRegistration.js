@@ -130,9 +130,6 @@ const NoticeRegistration = ({
       formData.files.forEach((file) => data.append('files', file));
 
       await axios.post(`${process.env.REACT_APP_API_URL}/admin/notice`, data, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
       });
 
       alert('공지사항이 성공적으로 등록되었습니다.');

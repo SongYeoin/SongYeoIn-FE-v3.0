@@ -19,8 +19,10 @@ import AdminJournalList from './components/journal/admin/AdminJournalList';
 import StudentJournalList from './components/journal/StudentJournalList';
 import StudentMainPage from './components/member/StudentMainPage';
 import AdminClubList from './components/club/admin/AdminClubList';
-import StudentAttendanceList
-  from './components/attendance/student/AttendanceList';
+import StudentAttendanceList from './components/attendance/student/AttendanceList';
+import SupportList from './components/support/SupportList';
+import AdminSupportList from './components/support/admin/AdminSupportList';
+
 import {
   AdminProtectedRoute,
   StudentProtectedRoute,
@@ -83,6 +85,11 @@ function App() {
                     <AdminJournalList />
                   </AdminProtectedRoute>
                 } />
+                <Route path="/admin/support" element={
+                  <AdminProtectedRoute>
+                    <AdminSupportList />
+                  </AdminProtectedRoute>
+                } />
 
                 {/* 학생 페이지 */}
                 <Route path="/main" element={
@@ -108,6 +115,11 @@ function App() {
                 <Route path="/attendance" element={
                   <StudentProtectedRoute>
                     <StudentAttendanceList />
+                  </StudentProtectedRoute>
+                } />
+                <Route path="/support" element={
+                  <StudentProtectedRoute>
+                    <SupportList />
                   </StudentProtectedRoute>
                 } />
 
