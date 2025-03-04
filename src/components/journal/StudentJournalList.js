@@ -98,10 +98,10 @@ const StudentJournalList = () => {
                     </div>
                     <div className="text-sm text-gray-600 text-center">{journal.title}</div>
                     <div className="text-sm text-gray-600 text-center">
-                      {new Date(journal.educationDate).toISOString().split('T')[0]}
+                      {new Date(new Date(journal.educationDate).getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0]}
                     </div>
                     <div className="text-sm text-gray-600 text-center">
-                      {new Date(journal.createdAt).toISOString().split('T')[0]}
+                      {new Date(new Date(journal.createdAt).getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0]}
                     </div>
                     <div className="text-sm text-gray-600 text-center">
                       {journal.file ? (

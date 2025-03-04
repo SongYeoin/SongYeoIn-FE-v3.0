@@ -11,7 +11,7 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
     content: '',
     file: null,
     memberName: '',
-    educationDate: new Date().toISOString().split('T')[0] // 오늘 날짜를 기본값으로
+    educationDate: new Date(new Date().getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0] // 한국 시간대로 오늘 날짜
   });
 
   const [errors, setErrors] = useState({
@@ -144,7 +144,7 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
             <div>
               <label className="text-sm text-gray-600 font-bold">작성일</label>
               <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
-                {new Date().toISOString().split('T')[0]}
+                {new Date(new Date().getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0]}
               </p>
             </div>
           </div>
@@ -160,7 +160,7 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
               value={formData.educationDate}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-lg bg-white"
-              max={new Date().toISOString().split('T')[0]} // 오늘 날짜까지만 선택 가능
+              max={new Date(new Date().getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0]} // 한국 시간대 기준 오늘 날짜
             />
             {errors.educationDate && <p className="text-red-500 text-sm mt-1">교육일자를 선택해주세요.</p>}
           </div>
