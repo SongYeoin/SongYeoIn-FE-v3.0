@@ -64,14 +64,14 @@ const handleDownload = async () => {
               <div>
                 <label className="text-sm text-gray-600 font-bold">작성일</label>
                 <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
-                  {new Date(journal.createdAt).toLocaleDateString()}
+                  {new Date(journal.createdAt).toISOString().split('T')[0]}
                 </p>
               </div>
             </div>
             <div className="mb-4">
               <label className="text-sm text-gray-600 font-bold">교육일자</label>
               <p className="w-full px-3 py-2 border rounded-lg bg-gray-100">
-                {new Date(journal.educationDate).toLocaleDateString()}
+                {new Date(journal.educationDate).toISOString().split('T')[0]}
               </p>
             </div>
             <div>

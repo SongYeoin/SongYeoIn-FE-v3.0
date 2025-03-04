@@ -10,6 +10,11 @@ let deviceFingerprint = null;
 // 자동 로그아웃 타이머
 let autoLogoutTimer = null;
 
+// 토큰 갱신 관련 상태
+let isRefreshing = false;
+let refreshPromise = null;
+let failedQueue = [];
+
 // 초기화 함수 - 앱 로드 시 호출
 export const initializeTokenSystem = () => {
   generateDeviceFingerprint();
@@ -36,16 +41,9 @@ const generateDeviceFingerprint = () => {
   const screenInfo = `${window.screen.width}x${window.screen.height}x${window.screen.colorDepth}`;
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const language = navigator.language;
-  const platform = navigator.platform;
 
-  // 브라우저 플러그인 정보 (제한적으로 사용)
-  const plugins = Array.from(navigator.plugins || [])
-  .map(p => p.name)
-  .join(';');
-
-  // 간단한 지문 생성
-  deviceFingerprint = btoa(`${screenInfo}|${timeZone}|${language}|${platform}|${plugins}`);
-
+  // 간소화된 지문 생성
+  deviceFingerprint = btoa(`${screenInfo}|${timeZone}|${language}`);
   return deviceFingerprint;
 };
 
@@ -116,6 +114,18 @@ export const clearAccessToken = () => {
   sessionStorage.removeItem('tokenExpiry');
 };
 
+// 대기 큐 처리 함수
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 // 로그아웃 및 리디렉션 함수
 const logoutAndRedirect = async () => {
   try {
@@ -127,16 +137,24 @@ const logoutAndRedirect = async () => {
     // 세션 스토리지 초기화
     sessionStorage.removeItem('user');
 
-    // 메인 페이지로 리디렉션
-    if (!window.location.pathname.includes('/login') && window.location.pathname !== '/') {
+    // 중복 알림 방지 로직 추가
+    const lastAlertTime = parseInt(sessionStorage.getItem('lastLoginAlertTime') || '0');
+    const now = Date.now();
+
+    // 1분 이내에 알림이 표시되지 않았을 때만 알림 표시
+    if (now - lastAlertTime > 60000) {
+      sessionStorage.setItem('lastLoginAlertTime', now.toString());
       alert('세션이 만료되었습니다. 로그인 페이지로 이동합니다.');
-      window.location.href = '/';
     }
+
+    // 메인 페이지로 리디렉션
+    window.location.href = '/';
   } catch (error) {
     console.error('자동 로그아웃 처리 오류:', error);
     window.location.href = '/';
   }
 };
+
 
 // Axios 기본 설정
 axios.defaults.baseURL = process.env.REACT_APP_API_URL.replace(/\/+$/, "");
@@ -170,20 +188,6 @@ axios.interceptors.request.use(
 );
 
 // 응답 인터셉터: 토큰 만료 처리
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
-};
-
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -194,10 +198,16 @@ axios.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // 네트워크 오류는 다르게 처리
+    if (!error.response) {
+      console.error('네트워크 오류:', error);
+      return Promise.reject(error);
+    }
+
     // 401 에러이고 재시도하지 않은 요청인 경우
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        // 이미 토큰 갱신 중이면 큐에 추가
+        // 이미 토큰 갱신 중이면 큐에 추가하고 결과 기다림
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
@@ -205,32 +215,36 @@ axios.interceptors.response.use(
           originalRequest.headers['Authorization'] = `Bearer ${token}`;
           return axios(originalRequest);
         })
-        .catch(err => Promise.reject(err));
+        .catch(err => {
+          // 갱신 실패 - 원래 오류 반환
+          return Promise.reject(err);
+        });
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
+        // 단일 Promise 사용하여 동시 갱신 요청 처리
+        if (!refreshPromise) {
+          refreshPromise = axios.post('/token/refresh', {}, {
+            isHandled: true,
+            withCredentials: true,
+            headers: {
+              'X-Device-Fingerprint': getDeviceFingerprint(),
+              'Authorization': undefined // 갱신 요청에는 만료된 AT 제외
+            }
+          });
+        }
+
+        const response = await refreshPromise;
+        const newToken = response.data.accessToken || response.data;
+
         // 세션 스토리지에서 기존 만료 시간 가져오기
         const storedExpiry = sessionStorage.getItem('tokenExpiry');
         const originalExpiryTime = storedExpiry ? parseInt(storedExpiry) : null;
 
-        // 토큰 갱신 시도 (/token/refresh 엔드포인트 사용)
-        const response = await axios.post('/token/refresh', {},
-          {
-            isHandled: true,
-            withCredentials: true, // 쿠키 전송 보장
-            headers: {
-              ...originalRequest.headers,
-              'Authorization': undefined // 갱신 요청에는 만료된 AT 제외
-            }
-          }
-        );
-
-        const newToken = response.data.accessToken || response.data;
-
-        // 새 토큰 저장 - 기존 만료 시간 유지
+        // 새 토큰 저장
         if (originalExpiryTime && originalExpiryTime > Date.now()) {
           setAccessToken(newToken, originalExpiryTime);
         } else {
@@ -247,13 +261,23 @@ axios.interceptors.response.use(
         // 토큰 갱신 실패 - 모든 대기 중인 요청 실패 처리
         processQueue(refreshError);
 
-        // 자동 로그아웃 및 로그인 페이지로 리다이렉트
+        // 중복 알림 방지 로직
+        const lastAlertTime = parseInt(sessionStorage.getItem('lastLoginAlertTime') || '0');
+        const now = Date.now();
+
+        // 1분 이내에 알림이 표시되지 않았을 때만 알림 표시
+        if (now - lastAlertTime > 60000) {
+          sessionStorage.setItem('lastLoginAlertTime', now.toString());
+          alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+        }
+
         clearAccessToken();
-        logoutAndRedirect();
+        window.location.href = '/';
 
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
+        refreshPromise = null;
       }
     }
 
@@ -277,12 +301,6 @@ axios.interceptors.response.use(
             break;
         }
       }
-    } else if (error.request) {
-      // 요청은 보냈지만 응답을 받지 못함
-      console.error('서버에서 응답이 없습니다:', error.request);
-    } else {
-      // 요청 설정 중 오류 발생
-      console.error('요청 설정 중 오류 발생:', error.message);
     }
 
     return Promise.reject(error);

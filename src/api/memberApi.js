@@ -4,7 +4,7 @@ import axios, { getAccessToken, setAccessToken, getDeviceFingerprint } from './a
 // 캐싱 변수 추가
 let lastValidationResult = null;
 let lastValidationTime = 0;
-const VALIDATION_CACHE_TIME = 5000; // 5초 캐싱
+const VALIDATION_CACHE_TIME = 60000; // 60초 캐싱
 
 // 회원 정보 조회
 export const getMemberInfo = async () => {
@@ -63,18 +63,42 @@ export const checkTokenExpiry = async () => {
   }
 };
 
-// 토큰 유효성 검증 - 캐싱 추가
+// 토큰 유효성 검증 - 캐싱 및 사전 검증
 export const validateToken = async () => {
   try {
     const token = getAccessToken();
     if (!token) return { valid: false };
 
-    // 캐싱: 마지막 검증 이후 5초 이내면 재검증 하지 않음
+    // 캐싱: 마지막 검증 이후 60초 이내면 재검증 하지 않음
     const now = Date.now();
     if (lastValidationResult && now - lastValidationTime < VALIDATION_CACHE_TIME) {
       return lastValidationResult;
     }
 
+    // JWT 자체에서 직접 정보 확인 (API 호출 없이)
+    try {
+      const tokenData = JSON.parse(atob(token.split('.')[1]));
+      const expiryTime = tokenData.exp * 1000;
+
+      // 만료까지 2분 이상 남은 경우 API 호출 없이 유효하다고 판단
+      if (expiryTime - now > 120000) {
+        const result = {
+          valid: true,
+          secondsRemaining: Math.floor((expiryTime - now) / 1000)
+        };
+
+        // 결과 캐싱
+        lastValidationResult = result;
+        lastValidationTime = now;
+
+        return result;
+      }
+    } catch (err) {
+      // 토큰 파싱 실패 시 서버 검증으로 진행
+      console.error('토큰 사전 검증 실패:', err);
+    }
+
+    // 서버 검증 (API 호출)
     const response = await axios.post('/token/validate', {}, {
       isHandled: true
     });
@@ -129,7 +153,27 @@ export const refreshSilently = async () => {
     // 이미 메모리에 유효한 토큰이 있으면 갱신하지 않음
     const existingToken = getAccessToken();
     if (existingToken) {
-      // 토큰 유효성 확인
+      // 로컬에서 토큰 유효성 먼저 확인 (불필요한 API 호출 방지)
+      try {
+        const tokenData = JSON.parse(atob(existingToken.split('.')[1]));
+        const expiryTime = tokenData.exp * 1000;
+        const now = Date.now();
+
+        // 만료까지 2분 이상 남았으면 그대로 사용
+        if (expiryTime - now > 120000) {
+          // 기존 만료 시간 유지
+          if (originalExpiryTime && originalExpiryTime > now) {
+            setAccessToken(existingToken, originalExpiryTime);
+          }
+
+          return true;
+        }
+      } catch (e) {
+        console.error('토큰 사전 검증 오류:', e);
+        // 오류 발생 시 서버 검증으로 진행
+      }
+
+      // API로 토큰 유효성 확인
       const validation = await validateToken();
 
       if (validation.valid) {
@@ -167,7 +211,7 @@ export const refreshSilently = async () => {
     return false;
   } catch (error) {
     console.error('자동 토큰 갱신 실패:', error);
-    return null;
+    return false;
   }
 };
 

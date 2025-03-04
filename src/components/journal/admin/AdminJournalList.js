@@ -14,6 +14,7 @@ const AdminJournalList = () => {
  const [pageSize, setPageSize] = useState(20);
  const [courses, setCourses] = useState([]);
  const [selectedIds, setSelectedIds] = useState([]);
+ const [downloadLoading, setDownloadLoading] = useState(false);
 
  const [filters, setFilters] = useState({
    courseId: '',
@@ -57,7 +58,13 @@ const AdminJournalList = () => {
  }, [filters.courseId, fetchJournals]); // filters.courseId와 fetchJournals를 의존성 배열에 추가
 
  const handleDownloadZip = async () => {
+   if (selectedIds.length === 0) {
+     alert('다운로드할 파일을 선택해주세요.');
+     return;
+   }
+
    try {
+     setDownloadLoading(true);
      const response = await adminJournalApi.downloadZip(selectedIds);
      const url = window.URL.createObjectURL(new Blob([response.data]));
      const link = document.createElement('a');
@@ -69,7 +76,9 @@ const AdminJournalList = () => {
      window.URL.revokeObjectURL(url);
    } catch (error) {
      console.error('일괄 다운로드 실패:', error);
-     alert(error.message || '일괄 다운로드에 실패했습니다.');  // error.message 사용
+     alert(error.message || '일괄 다운로드에 실패했습니다.');
+   } finally {
+     setDownloadLoading(false);
    }
  };
 
@@ -102,6 +111,7 @@ const AdminJournalList = () => {
            onFilterChange={handleFilterChange}
            selectedIds={selectedIds}
            handleDownloadZip={handleDownloadZip}
+           downloadLoading={downloadLoading}
          />
          <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
            <div className="border-b border-gray-200 bg-gray-50">
@@ -167,10 +177,10 @@ const AdminJournalList = () => {
                    </div>
                    <div className="text-sm text-gray-600 text-center">{journal.memberName}</div>
                    <div className="text-sm text-gray-600 text-center">
-                     {new Date(journal.educationDate).toLocaleDateString()}
+                     {new Date(journal.educationDate).toISOString().split('T')[0]}
                    </div>
                    <div className="text-sm text-gray-600 text-center">
-                     {new Date(journal.createdAt).toLocaleDateString()}
+                     {new Date(journal.createdAt).toISOString().split('T')[0]}
                    </div>
                    <div className="text-sm text-gray-600 text-center">
                      {journal.file ? (

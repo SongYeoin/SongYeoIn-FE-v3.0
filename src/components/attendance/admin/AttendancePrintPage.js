@@ -30,9 +30,9 @@ const AttendancePrintPage = ({
   const getStatusIcon = (status) => {
     switch (status) {
       case '출석':
-        return '●';
+        return '○';
       case '지각':
-        return '▲';
+        return '△';
       case '결석':
         return '✕';
       case '조퇴':
