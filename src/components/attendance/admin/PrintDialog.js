@@ -114,31 +114,16 @@ const PrintDialog = ({
       return;
     }
 
-    console.log('인쇄 시작');
     setIsPrinting(true);
 
     // 인쇄를 위한 타임아웃 설정 - DOM에 인쇄 컨텐츠가 렌더링될 시간을 주기 위함
     setTimeout(() => {
-      const printListener = () => {
-        // 인쇄 다이얼로그가 닫힌 것으로 간주
-        setIsPrinting(false);
-        alert('인쇄가 완료되었습니다.');
-        window.removeEventListener('afterprint', printListener);
-      };
-
-      // afterprint 이벤트 리스너 추가
-      window.addEventListener('afterprint', printListener);
-
       window.print();
 
-      // 만약 afterprint 이벤트가 발생하지 않을 경우를 대비한 백업 타이머
+      // 인쇄 다이얼로그가 닫힌 후 isPrinting 상태 복원
       setTimeout(() => {
-        if (document.hasFocus()) { // 문서가 포커스를 가졌다면 인쇄 다이얼로그는 닫힌 것으로 간주
-          window.removeEventListener('afterprint', printListener);
-          setIsPrinting(false);
-          alert('인쇄가 완료되었습니다.');
-        }
-      }, 5000); // 5초 후 확인
+        setIsPrinting(false);
+      }, 500);
     }, 300);
   };
 
@@ -160,9 +145,9 @@ const PrintDialog = ({
   const getStatusIcon = (status) => {
     switch (status) {
       case '출석':
-        return '●';
+        return '○';
       case '지각':
-        return '▲';
+        return '△';
       case '결석':
         return '✕';
       case '조퇴':
