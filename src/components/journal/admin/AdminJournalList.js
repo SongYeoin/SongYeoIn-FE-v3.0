@@ -65,6 +65,18 @@ const AdminJournalList = () => {
 
    try {
      setDownloadLoading(true);
+
+     // 먼저 알림 표시
+     const confirmDownload = window.confirm(
+       '일부 파일은 저장소에 존재하지 않아 제외됩니다. 나머지 파일만 다운로드하겠습니다.'
+     );
+
+     if (!confirmDownload) {
+       setDownloadLoading(false);
+       return;
+     }
+
+     // 사용자가 확인을 누른 경우 다운로드 진행
      const response = await adminJournalApi.downloadZip(selectedIds);
      const url = window.URL.createObjectURL(new Blob([response.data]));
      const link = document.createElement('a');
