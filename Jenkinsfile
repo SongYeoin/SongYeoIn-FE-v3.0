@@ -13,19 +13,22 @@ pipeline {
                     url: 'https://github.com/SongYeoin/SongYeoIn-FE-v3.0.git'
             }
         }
-
         stage('Prepare Environment') {
             steps {
                 echo "Injecting environment variables..."
-                withCredentials([string(credentialsId: 'env-production', variable: 'ENV_CONTENT')]) {
+                withCredentials([
+                    string(credentialsId: 'react-app-api-url', variable: 'API_URL'),
+                    string(credentialsId: 'react-app-discord-webhook', variable: 'WEBHOOK_URL')
+                ]) {
                     sh '''
-                    echo "$ENV_CONTENT" > .env.production
+                    echo "REACT_APP_API_URL=$API_URL" > .env.production
+                    echo "REACT_APP_DISCORD_WEBHOOK_URL=$WEBHOOK_URL" >> .env.production
+                    cat .env.production
                     echo ".env.production file created."
                     '''
                 }
             }
         }
-
         stage('build') {
             steps {
                 echo "Building frontend application..."
@@ -36,7 +39,6 @@ pipeline {
                 '''
             }
         }
-
         stage('deploy') {
             when {
                 branch DEPLOY_BRANCH
