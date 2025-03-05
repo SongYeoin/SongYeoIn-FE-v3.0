@@ -177,6 +177,19 @@ export const adminJournalApi = {
           }
           throw error;
       }
+  },
+
+  checkMissingFiles: async (journalIds) => {
+      try {
+          const response = await axios.post(
+              `${process.env.REACT_APP_API_URL}/admin/journals/check-missing-files`,
+              journalIds
+          );
+          return response;
+      } catch (error) {
+          console.error('파일 존재 여부 확인 실패:', error);
+          throw error;
+      }
   }
 
 };

@@ -195,8 +195,10 @@ return(
                     <label className="text-sm text-gray-600 font-bold">작성자/승인자</label>
                     <input
                       type="text"
-                      value={`${club.writer || ""} / ${club.checker || ""}`}
-                      disabled
+                      value={isEditing
+                          ? `${club.writer || ""} / ${user?.name || club.checker || ""}`
+                          : `${club.writer || ""} / ${club.checker || ""}`}
+                        disabled={!isEditing}
                       className="w-full px-3 py-2 border rounded-lg bg-gray-100"
                     />
                   </div>

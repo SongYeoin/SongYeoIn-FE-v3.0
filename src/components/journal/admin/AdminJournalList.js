@@ -66,17 +66,23 @@ const AdminJournalList = () => {
    try {
      setDownloadLoading(true);
 
-     // 먼저 알림 표시
-     const confirmDownload = window.confirm(
-       '일부 파일은 저장소에 존재하지 않아 제외됩니다. 나머지 파일만 다운로드하겠습니다.'
-     );
+     // 파일 존재 여부 확인
+     const checkResponse = await adminJournalApi.checkMissingFiles(selectedIds);
+     const hasMissingFiles = checkResponse.data.hasMissingFiles;
 
-     if (!confirmDownload) {
-       setDownloadLoading(false);
-       return;
+     // 누락된 파일이 있는 경우에만 확인 메시지 표시
+     if (hasMissingFiles) {
+       const confirmDownload = window.confirm(
+         '일부 파일은 저장소에 존재하지 않아 제외됩니다. 나머지 파일만 다운로드하겠습니까?'
+       );
+
+       if (!confirmDownload) {
+         setDownloadLoading(false);
+         return;
+       }
      }
 
-     // 사용자가 확인을 누른 경우 다운로드 진행
+     // 다운로드 진행
      const response = await adminJournalApi.downloadZip(selectedIds);
      const url = window.URL.createObjectURL(new Blob([response.data]));
      const link = document.createElement('a');
@@ -88,7 +94,7 @@ const AdminJournalList = () => {
      window.URL.revokeObjectURL(url);
    } catch (error) {
      console.error('일괄 다운로드 실패:', error);
-     alert(error.message || '일괄 다운로드에 실패했습니다.');
+     alert(error.response?.data?.message || '일괄 다운로드에 실패했습니다.');
    } finally {
      setDownloadLoading(false);
    }
