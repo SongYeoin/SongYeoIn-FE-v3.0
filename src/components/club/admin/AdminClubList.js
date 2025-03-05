@@ -289,25 +289,25 @@ useEffect(() => {
      }
 
      try {
-       setDownloadLoading(true);
-       // 다중 파일 다운로드 API 호출
-       const response = await axios.post(
-         `${process.env.REACT_APP_API_URL}/admin/club/download-batch`,
-         clubIds,
-         { responseType: 'blob' }
-       );
-       const contentDisposition = response.headers['content-disposition'];
-       let filename = extractFilenameFromContentDisposition(contentDisposition) || '선택된_파일들.zip';
+         setDownloadLoading(true);
+         const response = await axios.post(
+           `${process.env.REACT_APP_API_URL}/admin/club/download-batch`,
+           clubIds,
+           { responseType: 'blob' }
+         );
 
-       const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
-       const link = document.createElement('a');
-       link.href = blobUrl;
-       link.setAttribute('download', filename);
-       document.body.appendChild(link);
-       link.click();
-       link.remove();
-       window.URL.revokeObjectURL(blobUrl);
-     } catch (err) {
+         // 파일명 직접 지정
+         const filename = '동아리일지_일괄다운로드.zip';
+
+         const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+         const link = document.createElement('a');
+         link.href = blobUrl;
+         link.setAttribute('download', filename);
+         document.body.appendChild(link);
+         link.click();
+         link.remove();
+         window.URL.revokeObjectURL(blobUrl);
+       } catch (err) {
        console.error('파일 일괄 다운로드 실패:', err);
 
        // 서버에 배치 다운로드 API가 없는 경우 개별 파일 다운로드로 대체

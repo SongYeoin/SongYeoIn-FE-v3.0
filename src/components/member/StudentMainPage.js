@@ -329,135 +329,146 @@ const StudentMainPage = () => {
        {/* ===== ATTENDANCE UI SECTION START ===== */}
        <div className={`
          ${isDesktop ? 'w-1/3' : 'w-full'}
-         p-4 bg-[#F9F7F7] rounded-lg
+         p-4 bg-white rounded-lg shadow-md border border-gray-100
        `}>
-         <div className="mt-2 pb-4 w-full h-full">
-           <h3
-             className="mb-4 text-xl font-bold">{selectedDate} {dayOfWeek}</h3>
+         <div className="w-full h-full">
+           <h3 className="mb-4 text-xl font-bold text-gray-800 border-b pb-2">
+             {selectedDate} <span className="text-indigo-600">{dayOfWeek}</span>
+           </h3>
 
-             {/* 현재날짜: 입실/퇴실 버튼 */}
-             {selectedDate === today ? (
-               <>
-                 {/* 입실하기 Button */}
+           {/* 현재날짜: 입실/퇴실 버튼 */}
+           {selectedDate === today ? (
+             <div className="space-y-4">
+               {/* 입실하기 섹션 */}
+               <div className="bg-gray-50 p-3 rounded-md">
                  {enterTime ? (
-                   <div className="mb-4 text-sm text-gray-700">
-                     입실시간: {enterTime}
+                   <div className="flex items-center text-gray-700">
+                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                     </svg>
+                     <span className="font-medium">입실시간:</span> <span className="ml-2">{enterTime}</span>
                    </div>) : (
                    <button
-                     className="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-2 rounded mb-4 transition-colors duration-200"
-                     onClick={() => handleAttendanceClick('ENTER')} // 입실 처리 핸들러
+                     className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium px-4 py-2 rounded shadow transition-colors duration-200 flex items-center justify-center"
+                     onClick={() => handleAttendanceClick('ENTER')}
                    >
+                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                     </svg>
                      입실하기
                    </button>
                  )}
+               </div>
 
+               {/* 시간표 선택 섹션 (조퇴용) */}
+               {showPeriodSelection && (
+                 <div className="bg-gray-50 p-3 rounded-md mt-4 border border-gray-200">
+                   <h4 className="font-medium text-gray-700 mb-2">조퇴할 교시 선택</h4>
+                   <div className="max-h-40 overflow-y-auto">
+                     <table className="w-full border-collapse bg-white rounded-md overflow-hidden">
+                       <thead className="bg-gray-100">
+                         <tr>
+                           <th className="p-2 text-sm font-medium text-gray-700">선택</th>
+                           <th className="p-2 text-sm font-medium text-gray-700">교시</th>
+                           <th className="p-2 text-sm font-medium text-gray-700">시간</th>
+                         </tr>
+                       </thead>
+                       <tbody>
+                       {filteredPeriodData.map((entry, index) => (
+                         <tr key={index} className={`text-center ${selectedPeriod === entry.id ? 'bg-indigo-50' : 'hover:bg-gray-50'}`}>
+                           <td className="p-2 text-center text-sm">
+                             <input
+                               type="radio"
+                               name="selectedPeriod"
+                               value={entry.id}
+                               checked={selectedPeriod === entry.id}
+                               onChange={() => handlePeriodSelect(entry.id, entry.name)}
+                               className="form-radio h-4 w-4 text-indigo-600"
+                             />
+                           </td>
+                           <td className="p-2 text-center text-sm font-medium">{entry.name}</td>
+                           <td className="p-2 text-center text-sm">
+                             {entry.startTime.split(':').slice(0, 2).join(':')} - {entry.endTime.split(':').slice(0, 2).join(':')}
+                           </td>
+                         </tr>
+                       ))}
+                       </tbody>
+                     </table>
+                   </div>
+                 </div>
+               )}
 
-                 {/* 시간표 출력 (교시 선택 가능) */}
-                 {showPeriodSelection && (<table
-                   className="w-full border-collapse border border-gray-300">
-                   <thead>
-                   <tr>
-                     <th className="border text-sm py-3">선택</th>
-                     <th className="border text-sm py-3">교시</th>
-                     <th className="border text-sm py-3">시작 시간</th>
-                     <th className="border text-sm py-3">종료 시간</th>
-                   </tr>
-                   </thead>
-                   <tbody>
-                   {filteredPeriodData.map((entry, index) => (
-                     <tr key={index} className="text-center">
-                       <td className="border text-center text-sm py-3">
-                         <input
-                           type="radio"
-                           name="selectedPeriod"
-                           value={entry.id}
-                           checked={selectedPeriod === entry.id}
-                           onChange={() => handlePeriodSelect(entry.id, entry.name)}
-                         />
-                       </td>
-                       <td
-                         className="border text-center text-sm py-3">{entry.name}</td>
-                       <td className="border text-center text-sm py-3">
-                         {entry.startTime.split(':').slice(0, 2).join(':')}
-                       </td>
-                       <td className="border text-center text-sm py-3">
-                         {entry.endTime.split(':').slice(0, 2).join(':')}
-                       </td>
-                     </tr>
-                   ))}
-                   </tbody>
-                 </table>)}
-
-                 {/* 조퇴하기 Button (입실한 경우에만 활성화) */}
+               {/* 조퇴하기/퇴실하기 버튼 그룹 */}
+               <div className="flex space-x-2">
+                 {/* 조퇴하기 Button */}
                  {enterTime && !exitTime && (
                    <button
-                     className={`text-white text-sm px-4 py-2 rounded mb-4 transition-colors duration-200
+                     className={`flex-1 text-white font-medium px-4 py-2 rounded shadow transition-colors duration-200 flex items-center justify-center
                      ${!showPeriodSelection || selectedPeriod
-                       ? 'bg-yellow-500 hover:bg-yellow-600'
+                       ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700'
                        : 'bg-gray-400 cursor-not-allowed'
                      }`}
                      onClick={handleEarlyExitClick}
                      disabled={showPeriodSelection && !selectedPeriod}
                    >
-                     {showPeriodSelection ? '조퇴 확정하기' : '조퇴하기'}
+                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                     </svg>
+                     {showPeriodSelection ? '조퇴 확정' : '조퇴하기'}
                    </button>
                  )}
 
                  {/* 퇴실하기 Button */}
                  {exitTime ? (
-                   <div className="mb-6 text-sm text-gray-700">
-                     퇴실시간: {exitTime}
+                   <div className="flex-1 bg-gray-50 p-3 rounded-md flex items-center text-gray-700">
+                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                     </svg>
+                     <span className="font-medium">퇴실시간:</span> <span className="ml-2">{exitTime}</span>
                    </div>
                  ) : (
                    <button
-                     className="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded mb-6 transition-colors duration-200"
-                     onClick={() => handleAttendanceClick('EXIT')} // 퇴실 처리 핸들러
+                     className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium px-4 py-2 rounded shadow transition-colors duration-200 flex items-center justify-center"
+                     onClick={() => handleAttendanceClick('EXIT')}
                    >
+                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                     </svg>
                      퇴실하기
                    </button>
                  )}
-               </>
-             ) : selectedDate < today ? (
-               <>
-                 {/*과거 날짜인 경우: 출석 상태*/}
+               </div>
+             </div>
+           ) : selectedDate < today ? (
+             // 과거 날짜인 경우: 출석 상태
+             <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
                <div className="overflow-auto max-h-96">
-                 <table
-                   className="table-auto w-full border-collapse bg-white">
-                   <thead>
-                     <tr className="bg-gray-50">
-                       <th
-                         className="border px-4 py-2 text-sm font-semibold text-gray-700">교시
-                       </th>
-                       <th
-                         className="border px-4 py-2 text-sm font-semibold text-gray-700">출석
-                       </th>
+                 <table className="w-full border-collapse">
+                   <thead className="bg-gray-100">
+                     <tr>
+                       <th className="px-4 py-2 text-sm font-semibold text-gray-700 border-b text-left">교시</th>
+                       <th className="px-4 py-2 text-sm font-semibold text-gray-700 border-b text-center">출석</th>
                      </tr>
                    </thead>
                    <tbody>
                      {attendanceData.length > 0 ? (
                        attendanceData.map((entry, index) => (
-                         <tr key={index} className="border-b hover:bg-gray-50">
-                           <td className="border text-center text-sm py-3">
-                             {entry.periodName}
-                           </td>
-                           <td className="border">
-                             <div
-                               className="flex items-center justify-center h-full min-h-[2.5rem]">
+                         <tr key={index} className="hover:bg-gray-50">
+                           <td className="px-4 py-3 text-sm font-medium border-b">{entry.periodName}</td>
+                           <td className="border-b">
+                             <div className="flex items-center justify-center py-2">
                                {entry.status !== null ? (
-                                 <div
-                                   className="flex items-center justify-center">
-                              <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm
-                                ${entry.status === '출석' ? 'text-green-600' :
-                                entry.status === '지각' ? 'text-orange-600' :
-                                  'text-red-600'}`
-                              }>
-                                {getStatusIcon(entry.status)}
-                              </span>
+                                 <div className={`flex items-center justify-center px-3 py-1 rounded-full text-sm font-medium
+                                   ${entry.status === '출석' ? 'bg-green-100 text-green-800' :
+                                     entry.status === '지각' ? 'bg-orange-100 text-orange-800' :
+                                     'bg-red-100 text-red-800'}`}>
+                                   <span className="flex items-center gap-2">
+                                     {getStatusIcon(entry.status)}
+                                     <span>{entry.status}</span>
+                                   </span>
                                  </div>
                                ) : (
-                                 <span>
-                                   해당 날짜의 출석 정보가 없습니다.
-                                 </span>
+                                 <span className="text-sm text-gray-500">미등록</span>
                                )}
                              </div>
                            </td>
@@ -465,8 +476,7 @@ const StudentMainPage = () => {
                        ))
                      ) : (
                        <tr>
-                         <td colSpan="2"
-                             className="text-center text-gray-500 text-sm py-4">
+                         <td colSpan="2" className="text-center text-gray-500 text-sm py-4">
                            출석 데이터가 없습니다.
                          </td>
                        </tr>
@@ -474,50 +484,45 @@ const StudentMainPage = () => {
                    </tbody>
                  </table>
                </div>
-             </>
-             ) : null}
-
-             {/* 공통 시간표*/}
-             <div className="overflow-auto max-h-96">
-               <h2>{dayOfWeek} 시간표</h2>
-               {filteredPeriodData.length > 0 ? (
-                 <table
-                   className="table-auto w-full border-collapse bg-white">
-                   <thead>
-                   <tr className="bg-gray-50">
-                     <th
-                       className="border px-4 py-2 text-sm font-semibold text-gray-700">교시
-                     </th>
-                     <th
-                       className="border px-4 py-2 text-sm font-semibold text-gray-700">시작
-                       시간
-                     </th>
-                     <th
-                       className="border px-4 py-2 text-sm font-semibold text-gray-700">종료
-                       시간
-                     </th>
-                   </tr>
-                   </thead>
-                   <tbody>
-                   {filteredPeriodData.map((entry, index) => (
-                     <tr key={index} className="text-center">
-                       <td className="border text-center text-sm py-3">
-                         {entry.name}
-                       </td>
-                       <td className="border text-center text-sm py-3">
-                         {entry.startTime.split(":").slice(0,2).join(":")}
-                       </td>
-                       <td className="border text-center text-sm py-3">
-                         {entry.endTime.split(":").slice(0,2).join(":")}
-                       </td>
-                     </tr>
-                   ))}
-                   </tbody>
-                 </table>
-               ) : (
-                 <p>해당 날짜의 시간표가 없습니다.</p>
-               )}
              </div>
+           ) : null}
+
+           {/* 공통 시간표 */}
+           <div className="mt-6">
+             <h2 className="font-bold text-gray-800 mb-2 flex items-center">
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+               </svg>
+               {dayOfWeek} 시간표
+             </h2>
+
+             <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
+               <div className="overflow-auto max-h-96">
+                 {filteredPeriodData.length > 0 ? (
+                   <table className="w-full border-collapse">
+                     <thead className="bg-gray-100">
+                       <tr>
+                         <th className="px-4 py-2 text-sm font-semibold text-gray-700 border-b">교시</th>
+                         <th className="px-4 py-2 text-sm font-semibold text-gray-700 border-b">시간</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       {filteredPeriodData.map((entry, index) => (
+                         <tr key={index} className={`hover:bg-gray-50 ${index % 2 === 0 ? 'bg-gray-50' : ''}`}>
+                           <td className="px-4 py-3 text-sm font-medium border-b text-center">{entry.name}</td>
+                           <td className="px-4 py-3 text-sm border-b text-center">
+                             {entry.startTime.split(":").slice(0,2).join(":")} - {entry.endTime.split(":").slice(0,2).join(":")}
+                           </td>
+                         </tr>
+                       ))}
+                     </tbody>
+                   </table>
+                 ) : (
+                   <p className="p-4 text-sm text-gray-500 text-center">해당 날짜의 시간표가 없습니다.</p>
+                 )}
+               </div>
+             </div>
+           </div>
          </div>
        </div>
        {/* ===== ATTENDANCE UI SECTION END ===== */}
