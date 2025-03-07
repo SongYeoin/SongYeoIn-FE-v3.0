@@ -39,7 +39,7 @@ export const Join = () => {
       };
     }
     return {
-      container: 'w-[600px] min-h-[300px]', // min-h 감소
+      container: 'w-[600px] min-h-[300px]',
       inputContainer: 'w-[400px]',
       title: 'text-4xl',
       input: 'text-lg',
@@ -49,91 +49,93 @@ export const Join = () => {
 
   const styles = getResponsiveStyle();
 
-  // 필드 유효성 검사
+  // 필드 유효성 검사 규칙 정의
+  const validationRules = {
+    username: {
+      required: '아이디는 필수 입력 항목입니다.',
+      pattern: {
+        regex: /^(?=.*[a-z])[a-z0-9_]{6,12}$/,
+        message: '아이디는 6~12자의 영문 소문자를 포함하고, 숫자, 특수기호(_)만 사용 가능합니다.'
+      }
+    },
+    password: {
+      required: '비밀번호는 필수 입력 항목입니다.',
+      pattern: {
+        regex: /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,16}$/,
+        message: '비밀번호는 8~16자의 영문자, 숫자, 특수문자(!@#$%^&*)를 포함해야 합니다.'
+      }
+    },
+    confirmPassword: {
+      required: '비밀번호 확인은 필수 입력 항목입니다.',
+      custom: (value) => value === formData.password ? '' : '비밀번호가 일치하지 않습니다.'
+    },
+    email: {
+      required: '이메일은 필수 입력 항목입니다.',
+      pattern: {
+        regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        message: '유효한 이메일 주소를 입력하세요.'
+      }
+    },
+    birthday: {
+      required: '생년월일은 필수 입력 항목입니다.',
+      pattern: {
+        regex: /^(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/,
+        message: '생년월일은 yyyyMMdd 형식으로 입력하세요.'
+      }
+    },
+    name: {
+      required: '이름은 필수 입력 항목입니다.',
+      pattern: {
+        regex: /^[a-zA-Z가-힣\s-]{2,10}$/,
+        message: '이름은 2~10자의 한글, 영문자, 공백, 하이픈(-)만 사용 가능합니다.'
+      }
+    }
+  };
+
+  // 단일 필드 유효성 검사
   const validateField = (name, value) => {
-    const newErrors = { ...errors };
+    if (!validationRules[name]) return true; // 규칙이 없는 필드는 항상 유효
 
-    if (!value.trim()) {
-      newErrors[name] = `${name}은(는) 필수 입력 항목입니다.`;
-    } else {
-      newErrors[name] = '';
+    const rule = validationRules[name];
+    let errorMessage = '';
 
-      if (name === 'username') {
-        const usernameRegex = /^[a-z0-9_]{6,12}$/;
-        newErrors.username = usernameRegex.test(value)
-          ? ''
-          : '아이디는 6~12자의 영문 소문자, 숫자, 특수기호(_)만 사용 가능합니다.';
+    // 1. 필수 입력 검사
+    if (!value.trim() && rule.required) {
+      errorMessage = rule.required;
+    }
+    // 값이 있는 경우에만 패턴 및 커스텀 검증 수행
+    else if (value.trim()) {
+      // 2. 정규식 패턴 검사
+      if (rule.pattern && !rule.pattern.regex.test(value)) {
+        errorMessage = rule.pattern.message;
       }
-
-      if (name === 'password') {
-        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,16}$/;
-        newErrors.password = passwordRegex.test(value)
-          ? ''
-          : '비밀번호는 8~16자의 영문자, 숫자, 특수문자(!@#$%^&*)를 포함해야 합니다.';
-      }
-
-      if (name === 'confirmPassword') {
-        newErrors.confirmPassword =
-          value === formData.password ? '' : '비밀번호가 일치하지 않습니다.';
-      }
-
-      if (name === 'email') {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        newErrors.email = emailRegex.test(value)
-          ? ''
-          : '유효한 이메일 주소를 입력하세요.';
-      }
-
-      if (name === 'birthday') {
-        const birthdayRegex = /^\d{8}$/;
-        newErrors.birthday = birthdayRegex.test(value)
-          ? ''
-          : '생년월일은 yyyyMMdd 형식으로 입력하세요.';
-      }
-
-      if (name === 'name') {
-        const nameRegex = /^[a-zA-Z가-힣\s-]{2,10}$/;
-        newErrors.name = nameRegex.test(value)
-          ? ''
-          : '이름은 2~10자의 한글, 영문자, 공백, 하이픈(-)만 사용 가능합니다.';
+      // 3. 커스텀 검증 함수
+      else if (rule.custom) {
+        errorMessage = rule.custom(value);
       }
     }
 
-    setErrors(newErrors);
+    // 에러 상태 업데이트
+    setErrors(prev => ({
+      ...prev,
+      [name]: errorMessage
+    }));
+
+    return !errorMessage; // 에러 메시지가 없으면 유효함
   };
 
   // 모든 필드 유효성 검사
   const validateAllFields = () => {
-    const newErrors = {};
+    const fieldsToValidate = Object.keys(formData).filter(key => key !== 'role'); // role 제외
+    let isValid = true;
 
-    Object.keys(formData).forEach((key) => {
-      const value = formData[key];
-      if (!value.trim()) {
-        if (key === 'username') {
-          newErrors[key] = '아이디는 필수입니다';
-        }
-        if (key === 'password') {
-          newErrors[key] = '비밀번호는 필수입니다';
-        }
-        if (key === 'confirmPassword') {
-          newErrors[key] = '비밀번호 확인은 필수입니다';
-        }
-        if (key === 'name') {
-          newErrors[key] = '이름은 필수입니다';
-        }
-        if (key === 'birthday') {
-          newErrors[key] = '생년월일은 필수입니다';
-        }
-        if (key === 'email') {
-          newErrors[key] = '이메일은 필수입니다';
-        }
-      } else {
-        validateField(key, value);
-      }
+    // 각 필드별로 유효성 검사 수행
+    fieldsToValidate.forEach(field => {
+      const isFieldValid = validateField(field, formData[field]);
+      if (!isFieldValid) isValid = false;
     });
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).every((key) => !newErrors[key]);
+    return isValid;
   };
 
   // 입력값 변경 핸들러
@@ -143,10 +145,23 @@ export const Join = () => {
     validateField(name, value);
   };
 
+  // 입력 필드 포커스 아웃 핸들러
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    validateField(name, value);
+  };
+
   // 회원가입 처리
   const handleSubmit = async () => {
+    // 모든 필드 유효성 검사 실행
     if (!validateAllFields()) {
-      return;
+      return; // 유효하지 않은 경우 API 요청 중단
+    }
+
+    // 에러가 있는지 확인
+    const hasErrors = Object.values(errors).some(error => error !== '');
+    if (hasErrors) {
+      return; // 에러가 있으면 회원가입 진행하지 않음
     }
 
     try {
@@ -185,7 +200,6 @@ export const Join = () => {
       alert('회원가입이 완료되었습니다.');
       navigate('/');
     } catch (error) {
-      console.error('회원가입 실패:', error.response?.data);
       setErrors((prev) => ({
         ...prev,
         apiError: error.response?.data?.message || '회원가입 실패',
@@ -217,6 +231,7 @@ export const Join = () => {
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
                 placeholder="아이디"
               />
@@ -234,6 +249,7 @@ export const Join = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
                 placeholder="비밀번호"
               />
@@ -251,6 +267,7 @@ export const Join = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
                 placeholder="비밀번호 확인"
               />
@@ -268,6 +285,7 @@ export const Join = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
                 placeholder="이름"
               />
@@ -285,6 +303,7 @@ export const Join = () => {
                 name="birthday"
                 value={formData.birthday}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
                 placeholder="생년월일 (yyyyMMdd)"
               />
@@ -302,12 +321,20 @@ export const Join = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 className={`flex-1 ${styles.input} text-left text-[#1e2d1f] bg-transparent [&::placeholder]:text-grey-500 outline-none focus:outline-none border-none`}
                 placeholder="이메일"
               />
             </div>
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
+
+          {/* API 에러 메시지 표시 */}
+          {errors.apiError && (
+            <div className="w-full text-center">
+              <p className="text-red-500 text-sm mt-1">{errors.apiError}</p>
+            </div>
+          )}
 
           {/* 역할 선택 */}
           <div className={`${styles.inputContainer} flex justify-center items-center mt-1 mb-1`}>
