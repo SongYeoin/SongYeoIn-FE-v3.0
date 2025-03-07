@@ -131,7 +131,7 @@ export const AttendanceList = () => {
         date: filters.date || undefined,
         status: filters.status || undefined,
         page: currentPage - 1,
-        size: 10,
+        size: 20,
       };
 
       const response = await axios.get(

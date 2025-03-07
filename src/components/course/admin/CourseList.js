@@ -22,7 +22,7 @@ export const CourseList = () => {
             params: {
               word: searchTerm,
               page: page -1,
-              size: 10
+              size: 20
             }
           });
         console.log(response.data.content);
