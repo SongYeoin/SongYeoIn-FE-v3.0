@@ -33,6 +33,7 @@ const CourseRegistration = ({ isOpen, onClose,fetchCourses }) => {
         roomName: '',
       });
       setErrors({});
+      setIsSubmitting(false);
     }
   }, [isOpen]);
 
