@@ -106,7 +106,7 @@ export const CourseList = () => {
                     >
                       <div className="text-sm font-medium text-gray-900 text-center group-hover:text-gray-700">{course.name}</div>
                       <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.adminName}</div>
-                      <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.roomName}호</div>
+                      <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.roomName ? `${course.roomName}호` : ''}</div>
                       <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.weeks}주</div>
                       <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.startDate}</div>
                       <div className="text-sm text-gray-600 text-center group-hover:text-gray-700">{course.endDate}</div>
