@@ -22,6 +22,7 @@ const StudentMainPage = () => {
    const day = String(today.getDate()).padStart(2, '0');
    return `${year}-${month}-${day}`;
  });
+  const [availableCourses, setAvailableCourses] = useState([]);
  /* ===== SHARED STATE SECTION END ===== */
 
  /* ===== ATTENDANCE SECTION START =====
@@ -64,6 +65,23 @@ const StudentMainPage = () => {
       handleAttendanceClick('EARLY_EXIT', selectedPeriod, selectedPeriodName); // 선택한 경우 조퇴 처리
       setShowPeriodSelection(false);
       setSelectedPeriod(null);
+    }
+  };
+
+  // 코스 변경 핸들러
+  const handleCourseChange = (courseId) => {
+    const selectedCourse = availableCourses.find(course => course.id === courseId);
+    if (selectedCourse) {
+      setCurrentCourse(selectedCourse);
+      // 코스 변경 시 관련 데이터 초기화
+      setAttendanceData([]);
+      setEnterTime(null);
+      setExitTime(null);
+      setAllPeriodData([]);
+      setFilteredPeriodData([]);
+      setShowPeriodSelection(false);
+      setSelectedPeriod(null);
+      setSelectedPeriodName("");
     }
   };
 
@@ -129,6 +147,11 @@ const StudentMainPage = () => {
   const handleAttendanceClick = async (attendanceType, periodId = null, periodName = "") => {
       try {
 
+        if (!currentCourse) {
+          alert("선택된 과정이 없습니다.");
+          return;
+        }
+
         if (attendanceType === "EARLY_EXIT") {
           if (!periodId) {
             alert("조퇴할 교시를 선택해주세요.");
@@ -191,66 +214,63 @@ const StudentMainPage = () => {
   const formatDateTime = (isoString) => {
     if (!isoString) return null;
 
-    const date = new Date(isoString);
-    const hours = String(date.getHours()).padStart(2, "0"); // 두 자리로 변환
-    const minutes = String(date.getMinutes()).padStart(2, "0"); // 두 자리로 변환
-    const seconds = String(date.getSeconds()).padStart(2,"0");  // 두 자리로 변환
-    const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD 형식 추출
+    // 서버에서 온 ISO 문자열 형식: "2025-03-07T14:30:45.123Z" 또는 "2025-03-07T14:30:45"
+    // 날짜와 시간 부분 분리
+    const [datePart, timePart] = isoString.split('T');
 
-    return `${hours}:${minutes}:${seconds} - ${formattedDate}`;
+    // 시간 부분에서 시, 분, 초 추출 (밀리초, 시간대 정보 제거)
+    const timeComponents = timePart.split('.')[0].split(':');
+    const hours = timeComponents[0];
+    const minutes = timeComponents[1];
+    const seconds = timeComponents[2];
+
+    return `${hours}:${minutes}:${seconds} - ${datePart}`;
   };
-
 
   /* ===== CALENDAR SECTION START =====
    * Owner: [예린]
    * Description: 달력 관련 로직 및 상태 관리
    */
- useEffect(() => {
-   const fetchCurrentCourse = async () => {
-     try {
-       const response = await studentJournalApi.getCurrentEnrollment();
-       console.log("API 전체 응답:", response);
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await studentJournalApi.getCurrentEnrollment();
+        console.log("API 전체 응답:", response);
 
-       if (response.data && response.data.length > 0) {
-         console.log("첫 번째 수강 정보:", response.data[0]);
+        if (response.data && response.data.length > 0) {
+          // 모든 수강 정보를 가공하여 저장
+          const courses = response.data.map(enrollment => ({
+            id: enrollment.courseId,
+            name: enrollment.courseName,
+            adminName: enrollment.adminName,
+            teacherName: enrollment.teacherName,
+            startDate: enrollment.startDate,
+            endDate: enrollment.endDate,
+            enrollDate: enrollment.enrollDate
+          }));
 
-         const currentEnrollment = response.data.find(enrollment => {
-           const enrollDate = new Date(enrollment.enrollDate);
-           const endDate = new Date(enrollment.endDate);
-           const now = new Date();
-           console.log("날짜 비교:", {
-             enrollDate,
-             endDate,
-             now,
-             isValid: now >= enrollDate && now <= endDate
-           });
-           return now >= enrollDate && now <= endDate;
-         });
+          setAvailableCourses(courses);
 
-         console.log("찾은 현재 수강 정보:", currentEnrollment);
+          // 현재 수강 중인 과정을 찾아 현재 과정으로 설정
+          const now = new Date();
+          const currentEnrollment = courses.find(course => {
+            const enrollDate = new Date(course.enrollDate || course.startDate);
+            const endDate = new Date(course.endDate);
+            return now >= enrollDate && now <= endDate;
+          }) || courses[0]; // 현재 과정이 없으면 첫 번째 과정 선택
 
-         if (currentEnrollment) {
-           setCurrentCourse({
-             id: currentEnrollment.courseId,
-             name: currentEnrollment.courseName,
-             adminName: currentEnrollment.adminName,
-             teacherName: currentEnrollment.teacherName,
-             startDate: currentEnrollment.startDate,
-             endDate: currentEnrollment.endDate
-           });
-         } else {
-           console.log("현재 수강 중인 과정을 찾을 수 없습니다.");
-         }
-       } else {
-         console.log("수강 정보가 없습니다.");
-       }
-     } catch (error) {
-       console.error('현재 수강 과정 조회 실패:', error);
-     }
-   };
+          setCurrentCourse(currentEnrollment);
+          console.log("현재 선택된 과정:", currentEnrollment);
+        } else {
+          console.log("수강 정보가 없습니다.");
+        }
+      } catch (error) {
+        console.error('수강 과정 조회 실패:', error);
+      }
+    };
 
-   fetchCurrentCourse();
- }, []);
+    fetchCourses();
+  }, []);
  /* ===== CALENDAR SECTION END ===== */
 
   // 전체 시간표 데이터 가져오기(초기 로드)
@@ -306,7 +326,11 @@ const StudentMainPage = () => {
 
  return (
    <StudentLayout>
-     <StudentMainHeader courseInfo={currentCourse} />
+     <StudentMainHeader
+       courseInfo={currentCourse}
+       availableCourses={availableCourses}
+       onCourseChange={handleCourseChange}
+     />
      <div className={`
        flex
        ${isDesktop ? 'flex-row' : 'flex-col'}
@@ -351,6 +375,7 @@ const StudentMainPage = () => {
                    <button
                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium px-4 py-2 rounded shadow transition-colors duration-200 flex items-center justify-center"
                      onClick={() => handleAttendanceClick('ENTER')}
+                     disabled={!currentCourse}
                    >
                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -409,7 +434,7 @@ const StudentMainPage = () => {
                        : 'bg-gray-400 cursor-not-allowed'
                      }`}
                      onClick={handleEarlyExitClick}
-                     disabled={showPeriodSelection && !selectedPeriod}
+                     disabled={showPeriodSelection && !selectedPeriod || !currentCourse}
                    >
                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -430,6 +455,7 @@ const StudentMainPage = () => {
                    <button
                      className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium px-4 py-2 rounded shadow transition-colors duration-200 flex items-center justify-center"
                      onClick={() => handleAttendanceClick('EXIT')}
+                     disabled={!currentCourse}
                    >
                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
