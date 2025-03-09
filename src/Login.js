@@ -90,47 +90,28 @@ export const Login = ({ role }) => {
       // 로그인 성공 시 리다이렉트
       navigate(redirectPath);
     } catch (error) {
+      console.error('로그인 오류:', error);
+
       if (error.response) {
-        // 서버에서 응답을 받았지만 오류 상태 코드를 반환한 경우
         const { data, status } = error.response;
+        const code = data?.code;
+        const message = data?.message || '';
 
-        // 오류 데이터 구조 검사
-        const errorCode = data?.code;
-        const errorMessage = data?.message || '';
-
-        // 보안을 위해 인증 관련 오류는 일반적인 메시지로 통일
-        if (['USER_003', 'USER_NOT_FOUND', 'INVALID_PASSWORD', 'COMMON_001'].includes(errorCode) ||
+        // 아이디 없음 또는 비밀번호 불일치 - 보안상 같은 메시지 사용
+        if (['USER_003', 'USER_NOT_FOUND', 'INVALID_PASSWORD'].includes(code) ||
           status === 401) {
           setErrorMessage('아이디 또는 비밀번호가 올바르지 않습니다.');
         }
-        // 계정 상태 관련 오류는 구체적인 메시지 제공
-        else if (errorCode === 'USER_PENDING_APPROVAL' ||
-          errorMessage.includes('승인 대기') ||
-          errorMessage.includes('pending approval')) {
-          setErrorMessage('승인 대기 중인 계정입니다. 관리자의 승인을 기다려주세요.');
+        // 입력값 검증 실패 - 기존 메시지 유지
+        else if (code === 'COMMON_001') {
+          setErrorMessage('아이디나 비밀번호를 입력해주세요.');
         }
-        else if (errorCode === 'USER_NOT_APPROVED' ||
-          errorMessage.includes('미승인') ||
-          errorMessage.includes('not approved')) {
-          setErrorMessage('승인이 거부된 계정입니다. 관리자에게 문의해주세요.');
-        }
-        // 권한 관련 오류
-        else if (errorCode === 'ACCESS_DENIED' ||
-          status === 403 ||
-          errorMessage.includes('접근 권한') ||
-          errorMessage.includes('권한이 없습니다')) {
-          setErrorMessage(`${role === 'student' ? '수강생' : '관리자'} 계정으로만 로그인 가능합니다.`);
-        }
-        // 그 외 모든 서버 오류
+        // 그 외 모든 에러는 서버에서 받은 메시지 그대로 표시
         else {
-          setErrorMessage('로그인 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+          setErrorMessage(message || '로그인 중 오류가 발생했습니다.');
         }
-      } else if (error.request) {
-        // 요청은 보냈지만 응답이 없는 경우 (서버 연결 문제)
-        setErrorMessage('서버와의 통신에 실패했습니다. 인터넷 연결을 확인해주세요.');
       } else {
-        // 요청 자체를 보내지 못한 경우
-        setErrorMessage('로그인 요청을 처리할 수 없습니다. 잠시 후 다시 시도해주세요.');
+        setErrorMessage('서버와의 통신에 실패했습니다. 다시 시도해주세요.');
       }
     } finally {
       setIsLoading(false);
