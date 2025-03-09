@@ -151,7 +151,7 @@ export const AttendanceList = () => {
     if (filters.courseId && filters.date) {
       fetchAttendanceData();
     }
-  }, [filters.courseId, filters.date, currentPage, fetchAttendanceData]);
+  }, [filters.courseId, filters.date,filters.studentName, currentPage, fetchAttendanceData]);
 
   const handleFilterChange = (updatedFilters) => {
     setFilters(updatedFilters);
