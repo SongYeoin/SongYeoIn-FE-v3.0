@@ -204,7 +204,7 @@ const AttendMainHeader = ({ role, courses, onFilterChange, attendanceRates, term
               </button>
               <button
                 className={`px-4 py-2 rounded transition-colors duration-200 ${
-                  filters.status === 'EARLY_EXIT'
+                  filters.status === 'EARLY_LEAVE'
                     ? 'bg-[#FF0000] bg-opacity-50 text-black'
                     : 'bg-gray-200 hover:bg-[#FF0000] hover:bg-opacity-30'
                 }`}
