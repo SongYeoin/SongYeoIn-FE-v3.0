@@ -209,6 +209,30 @@ const AttendanceDetail = ({ attendance, onClose }) => {
     }
   });
 
+  // 날짜와 시간을 간결하게 포맷팅하는 함수
+  const formatDateTime = (dateTimeStr) => {
+    if (!dateTimeStr) return "-";
+
+    const dateTime = new Date(dateTimeStr);
+
+    // 날짜 부분
+    const year = dateTime.getFullYear();
+    const month = String(dateTime.getMonth() + 1).padStart(2, '0');
+    const day = String(dateTime.getDate()).padStart(2, '0');
+
+    // 시간 부분
+    let hours = dateTime.getHours();
+    const minutes = String(dateTime.getMinutes()).padStart(2, '0');
+
+    // 오전/오후 구분
+    const ampm = hours >= 12 ? '오후' : '오전';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0시는 12시로 표시
+    const formattedHours = String(hours).padStart(2, '0');
+
+    return `${year}.${month}.${day} ${ampm} ${formattedHours}:${minutes}`;
+  };
+
 return (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto">
     <div className="bg-white w-full max-w-4xl p-6 rounded-2xl shadow-lg my-10"
@@ -308,21 +332,30 @@ return (
                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">교시</th>
                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">시간</th>
                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">상태</th>
-                    <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">출석 시간</th>
+                    <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">입실 시간</th>
+                    <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">퇴실 시간</th>
                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">관리</th>
                   </tr>
                 </thead>
                 <tbody>
                   {attendanceDetails.attendances.content.map((attendance, index) => (
                     <tr key={index} className="border-b">
-                      <td className="py-2 px-4 text-center">{attendance.periodName}</td>
-                      <td className="py-2 px-4 text-center">{attendance.startTime} ~ {attendance.endTime}</td>
+                      <td
+                        className="py-2 px-4 text-center">{attendance.periodName}</td>
+                      <td
+                        className="py-2 px-4 text-center">{attendance.startTime} ~ {attendance.endTime}</td>
                       <td className="py-2 px-4 text-center align-middle">
-                        <div className="flex justify-center items-center h-full">
+                        <div
+                          className="flex justify-center items-center h-full">
                           {renderStatusIcon(attendance.status)}
                         </div>
                       </td>
-                      <td className="py-2 px-4 text-center">{new Date(attendance.enrollDate).toLocaleString()}</td>
+                      <td
+                        className="py-2 px-4 text-center">{attendance.enterDateTime
+                        ? formatDateTime(attendance.enterDateTime) : '-'}</td>
+                      <td
+                        className="py-2 px-4 text-center">{attendance.exitDateTime
+                        ? formatDateTime(attendance.exitDateTime) : '-'}</td>
                       <td className="py-2 px-4 text-center">
                         {editingIndex === index ? (
                           <div className="flex flex-col gap-2">
@@ -386,7 +419,8 @@ return (
                               </button>
                               <button
                                 className="px-2 py-0.5 text-sm bg-green-800 text-white rounded hover:bg-green-900 transition-colors duration-200"
-                                onClick={() => handleStatusChange(attendance.attendanceId, selectedStatus)}
+                                onClick={() => handleStatusChange(
+                                  attendance.attendanceId, selectedStatus)}
                                 disabled={isSaving || selectedStatus === ''}
                               >
                                 {isSaving ? '저장 중...' : '저장'}

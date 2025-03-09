@@ -175,6 +175,29 @@ const AttendanceDetail = ({ attendance, onClose }) => {
     }
   });
 
+// 날짜와 시간을 간결하게 포맷팅하는 함수
+  const formatDateTime = (dateTimeStr) => {
+    if (!dateTimeStr) return "-";
+
+    const dateTime = new Date(dateTimeStr);
+
+    // 날짜 부분
+    const year = dateTime.getFullYear();
+    const month = String(dateTime.getMonth() + 1).padStart(2, '0');
+    const day = String(dateTime.getDate()).padStart(2, '0');
+
+    // 시간 부분
+    let hours = dateTime.getHours();
+    const minutes = String(dateTime.getMinutes()).padStart(2, '0');
+
+    // 오전/오후 구분
+    const ampm = hours >= 12 ? '오후' : '오전';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0시는 12시로 표시
+    const formattedHours = String(hours).padStart(2, '0');
+
+    return `${year}.${month}.${day} ${ampm} ${formattedHours}:${minutes}`;
+  };
 
   return (
    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto">
@@ -275,7 +298,8 @@ const AttendanceDetail = ({ attendance, onClose }) => {
                      <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">교시</th>
                      <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">시간</th>
                      <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">상태</th>
-                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">출석 시간</th>
+                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">입실 시간</th>
+                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">퇴실 시간</th>
                    </tr>
                  </thead>
                  <tbody>
@@ -288,7 +312,8 @@ const AttendanceDetail = ({ attendance, onClose }) => {
                            {renderStatusIcon(attendance.status)}
                          </div>
                        </td>
-                       <td className="py-2 px-4 text-center">{new Date(attendance.enrollDate).toLocaleString()}</td>
+                       <td className="py-2 px-4 text-center">{attendance.enterDateTime? formatDateTime(attendance.enterDateTime) : '-'}</td>
+                       <td className="py-2 px-4 text-center">{attendance.exitDateTime? formatDateTime(attendance.exitDateTime) : '-'}</td>
                      </tr>
                    ))}
                  </tbody>

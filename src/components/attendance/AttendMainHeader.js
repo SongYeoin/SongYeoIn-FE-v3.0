@@ -7,18 +7,22 @@ const AttendMainHeader = ({ role, courses, onFilterChange, attendanceRates, term
   onTermSelect
 }) => {
 
-  // 필터링 상태 관리
+  // 날짜 포맷팅 헬퍼 함수
+  const formatDateToYYYYMMDD = (date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+
   const [filters, setFilters] = useState({
     courseId: '',
     studentName: '',
-    date: new Date().toISOString().split('T')[0], // 오늘 날짜를 기본값으로 설정
+    date: formatDateToYYYYMMDD(new Date()), // 오늘 날짜
     status: '',
     startDate: (() => {
       const date = new Date();
       date.setDate(date.getDate() - 7); // 일주일 전
-      return date.toISOString().split('T')[0];
-    })(), // 즉시 실행 함수로 초기화
-    endDate: new Date().toISOString().split('T')[0], // 오늘 날짜를 기본값으로 설정
+      return formatDateToYYYYMMDD(date);
+    })(),
+    endDate: formatDateToYYYYMMDD(new Date()), // 오늘 날짜
   });
 
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
