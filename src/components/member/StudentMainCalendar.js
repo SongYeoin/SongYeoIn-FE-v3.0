@@ -35,6 +35,10 @@ const StudentMainCalendar = ({ courseId, onDateChange }) => {
 
   // 초기 로딩 시 현재 월의 데이터 fetch
   useEffect(() => {
+    setJournals([]);
+    setSelectedJournal(null);
+
+
     if (courseId) {
       fetchJournals(currentMonth);
     }
