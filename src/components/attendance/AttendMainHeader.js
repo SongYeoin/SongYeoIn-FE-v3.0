@@ -208,7 +208,7 @@ const AttendMainHeader = ({ role, courses, onFilterChange, attendanceRates, term
                     ? 'bg-[#FF0000] bg-opacity-50 text-black'
                     : 'bg-gray-200 hover:bg-[#FF0000] hover:bg-opacity-30'
                 }`}
-                onClick={() => handleStatusToggle('EARLY_EXIT')}
+                onClick={() => handleStatusToggle('EARLY_LEAVE')}
               >
                 조퇴
               </button>
