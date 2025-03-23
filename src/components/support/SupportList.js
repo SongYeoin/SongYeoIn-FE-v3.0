@@ -92,9 +92,9 @@ const SupportList = () => {
       />
 
       <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
-        {/* Table Header */}
+        {/* Table Header - 컬럼 하나 추가 (5열에서 6열로) */}
         <div className="border-b border-gray-200 bg-gray-50">
-          <div className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr] gap-4 px-6 py-4">
+          <div className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4">
             <div className="flex flex-col items-center justify-center">
               <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">번호</span>
             </div>
@@ -110,10 +110,13 @@ const SupportList = () => {
             <div className="flex flex-col items-center justify-center">
               <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">상태</span>
             </div>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">개발팀</span>
+            </div>
           </div>
         </div>
 
-        {/* Table Body */}
+        {/* Table Body - 컬럼 하나 추가 */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="text-center py-10">
@@ -125,7 +128,7 @@ const SupportList = () => {
               <div
                 key={support.id}
                 onClick={() => openDetailModal(support)}
-                className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
+                className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
               >
                 <div className="text-sm font-medium text-gray-900 text-center">
                   {totalElements - (currentPage * pageSize + index)}
@@ -143,10 +146,19 @@ const SupportList = () => {
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     support.isConfirmed
                       ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                      : 'bg-gray-100 text-gray-600'
                   }`}>
                     {support.isConfirmed ? '확인완료' : '미확인'}
                   </span>
+                </div>
+                <div className="text-sm text-center">
+                 <span className={`px-2 py-1 rounded-full text-xs ${
+                   support.developerResponse
+                     ? 'bg-blue-100 text-blue-800'
+                     : 'bg-gray-100 text-gray-600'
+                 }`}>
+                   {support.developerResponse ? '답변완료' : '대기중'}
+                 </span>
                 </div>
               </div>
             ))

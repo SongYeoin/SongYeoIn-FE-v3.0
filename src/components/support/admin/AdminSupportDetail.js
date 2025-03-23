@@ -158,9 +158,17 @@ ${support.content}
               <span className={`px-2 py-1 rounded-full text-xs ${
                 support.isConfirmed
                   ? 'bg-green-100 text-green-800'
-                  : 'bg-yellow-100 text-yellow-800'
+                  : 'bg-gray-100 text-gray-600'
               }`}>
                 {support.isConfirmed ? '확인완료' : '미확인'}
+              </span>
+              {/* 개발팀 답변 상태 아이콘 추가 */}
+              <span className={`px-2 py-1 rounded-full text-xs ${
+                support.developerResponse
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-600'
+              }`}>
+                {support.developerResponse ? '답변완료' : '대기중'}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -173,14 +181,14 @@ ${support.content}
               {!support.isConfirmed ? (
                 <button
                   onClick={handleConfirm}
-                  className="px-2 py-1 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors duration-200"
+                  className="px-2 py-1 bg-gray-600 text-white text-xs rounded-lg hover:bg-gray-700 transition-colors duration-200"
                 >
                   확인 처리하기
                 </button>
               ) : (
                 <button
                   onClick={handleUnconfirm}
-                  className="px-2 py-1 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition-colors duration-200"
+                  className="px-2 py-1 bg-gray-600 text-white text-xs rounded-lg hover:bg-gray-700 transition-colors duration-200"
                 >
                   확인 취소하기
                 </button>
@@ -225,6 +233,17 @@ ${support.content}
                 {support.content}
               </div>
             </div>
+
+            {/* 개발팀 응답 영역 추가 */}
+            {support.developerResponse && (
+              <div className="mt-4">
+                <label className="text-sm text-gray-600 font-bold">개발팀 답변</label>
+                <div className="w-full px-3 py-2 border rounded-lg bg-blue-50 min-h-[100px] whitespace-pre-wrap">
+                  {support.developerResponse.responseContent}
+                </div>
+              </div>
+            )}
+
           </div>
 
           {/* 버튼 영역 */}
