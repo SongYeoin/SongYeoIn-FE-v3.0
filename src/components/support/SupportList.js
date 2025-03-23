@@ -4,47 +4,44 @@ import StudentLayout from '../common/layout/student/StudentLayout';
 import SupportHeader from './SupportHeader';
 import SupportDetail from './SupportDetail';
 import SupportCreate from './SupportCreate';
-import _ from 'lodash';
 
 const SupportList = () => {
   const [supports, setSupports] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0); // 총 항목 수 상태 추가
+  const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSupport, setSelectedSupport] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const pageSize = 20; // 페이지당 항목 수 (고정값으로 설정)
+  const pageSize = 20;
 
   const fetchSupports = useCallback(async (page = 0) => {
     setLoading(true);
     try {
-      // 검색어 파라미터 추가
+      console.log("API 검색 요청:", searchTerm);
       const response = await studentSupportApi.getMyList(page, pageSize, searchTerm);
+      console.log("API 응답:", response);
       setSupports(response.content);
       setTotalPages(response.totalPages);
-      setTotalElements(response.totalElements); // 총 항목 수 저장
+      setTotalElements(response.totalElements);
     } catch (error) {
       console.error('문의 목록 조회 중 오류:', error);
       alert(error.message || '문의 목록을 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
-  }, [searchTerm]); // 검색어 의존성 추가
+  }, [searchTerm]);
 
   useEffect(() => {
     fetchSupports(currentPage);
-  }, [currentPage, fetchSupports]);
+  }, [currentPage, searchTerm, fetchSupports]);
 
-  const debouncedSearch = useCallback(
-    _.debounce((term) => {
-      setSearchTerm(term);
-      setCurrentPage(0);
-      fetchSupports(0);
-    }, 500),
-    [fetchSupports]
-  );
+  const handleSearch = (term) => {
+    console.log("검색어 변경:", term);
+    setSearchTerm(term);
+    setCurrentPage(0); // 검색어 변경 시 첫 페이지로 이동
+  };
 
   // 날짜 형식 포맷팅 함수
   const formatDate = (dateString) => {
@@ -54,10 +51,6 @@ const SupportList = () => {
       return dateString.split(' ')[0];
     }
     return dateString;
-  };
-
-  const handleSearch = (term) => {
-    debouncedSearch(term);
   };
 
   const handlePageChange = (page) => {
@@ -81,15 +74,15 @@ const SupportList = () => {
   };
 
   return (
-    <StudentLayout
-      currentPage={currentPage + 1}
-      totalPages={totalPages}
-      onPageChange={(page) => handlePageChange(page - 1)}
-    >
-      <SupportHeader
-        onSearch={handleSearch}
-        onCreate={openCreateModal}
-      />
+      <StudentLayout
+        currentPage={currentPage + 1}
+        totalPages={totalPages}
+        onPageChange={(page) => handlePageChange(page - 1)}
+      >
+        <SupportHeader
+          onSearch={handleSearch}
+          onCreate={openCreateModal}
+        />
 
       <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
         {/* Table Header - 컬럼 하나 추가 (5열에서 6열로) */}

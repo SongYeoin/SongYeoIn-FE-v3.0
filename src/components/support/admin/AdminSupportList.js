@@ -11,7 +11,7 @@ const AdminSupportList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(''); // 수정된 부분: 대괄호 제거
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedSupport, setSelectedSupport] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const pageSize = 20;
@@ -19,8 +19,9 @@ const AdminSupportList = () => {
   const fetchSupports = useCallback(async (page = 0) => {
     setLoading(true);
     try {
-      // 수정: 페이지, 사이즈, 검색어 순서로 파라미터 전달
+      console.log("관리자 API 검색 요청:", searchTerm);
       const response = await adminSupportApi.getAllList(page, pageSize, searchTerm);
+      console.log("관리자 API 응답:", response);
       setSupports(response.content);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
@@ -30,17 +31,17 @@ const AdminSupportList = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, pageSize]); // pageSize 의존성 추가
+  }, [searchTerm, pageSize]);
 
   useEffect(() => {
     fetchSupports(currentPage);
-  }, [currentPage, fetchSupports]);
+  }, [currentPage, searchTerm, fetchSupports]);
 
-  // 단순 검색 함수로 수정
+  // 검색 처리 함수
   const handleSearch = (term) => {
+    console.log("관리자 검색어 변경:", term);
     setSearchTerm(term);
-    setCurrentPage(0);
-    fetchSupports(0);
+    setCurrentPage(0); // 검색어 변경 시 첫 페이지로 이동
   };
 
   const handlePageChange = (page) => {
