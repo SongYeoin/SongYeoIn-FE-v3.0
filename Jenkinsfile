@@ -82,7 +82,9 @@ pipeline {
                     sh """
                     set -e
                     cd build
-                    aws s3 cp . s3://${env.S3_BUCKET}/ --recursive
+                    for file in $(find . -type f); do
+                        aws s3 cp "$file" "s3://songyeoin-jenkins-ci-cd/${file#./}"
+                    done
                     """
                 }
             }
