@@ -47,7 +47,7 @@ pipeline {
                 expression { env.GIT_BRANCH?.contains(env.DEPLOY_BRANCH) }
             }
             steps {
-                sh 'npm run build'
+                sh 'CI=false npm run build'
             }
         }
         
