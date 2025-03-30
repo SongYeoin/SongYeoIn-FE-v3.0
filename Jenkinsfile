@@ -45,7 +45,7 @@ pipeline {
                 expression { env.GIT_BRANCH?.contains(env.DEPLOY_BRANCH) }
             }
             steps {
-                sh 'CI=false npm run build'
+                sh 'REACT_APP_API_URL=https://api.songyeoin.site CI=false npm run build'
             }
         }
         
