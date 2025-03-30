@@ -59,7 +59,7 @@ pipeline {
                 withAWS(credentials: "${env.AWS_CREDENTIALS}", region: 'ap-northeast-2') {
                     // 빌드 결과물을 S3에 업로드
                     s3Upload(bucket: "${env.S3_BUCKET}", 
-                             path: '/', 
+                             path: '', 
                              includePathPattern: '**/*', 
                              workingDir: 'build')
                 }
