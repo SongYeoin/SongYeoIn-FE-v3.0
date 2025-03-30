@@ -28,7 +28,7 @@ pipeline {
         
         stage('Install Dependencies') {
             when {
-                expression { env.GIT_BRANCH == 'main' }
+                expression { env.GIT_BRANCH?.contains(env.DEPLOY_BRANCH) }
             }
             steps {
                 sh 'npm install'
@@ -37,7 +37,7 @@ pipeline {
         
         stage('Build') {
             when {
-                expression { env.GIT_BRANCH == 'main' }
+                expression { env.GIT_BRANCH?.contains(env.DEPLOY_BRANCH) }
             }
             steps {
                 sh 'npm run build'
@@ -46,7 +46,7 @@ pipeline {
         
         stage('Deploy to S3') {
             when {
-                expression { env.GIT_BRANCH == 'main' }
+                expression { env.GIT_BRANCH?.contains(env.DEPLOY_BRANCH) }
             }
             steps {
                 withAWS(credentials: "${env.AWS_CREDENTIALS}", region: 'ap-northeast-2') {
