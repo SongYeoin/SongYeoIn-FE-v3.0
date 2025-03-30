@@ -138,6 +138,18 @@ export const Landing = () => {
              <p>서울특별시 송파구 중대로9길 34(가락동) 대호빌딩2층</p>
              <p>담당자: 송파여성인력개발센터 황경미&nbsp;&nbsp;&nbsp;&nbsp;전화번호: 070-4322-3011</p>
              <p>개발팀: 김도연, 김예린, 이유진, 최소연</p>
+             <a
+               href="/manuals/songyeoin_manuals.pdf"
+               target="_blank"
+               rel="noopener noreferrer"
+               className="flex items-center justify-center gap-1 text-[#1e2d1f] hover:text-[#4a7c4c] hover:underline cursor-pointer transition-colors"
+             >
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+               <path d="M5 4a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm-.5 2.5A.5.5 0 0 1 5 6h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zM5 8a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm0 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1H5z"/>
+               <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/>
+             </svg>
+             사이트 사용방법 안내 메뉴얼
+             </a>
            </div>
          </div>
        </div>
