@@ -24,73 +24,64 @@ const Footer = ({ currentPage, totalPages, onPageChange }) => {
 
   return (
     <footer className="flex justify-center items-center p-4 bg-white">
-      {/* 페이징 처리 */}
-      <nav className="inline-flex rounded-md shadow-sm">
+      <nav className="flex items-center gap-2">
         {/* 처음 페이지 버튼 */}
         <button
-          className={`relative inline-flex items-center px-3 py-2 text-sm font-medium ${
-                                currentPage === 1
-                                  ? 'text-gray-400 cursor-default'
-                                  : 'text-gray-700 hover:bg-gray-50'
-                              } rounded-l-md border border-gray-300`}
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-50"
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
         >
-          &laquo;
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 17L13 12L18 7M11 17L6 12L11 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
 
-        {/* 이전 페이지 화살표 < */}
+        {/* 이전 페이지 버튼 */}
         <button
-          className={`relative inline-flex items-center px-3 py-2 text-sm font-medium ${
-                                currentPage === 1
-                                  ? 'text-gray-400 cursor-default'
-                                  : 'text-gray-700 hover:bg-gray-50'
-                              } border-t border-b border-gray-300`}
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-50"
           onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
           disabled={currentPage === 1}
         >
-          &lt;
+          <svg width="6" height="10" fill="none" stroke="currentColor">
+            <path d="M5 9L1 5L5 1" />
+          </svg>
         </button>
 
         {/* 페이지 번호 */}
         {visiblePages.map((page) => (
           <button
             key={page}
-            className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
-                                    currentPage === page
-                                      ? 'bg-[#225930] text-white font-bold'
-                                      : 'text-gray-700 hover:bg-gray-50'
-                                  } border border-gray-300`}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg ${
+              currentPage === page
+                ? 'bg-[#225930] text-white'
+                : 'border border-gray-300'
+            }`}
             onClick={() => onPageChange(page)}
           >
             {page}
           </button>
         ))}
 
-        {/* 다음 페이지 화살표 > */}
+        {/* 다음 페이지 버튼 */}
         <button
-          className={`relative inline-flex items-center px-3 py-2 text-sm font-medium ${
-                                currentPage === totalPages
-                                  ? 'text-gray-400 cursor-default'
-                                  : 'text-gray-700 hover:bg-gray-50'
-                              } border-t border-b border-gray-300`}
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-50"
           onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
           disabled={currentPage === totalPages}
         >
-          &gt;
+          <svg width="6" height="10" fill="none" stroke="currentColor">
+            <path d="M1 9L5 5L1 1" />
+          </svg>
         </button>
 
         {/* 마지막 페이지 버튼 */}
         <button
-          className={`relative inline-flex items-center px-3 py-2 text-sm font-medium ${
-                                currentPage === totalPages
-                                  ? 'text-gray-400 cursor-default'
-                                  : 'text-gray-700 hover:bg-gray-50'
-                              } rounded-r-md border border-gray-300`}
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-50"
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
         >
-          &raquo;
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 7L11 12L6 17M13 7L18 12L13 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
       </nav>
     </footer>
