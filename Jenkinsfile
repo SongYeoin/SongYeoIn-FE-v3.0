@@ -72,10 +72,10 @@ pipeline {
     
     post {
         success {
-            echo "배포가 성공적으로 완료되었습니다!"
+            echo "배포가 성공적으로 완료되었습니다!!"
         }
         failure {
-            echo "배포 중 오류가 발생했습니다."
+            echo "배포 중 오류가 발생했습니다.."
         }
     }
 }
