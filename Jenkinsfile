@@ -61,12 +61,7 @@ pipeline {
                     sh "aws s3 rm s3://${env.S3_BUCKET}/ --recursive"
         
                     // ✅ 새 빌드 결과물 업로드
-                    s3Upload(
-                        bucket: "${env.S3_BUCKET}",
-                        path: '', // 루트에 바로 업로드
-                        includePathPattern: '**/*',
-                        workingDir: 'build'
-                    )
+                    sh "aws s3 cp build/ s3://${env.S3_BUCKET}/ --recursive"
                 }
             }
         }
