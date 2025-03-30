@@ -58,10 +58,7 @@ pipeline {
             steps {
                 withAWS(credentials: "${env.AWS_CREDENTIALS}", region: 'ap-northeast-2') {
                      // ✅ 기존 파일 전체 삭제
-                    s3Delete(
-                        bucket: "${env.S3_BUCKET}",
-                        path: '' // 버킷 루트 전체 삭제
-                    )
+                    sh "aws s3 rm s3://${env.S3_BUCKET}/ --recursive"
         
                     // ✅ 새 빌드 결과물 업로드
                     s3Upload(
