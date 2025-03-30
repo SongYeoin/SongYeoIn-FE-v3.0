@@ -12,6 +12,8 @@ const SupportCreate = ({ isOpen, onClose, refreshList }) => {
     memberName: '',
     createdDate: new Date().toLocaleDateString() // 오늘 날짜를 기본값으로
   });
+  const [files, setFiles] = useState([]);
+  const [filePreviewUrls, setFilePreviewUrls] = useState([]);
   const [errors, setErrors] = useState({});
 
   // 컴포넌트가 마운트될 때 한번만 실행
@@ -54,6 +56,52 @@ const SupportCreate = ({ isOpen, onClose, refreshList }) => {
     }
   };
 
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+
+    // 기존 파일 + 새 파일의 총 개수가 5개를 초과하는지 확인
+    const totalFiles = files.length + selectedFiles.length;
+    if (totalFiles > 5) {
+      alert("파일은 최대 5개까지만 첨부할 수 있습니다.");
+      // 파일 인풋 필드 초기화 (선택 취소)
+      e.target.value = '';
+      return;
+    }
+
+    // 기존 파일 + 새 파일 병합
+    const updatedFiles = [...files, ...selectedFiles];
+    setFiles(updatedFiles);
+
+    // 새 파일에 대한 미리보기 생성
+    const newPreviewUrls = selectedFiles.map(file => {
+      return {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
+      };
+    });
+
+    // 기존 미리보기 + 새 미리보기 병합
+    setFilePreviewUrls([...filePreviewUrls, ...newPreviewUrls]);
+  };
+
+  const removeFile = (index) => {
+    const newFiles = [...files];
+    const newPreviewUrls = [...filePreviewUrls];
+
+    // 미리보기 URL 해제
+    if (newPreviewUrls[index]?.url) {
+      URL.revokeObjectURL(newPreviewUrls[index].url);
+    }
+
+    newFiles.splice(index, 1);
+    newPreviewUrls.splice(index, 1);
+
+    setFiles(newFiles);
+    setFilePreviewUrls(newPreviewUrls);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -72,7 +120,7 @@ const SupportCreate = ({ isOpen, onClose, refreshList }) => {
     }
 
     try {
-      await studentSupportApi.create(formData);
+      await studentSupportApi.create(formData.title, formData.content, files);
       alert('문의가 등록되었습니다.');
       refreshList();
       handleClose();
@@ -89,6 +137,14 @@ const SupportCreate = ({ isOpen, onClose, refreshList }) => {
       memberName: formData.memberName,
       createdDate: new Date().toLocaleDateString()
     });
+
+    // 파일 상태 초기화 및 미리보기 URL 해제
+    filePreviewUrls.forEach(file => {
+      if (file.url) URL.revokeObjectURL(file.url);
+    });
+    setFiles([]);
+    setFilePreviewUrls([]);
+
     setErrors({});
     onClose();
   };
@@ -140,7 +196,7 @@ const SupportCreate = ({ isOpen, onClose, refreshList }) => {
               </div>
             </div>
 
-            <div>
+            <div className="mb-4">
               <label className="text-sm text-gray-600 font-bold">
                 내용 <span className="text-red-500">*</span>
               </label>
@@ -152,6 +208,59 @@ const SupportCreate = ({ isOpen, onClose, refreshList }) => {
                 placeholder="문의 내용을 입력하세요"
               ></textarea>
               {errors.content && <p className="text-red-500 text-sm mt-1">{errors.content}</p>}
+            </div>
+
+            {/* 파일 업로드 영역 */}
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm text-gray-600 font-bold">첨부 파일</label>
+                <span className="text-sm text-gray-500">
+                  {`파일 ${filePreviewUrls.length}/5개`}
+                </span>
+              </div>
+
+              <div className="bg-gray-50 p-3 rounded-lg mb-3 text-sm text-gray-600">
+                <p>• 이미지 파일만 업로드 가능합니다</p>
+                <p>• 허용 확장자: jpg, jpeg, png, bmp, tiff, tif, webp, svg</p>
+              </div>
+
+              {/* 선택된 파일 목록 */}
+              {filePreviewUrls.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-sm text-gray-600 font-bold mb-2">첨부된 파일</p>
+                  <ul className="space-y-2">
+                    {filePreviewUrls.map((file, index) => (
+                      <li key={index} className="flex items-center bg-gray-50 p-2 rounded">
+                        {file.type.startsWith('image/') && file.url ? (
+                          <img src={file.url} alt={file.name} className="h-8 w-8 object-cover rounded mr-2" />
+                        ) : (
+                          <div className="h-8 w-8 flex items-center justify-center bg-gray-200 rounded mr-2">
+                            <span className="text-xs font-medium">파일</span>
+                          </div>
+                        )}
+                        <span className="flex-1 text-sm truncate">{file.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="ml-2 text-gray-500 hover:text-red-500"
+                        >
+                          ✕
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <input
+                type="file"
+                id="file-upload"
+                multiple
+                onChange={handleFileChange}
+                className="w-full px-3 py-2 border rounded-lg"
+                accept=".jpg,.jpeg,.png,.bmp,.tiff,.tif,.webp,.svg"
+              />
+              {errors.files && <p className="text-red-500 text-sm mt-1">{errors.files}</p>}
             </div>
           </div>
 

@@ -11,7 +11,7 @@ const AdminSupportList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(''); // 수정된 부분: 대괄호 제거
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedSupport, setSelectedSupport] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const pageSize = 20;
@@ -19,8 +19,9 @@ const AdminSupportList = () => {
   const fetchSupports = useCallback(async (page = 0) => {
     setLoading(true);
     try {
-      // 수정: 페이지, 사이즈, 검색어 순서로 파라미터 전달
+      console.log("관리자 API 검색 요청:", searchTerm);
       const response = await adminSupportApi.getAllList(page, pageSize, searchTerm);
+      console.log("관리자 API 응답:", response);
       setSupports(response.content);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
@@ -30,17 +31,17 @@ const AdminSupportList = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, pageSize]); // pageSize 의존성 추가
+  }, [searchTerm, pageSize]);
 
   useEffect(() => {
     fetchSupports(currentPage);
-  }, [currentPage, fetchSupports]);
+  }, [currentPage, searchTerm, fetchSupports]);
 
-  // 단순 검색 함수로 수정
+  // 검색 처리 함수
   const handleSearch = (term) => {
+    console.log("관리자 검색어 변경:", term);
     setSearchTerm(term);
-    setCurrentPage(0);
-    fetchSupports(0);
+    setCurrentPage(0); // 검색어 변경 시 첫 페이지로 이동
   };
 
   const handlePageChange = (page) => {
@@ -77,7 +78,7 @@ const AdminSupportList = () => {
       <div className="flex flex-col w-full bg-white rounded-xl shadow-sm">
         {/* Table Header */}
         <div className="border-b border-gray-200 bg-gray-50">
-          <div className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr] gap-4 px-6 py-4">
+          <div className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4">
             <div className="flex flex-col items-center justify-center">
               <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">번호</span>
             </div>
@@ -92,6 +93,9 @@ const AdminSupportList = () => {
             </div>
             <div className="flex flex-col items-center justify-center">
               <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">상태</span>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-sm font-bold text-gray-800 uppercase tracking-wider">개발팀</span>
             </div>
           </div>
         </div>
@@ -108,7 +112,7 @@ const AdminSupportList = () => {
               <div
                 key={support.id}
                 onClick={() => openDetailModal(support)}
-                className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
+                className="grid grid-cols-[1fr_4fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-all duration-200 ease-in-out"
               >
                 <div className="text-sm font-medium text-gray-900 text-center">
                   {totalElements - (currentPage * pageSize + index)}
@@ -126,9 +130,18 @@ const AdminSupportList = () => {
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     support.isConfirmed
                       ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                      : 'bg-gray-100 text-gray-600'
                   }`}>
                     {support.isConfirmed ? '확인완료' : '미확인'}
+                  </span>
+                </div>
+                <div className="text-sm text-center">
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    support.developerResponse
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {support.developerResponse ? '답변완료' : '대기중'}
                   </span>
                 </div>
               </div>

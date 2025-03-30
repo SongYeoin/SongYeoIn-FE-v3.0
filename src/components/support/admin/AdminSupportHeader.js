@@ -1,18 +1,14 @@
 import React from 'react';
-import _ from 'lodash';
 
 const AdminSupportHeader = ({ onSearch, onCreate }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
 
-  // 디바운스 함수 생성 (1초 지연)
-  const debouncedSearch = _.debounce((term) => {
-    onSearch(term);
-  }, 1000);
-
+  // 디바운스 제거하고 즉시 검색 적용
   const handleInputChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    debouncedSearch(value);
+    console.log("관리자 검색어 입력:", value); // 디버깅용 로그
+    onSearch(value); // 즉시 상위 컴포넌트에 전달
   };
 
   return (

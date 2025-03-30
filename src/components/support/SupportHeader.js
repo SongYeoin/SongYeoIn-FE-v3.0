@@ -1,17 +1,13 @@
-import React from 'react';
-import _ from 'lodash';
+import React, { useState } from 'react';
 
 const SupportHeader = ({ onSearch, onCreate }) => {
-  const [searchTerm, setSearchTerm] = React.useState('');
-
-  const debouncedSearch = _.debounce((value) => {
-    onSearch(value);
-  }, 300);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    debouncedSearch(value);
+    // 키 입력할 때마다 즉시 상위 컴포넌트에 검색어 전달
+    onSearch(value);
   };
 
   return (
