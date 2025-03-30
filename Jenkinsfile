@@ -69,9 +69,11 @@ pipeline {
         stage('Invalidate CloudFront') {
             steps {
                 withAWS(credentials: "${env.AWS_CREDENTIALS}", region: 'ap-northeast-2') {
-                    // CloudFront 캐시 무효화
-                    cfInvalidate(distribution: "${env.CLOUDFRONT_DISTRIBUTION_ID}", 
-                                 paths: ['/*'])
+                    sh """
+                    aws cloudfront create-invalidation \
+                        --distribution-id ${env.CLOUDFRONT_DISTRIBUTION_ID} \
+                        --paths "/*"
+                    """
                 }
             }
         }
