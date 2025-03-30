@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'api/axios';
-import { format, isAfter, isBefore, isSameDay, parseISO } from 'date-fns';
+import { format, isAfter, isBefore, isSameDay, parseISO, addMonths } from 'date-fns';
 
 const ClubCreate = ({ selectedCourse, onClose, onSubmitSuccess }) => {
   const initialFormData = {
@@ -156,10 +156,11 @@ const ClubCreate = ({ selectedCourse, onClose, onSubmitSuccess }) => {
     if (courseDetails.startDate && courseDetails.endDate) {
       const courseStartDate = parseISO(courseDetails.startDate);
       const courseEndDate = parseISO(courseDetails.endDate);
+      const sixMonthsAfterEndDate = addMonths(courseEndDate, 6);
 
-      if (isBefore(studyDate, courseStartDate) || isAfter(studyDate, courseEndDate)) {
-        const errorMsg = `활동일은 수강 기간 내(${courseDetails.startDate} ~ ${courseDetails.endDate})여야 합니다.`;
-        setDateError('활동일은 수강 기간 내여야 합니다.');
+      if (isBefore(studyDate, courseStartDate) || isAfter(studyDate, sixMonthsAfterEndDate)) {
+        const errorMsg = `활동일은 수강 기간 내 또는 종강 후 6개월 이내(${courseDetails.startDate} ~ ${format(sixMonthsAfterEndDate, 'yyyy-MM-dd')})여야 합니다.`;
+        setDateError('활동일은 수강 기간 내 또는 종강 후 6개월 이내여야 합니다.');
         return { isValid: false, message: errorMsg };
       }
     }
@@ -289,6 +290,7 @@ const ClubCreate = ({ selectedCourse, onClose, onSubmitSuccess }) => {
                 name="clubName"
                 value={formData.clubName}
                 onChange={handleInputChange}
+                placeholder="동아리명을 입력하세요"
               />
             </div>
             <div>
@@ -329,7 +331,7 @@ const ClubCreate = ({ selectedCourse, onClose, onSubmitSuccess }) => {
               )}
               {courseDetails.startDate && courseDetails.endDate && (
                 <p className="text-gray-500 text-xs mt-1">
-                  수강 기간: {courseDetails.startDate} ~ {courseDetails.endDate}
+                  신청 가능 기간: {courseDetails.startDate} ~ {format(addMonths(parseISO(courseDetails.endDate), 6), 'yyyy-MM-dd')}
                 </p>
               )}
             </div>
