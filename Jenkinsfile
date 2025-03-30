@@ -61,7 +61,10 @@ pipeline {
                     sh "aws s3 rm s3://${env.S3_BUCKET}/ --recursive"
         
                     // ✅ 새 빌드 결과물 업로드
-                    sh "aws s3 cp build/ s3://${env.S3_BUCKET}/ --recursive"
+                    sh """
+                    cd build
+                    aws s3 cp . s3://${env.S3_BUCKET}/ --recursive
+                    """
                 }
             }
         }
