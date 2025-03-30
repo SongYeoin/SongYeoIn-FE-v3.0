@@ -1,7 +1,6 @@
 pipeline {
     
     agent any
-
     environment {
         DEPLOY_BRANCH = "main"
         S3_BUCKET = "songyeoin-jenkins-ci-cd"
@@ -25,7 +24,6 @@ pipeline {
                 }
             }
         }
-
         stage('Check Node/NPM') {
             steps {
                 sh 'node -v'
@@ -51,6 +49,26 @@ pipeline {
             }
         }
         
+        stage('Debug Build Directory') {
+            when {
+                expression { env.GIT_BRANCH?.contains(env.DEPLOY_BRANCH) }
+            }
+            steps {
+                sh "ls -la build"
+            }
+        }
+        
+        stage('Debug AWS Credentials') {
+            when {
+                expression { env.GIT_BRANCH?.contains(env.DEPLOY_BRANCH) }
+            }
+            steps {
+                withAWS(credentials: "${env.AWS_CREDENTIALS}", region: 'ap-northeast-2') {
+                    sh "aws sts get-caller-identity"
+                }
+            }
+        }
+        
         stage('Deploy to S3') {
             when {
                 expression { env.GIT_BRANCH?.contains(env.DEPLOY_BRANCH) }
@@ -62,6 +80,7 @@ pipeline {
         
                     // ✅ 새 빌드 결과물 업로드
                     sh """
+                    set -e
                     cd build
                     aws s3 cp . s3://${env.S3_BUCKET}/ --recursive
                     """
@@ -69,7 +88,21 @@ pipeline {
             }
         }
         
+        stage('Verify S3 Upload') {
+            when {
+                expression { env.GIT_BRANCH?.contains(env.DEPLOY_BRANCH) }
+            }
+            steps {
+                withAWS(credentials: "${env.AWS_CREDENTIALS}", region: 'ap-northeast-2') {
+                    sh "aws s3 ls s3://${env.S3_BUCKET}/ --recursive"
+                }
+            }
+        }
+        
         stage('Invalidate CloudFront') {
+            when {
+                expression { env.GIT_BRANCH?.contains(env.DEPLOY_BRANCH) }
+            }
             steps {
                 withAWS(credentials: "${env.AWS_CREDENTIALS}", region: 'ap-northeast-2') {
                     sh """
