@@ -504,7 +504,7 @@ const MemberDetail = ({ memberId, onClose }) => {
                     <tr key={record.id} className="hover:bg-gray-50">
                       <td className="border px-4 py-2 text-sm text-center">{record.courseName}</td>
                       <td className="border px-4 py-2 text-sm text-center">{record.adminName}</td>
-                      <td className="border px-4 py-2 text-sm text-center">{record.enrollDate}</td>
+                      <td className="border px-4 py-2 text-sm text-center">{record.startDate}</td>
                       <td className="border px-4 py-2 text-sm text-center">{record.endDate}</td>
                       <td className="border px-4 py-2 text-center">
                         <button

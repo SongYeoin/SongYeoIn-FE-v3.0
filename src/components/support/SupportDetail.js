@@ -28,6 +28,7 @@ const downloadFile = async (supportId, fileId, fileName) => {
 const SupportDetail = ({ supportId, onClose, refreshList }) => {
   const [support, setSupport] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [imageModal, setImageModal] = useState({ isOpen: false, url: '', name: '' });
 
   useEffect(() => {
     const fetchSupportDetail = async () => {
@@ -100,6 +101,65 @@ const SupportDetail = ({ supportId, onClose, refreshList }) => {
         </svg>
       );
     }
+  };
+
+  // 이미지 모달 닫기
+  const closeImageModal = () => {
+    setImageModal({ isOpen: false, url: '', name: '' });
+  };
+
+  // 이미지 모달 열기
+  const openImageModal = (url, name) => {
+    setImageModal({ isOpen: true, url, name });
+  };
+
+  // 안전한 이미지 렌더링을 위한 헬퍼 함수
+  const renderSafeImage = (file, index) => {
+    const handleImageError = (e) => {
+      e.target.onerror = null; // 무한 루프 방지
+      e.target.src = '/images/default_profile.png'; // 기본 이미지로 대체
+      e.target.style.cursor = 'not-allowed';
+    };
+
+    const handleImageClick = (e, url, name) => {
+      if (e.target.src.includes('default_profile.png')) {
+        alert('이미지를 불러올 수 없습니다. 파일이 삭제되었거나 접근할 수 없습니다.');
+      } else {
+        openImageModal(url, name);
+      }
+    };
+
+    const handleViewOriginalClick = (e) => {
+      e.preventDefault();
+      const img = e.target.closest('.group').querySelector('img');
+      if (img.src.includes('default_profile.png')) {
+        alert('이미지를 불러올 수 없습니다. 파일이 삭제되었거나 접근할 수 없습니다.');
+      } else {
+        openImageModal(file.url, file.originalName);
+      }
+    };
+
+    return (
+      <div key={index} className="relative group">
+        <img
+          src={file.url}
+          alt={file.originalName}
+          className="rounded-lg shadow-md w-full h-40 object-cover cursor-pointer"
+          onError={handleImageError}
+          onClick={(e) => handleImageClick(e, file.url, file.originalName)}
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center">
+          <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 flex space-x-2">
+            <button
+              className="bg-white text-gray-800 px-3 py-1 rounded-full text-sm"
+              onClick={handleViewOriginalClick}
+            >
+              원본 보기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -216,28 +276,7 @@ const SupportDetail = ({ supportId, onClose, refreshList }) => {
               <div className="mt-2 grid grid-cols-2 gap-4">
                 {support.files
                   .filter(file => file.mimeType?.startsWith('image/'))
-                  .map((file, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={file.url}
-                        alt={file.originalName}
-                        className="rounded-lg shadow-md w-full h-40 object-cover cursor-pointer"
-                        onClick={() => window.open(file.url, '_blank')}
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 flex space-x-2">
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-white text-gray-800 px-3 py-1 rounded-full text-sm"
-                          >
-                            원본 보기
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  .map((file, index) => renderSafeImage(file, index))}
               </div>
             </div>
           )}
@@ -269,6 +308,30 @@ const SupportDetail = ({ supportId, onClose, refreshList }) => {
           </button>
         </div>
       </div>
+
+      {/* 이미지 모달 */}
+      {imageModal.isOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-[60]" onClick={closeImageModal}>
+          <div className="relative max-w-4xl max-h-[90vh] p-2" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={closeImageModal}
+              className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-lg text-gray-800 hover:text-gray-900 z-[70]"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+            <img
+              src={imageModal.url}
+              alt={imageModal.name}
+              className="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl"
+            />
+            <div className="bg-white px-4 py-2 rounded-b-lg">
+              <p className="text-center text-gray-700">{imageModal.name}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
