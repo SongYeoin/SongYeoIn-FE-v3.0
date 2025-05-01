@@ -1,4 +1,4 @@
-/* print.css - 출석부 인쇄용 스타일 */
+/* print.css - 출석부 인쇄용 스타일 - 고정 행 높이 테이블 템플릿 */
 
 @media print {
   @page {
@@ -48,16 +48,13 @@
     padding: 10px !important;
     box-sizing: border-box !important;
     position: relative !important;
-    height: 190mm !important; /* A4 가로에서 여백을 제외한 높이 */
-    display: flex !important;
-    flex-direction: column !important;
   }
 
   /* 헤더 영역 */
   .header {
     width: 100% !important;
-    padding-bottom: 10px !important;
-    flex-shrink: 0 !important;
+    padding-bottom: 5px !important;
+    margin-bottom: 5px !important;
   }
 
   .title {
@@ -82,22 +79,16 @@
 
   /* 테이블 컨테이너 */
   .table-container {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: visible !important; /* 내용이 넘치지 않게 설정 */
-    margin-bottom: 20px !important; /* 푸터를 위한 여백 */
-    width: 100%  !important;
+    width: 100% !important;
+    margin-bottom: 25px !important; /* 푸터와의 간격 */
   }
 
   /* 테이블 기본 스타일 */
   .attendance-table, .summary-table {
     width: 100% !important;
-    height: 100% !important;
     border-collapse: collapse !important;
     table-layout: fixed !important;
-    border: 1px #333 !important;
-    /*max-height: calc(190mm - 70px) !important; !* 푸터와 헤더를 위한 여백 제외 *!*/
+    border: 1px solid #333 !important;
   }
 
   .attendance-table th, .attendance-table td,
@@ -108,13 +99,19 @@
     font-size: 10px !important;
     overflow: visible !important;
     padding: 1px !important;
-    height: auto !important;
   }
 
   /* 헤더 셀 스타일 */
   .attendance-table th {
     background-color: #f3f4f6 !important;
-    /*font-weight: bold !important;*/
+    padding: 2px !important;
+  }
+
+  /* 헤더 행 높이 고정 */
+  .attendance-table thead tr:nth-child(1),
+  .attendance-table thead tr:nth-child(2),
+  .attendance-table thead tr:nth-child(3) {
+    height: 20px !important;
   }
 
   /* 출석부 테이블 레이아웃 조정 */
@@ -132,7 +129,7 @@
   /* 날짜별 컬럼 너비 */
   .date-col {
     min-width: 15px !important;
-    padding: 4px !important;
+    padding: 2px !important;
   }
 
   /* 교시 셀 */
@@ -155,7 +152,7 @@
   /* 학생별 셀 스타일 */
   .number-cell {
     width: 30px !important;
-    padding: 4px !important;
+    padding: 2px !important;
   }
 
   .name-cell {
@@ -166,77 +163,27 @@
   .status-cell {
     width: 15px !important;
     padding: 0 !important;
-    font-size: 10px !important;
   }
 
   /* 통계 영역 */
   .stat-cell {
     width: 24px !important;
-    padding: 4px !important;
-  }
-
-  /* 페이지 번호 스타일 - 페이지 하단에 고정 */
-  .page-number {
-    position: absolute !important;
-    bottom: 5px !important;
-    left: 0 !important;
-    right: 0 !important;
-    display: flex !important;
-    justify-content: center !important;
-    font-size: 12px !important;
     padding: 2px !important;
-    background-color: white !important; /* 배경색 추가 */
-    z-index: 10 !important; /* 다른 요소 위에 표시 */
-    height: 20px !important;
   }
 
-  /* 요약 페이지 스타일 */
-  .summary-table {
-    width: 100% !important;
-  }
-
-  .summary-table th, .summary-table td {
-    padding: 6px !important; /* 간격 줄임 */
-    font-size: 11px !important; /* 글자 크기 조정 */
-  }
-
-  .summary-table th {
-    background-color: #f9fafb !important;
-  }
-
-  /* 테이블 레이아웃 - 중요! */
-  .attendance-table tr,
-  .summary-table tr {
-    display: table-row !important;
-    height: auto !important; /* 자동 높이 */
-  }
-
-  /* 15명까지 표시할 수 있도록 각 행의 높이 조절 */
-  /*.attendance-table tbody tr {
-    height: 8.5mm !important; !* 고정 높이 설정 *!
-    !*max-height: 8.5mm !important;*!
-  }
-
-  !* 더 많은 학생이 있을 경우 높이 자동 조절 *!
-  .attendance-table.many-students tbody tr {
-    height: auto !important;
-    !*max-height: 7.5mm !important; !* 더 작은 높이로 설정 *!*!
-  }
-*/
-
-  /* 테이블 본문이 가능한 많은 공간 차지하도록 설정 */
-  .attendance-table tbody {
-    height: 100% !important;
-  }
-
-  /* 행 높이를 자동으로 조정하여 가용 공간을 균등하게 분배 */
+  /* 15명이 표시될 수 있도록 각 행의 높이 고정 - 완전 고정 높이 */
   .attendance-table tbody tr {
-    height: auto !important; /* 자동 높이로 변경 */
+    height: 9mm !important; /* 고정 행 높이 */
+    min-height: 9mm !important;
+    max-height: 9mm !important;
   }
 
-  /* 많은 학생 수에 대한 행 높이도 자동으로 조정 */
-  .attendance-table.many-students tbody tr {
-    height: auto !important;
+  /* 빈 행도 동일한 높이 유지 */
+  .attendance-table tbody tr.empty-row {
+    height: 9mm !important;
+    min-height: 9mm !important;
+    max-height: 9mm !important;
+    visibility: visible !important;
   }
 
   .attendance-table th,
@@ -246,13 +193,23 @@
     display: table-cell !important;
   }
 
-  /* 출석 상태 아이콘 (동그라미) */
-  .status-icon {
-    display: inline-block !important;
-    width: 8px !important;
-    height: 8px !important;
-    border-radius: 50% !important;
-    background-color: #000 !important;
+  /* 테이블 행 스타일 */
+  .attendance-table tr,
+  .summary-table tr {
+    display: table-row !important;
+  }
+
+  /* 페이지 번호 스타일 - 테이블 아래 고정 위치 */
+  .page-footer {
+    position: relative !important; /* 정적 위치로 변경 */
+    width: 100% !important;
+    text-align: center !important;
+    font-size: 11px !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    border-top: 1px solid #ddd !important;
+    background-color: white !important;
+    margin-top: 10px !important;
   }
 
   /* 인쇄 영역의 크기 고정 */
