@@ -228,7 +228,7 @@ const AttendancePrintPage = ({
               {summaryPage?.studentSummaries.map((student, idx) => (
                 <tr key={`summary-${student.studentId}`}>
                   <td>{idx + 1}</td>
-                  <td>{student.studentName}</td>
+                  <td className="course-name-cell">{student.studentName}</td>
                   <td>{courseName}</td>
                   <td>{student.totalWorkingDays}일</td>
                   <td>{student.attendanceDays}일</td>
@@ -236,6 +236,21 @@ const AttendancePrintPage = ({
                   <td>{student.lateDays}회</td>
                   <td>{student.earlyLeaveDays}회</td>
                   <td>{student.attendanceRate.toFixed(1)}%</td>
+                </tr>
+              ))}
+
+              {/* 학생 수가 15명 미만인 경우 빈 행 추가 */}
+              {Array.from({ length: Math.max(0, 15 - summaryPage.studentSummaries.length) }).map((_, idx) => (
+                <tr key={`empty-summary-${idx}`} className="empty-row">
+                  <td>{summaryPage.studentSummaries.length + idx + 1}</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
                 </tr>
               ))}
               </tbody>
