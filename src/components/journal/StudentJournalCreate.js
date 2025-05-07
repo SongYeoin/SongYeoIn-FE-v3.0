@@ -190,6 +190,8 @@ const StudentJournalCreate = ({ courseId, onClose, onSuccess }) => {
           <div className="bg-gray-50 p-3 rounded-lg mb-3 text-sm text-gray-600">
             <p>• 교육일지 파일 첨부는 필수입니다</p>
             <p>• 허용 확장자: hwp, hwpx, doc, docx</p>
+            <p>• 파일명은 &#39;교육일지_이름_날짜&#39; 형식입니다</p>
+            <p className="text-gray-500"> (ex. &#39;교육일지_홍길동_20250505&#39;, 동명이인인 경우 &#39;홍길동A&#39;)</p>
           </div>
 
           {/* 선택된 파일 표시 */}

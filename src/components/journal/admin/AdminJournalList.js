@@ -141,6 +141,7 @@ const AdminJournalList = () => {
                      setSelectedIds(e.target.checked ? journals.map(j => j.id) : []);
                    }}
                    checked={selectedIds.length === journals.length && journals.length > 0}
+                   className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                  />
                </div>
                <div className="flex flex-col items-center justify-center">
@@ -185,6 +186,7 @@ const AdminJournalList = () => {
                            : selectedIds.filter(id => id !== journal.id)
                          );
                        }}
+                       className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                      />
                    </div>
                    <div className="text-sm font-medium text-gray-900 text-center">
