@@ -145,7 +145,28 @@ const AdminClubDetail = ({ club, onClose, user, onUpdateSuccess, courseId }) => 
       }
 
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/club/${club.clubId}/download`, {responseType: 'blob',});
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/club/${club.clubId}/download`, {
+      responseType: 'blob',
+      validateStatus: function (status) {
+        return status < 500; // 500 미만의 상태 코드는 정상 처리하여 에러 메시지를 확인할 수 있도록 함
+        },
+      });
+
+      // 에러 응답인 경우 (JSON으로 응답 예상)
+      if (response.status !== 200) {
+        const reader = new FileReader();
+        reader.onload = function() {
+          try {
+            const errorData = JSON.parse(reader.result);
+            const errorMessage = errorData.message || '파일 다운로드에 실패했습니다.';
+            alert(errorMessage);
+          } catch (e) {
+            alert('파일 다운로드에 실패했습니다.');
+          }
+        };
+        reader.readAsText(response.data);
+        return;
+      }
 
       // 응답 헤더에서 파일 이름 추출
       const contentDisposition = response.headers['content-disposition'];
@@ -167,10 +188,36 @@ const AdminClubDetail = ({ club, onClose, user, onUpdateSuccess, courseId }) => 
       link.click();
       link.remove();
       window.URL.revokeObjectURL(blobUrl); // Blob URL 해제
-
     } catch (err) {
       console.error('File download error:', err);
-      alert('파일 다운로드에 실패했습니다.');
+
+      // 서버에서 반환한 에러 메시지가 있는 경우
+      if (err.response && err.response.data) {
+        try {
+          // JSON 객체인 경우
+          if (typeof err.response.data === 'object') {
+            alert(err.response.data.message || '파일 다운로드에 실패했습니다.');
+            return;
+          }
+
+          // Blob 데이터인 경우
+          const reader = new FileReader();
+          reader.onload = function() {
+            try {
+              const errorData = JSON.parse(reader.result);
+              alert(errorData.message || '파일 다운로드에 실패했습니다.');
+            } catch (e) {
+              alert('파일 다운로드에 실패했습니다.');
+            }
+          };
+          reader.readAsText(err.response.data);
+        } catch (e) {
+          alert('파일 다운로드에 실패했습니다.');
+        }
+      } else {
+        // 서버 에러 응답이 없는 경우 기본 메시지 표시
+        alert('파일 다운로드에 실패했습니다.');
+      }
     }
   };
 
