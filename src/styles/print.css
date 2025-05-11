@@ -6,9 +6,12 @@
     margin: 10mm !important;
   }
 
-  body {
+  html,body {
     margin: 0 !important;
     padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
     font-family: 'Malgun Gothic', sans-serif !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -29,7 +32,11 @@
     left: 0 !important;
     top: 0 !important;
     width: 297mm !important;
+    height: 210mm !important;
     max-width: 297mm !important;
+    max-height: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   /* 페이지 나누기 */
@@ -287,5 +294,18 @@
   /* 인쇄 영역의 크기 고정 */
   @page {
     size: 297mm 210mm !important;
+    margin: 0 !important;
+  }
+
+  @page :left {
+    margin: 0 !important;
+  }
+
+  @page :right {
+    margin: 0 !important;
+  }
+
+  @page :first {
+    margin: 0 !important;
   }
 }
