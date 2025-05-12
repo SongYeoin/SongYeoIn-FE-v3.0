@@ -41,6 +41,16 @@ const AttendancePrintPage = ({
         return ' ';
     }
   };
+
+  // 실제 데이터가 있는 날만 카운트하는 함수
+  const calculateActualAttendanceDays = (dailyAttendance) => {
+    // 데이터가 있는 날짜만 필터링
+    const daysWithData = dailyAttendance.filter(day =>
+      day.periods && day.periods.some(period => period.status)
+    );
+    return daysWithData.length;
+  };
+
   // 항상 15명의 학생 행을 생성하는 함수 - 빈 행 클래스 추가
   const renderStudentRows = (pageStudents, dailyAttendanceTemplate) => {
     // 항상 15개의 행을 만들기 위한 배열
@@ -76,7 +86,7 @@ const AttendancePrintPage = ({
             })}
             {/* 통계 열 추가 */}
             <td className="stat-cell">{student.processedDays}</td>
-            <td className="stat-cell">{student.realAttendDays}</td>
+            <td className="stat-cell">{calculateActualAttendanceDays(student.dailyAttendance)}</td>
             <td className="stat-cell">{student.absentCount}</td>
             <td className="stat-cell">{student.lateCount}</td>
             <td className="stat-cell">{student.earlyLeaveCount}</td>
