@@ -169,6 +169,15 @@ const PrintDialog = ({
     return null;
   }
 
+  // 실제 데이터가 있는 날만 카운트하는 함수
+  const calculateActualAttendanceDays = (dailyAttendance) => {
+    // 데이터가 있는 날짜만 필터링
+    const daysWithData = dailyAttendance.filter(day =>
+      day.periods && day.periods.some(period => period.status)
+    );
+    return daysWithData.length;
+  };
+
   return (
     <div>
       {/* 화면에 보여지는 모달 (인쇄 시에는 숨김) */}
@@ -365,7 +374,7 @@ const PrintDialog = ({
                             <td
                               className="border border-gray-800 p-2 text-center">{student.processedDays}</td>
                             <td
-                              className="border border-gray-800 p-2 text-center">{student.realAttendDays}</td>
+                              className="border border-gray-800 p-2 text-center">{calculateActualAttendanceDays(student.dailyAttendance)}</td>
                             <td
                               className="border border-gray-800 p-2 text-center">{student.absentCount}</td>
                             <td
