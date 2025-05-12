@@ -47,28 +47,6 @@ const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
     fetchSupportDetail();
   }, [supportId]);
 
-  const handleConfirm = async () => {
-    try {
-      const updatedSupport = await adminSupportApi.confirmSupport(supportId);
-      setSupport(updatedSupport);
-      refreshList();
-    } catch (error) {
-      console.error("Error confirming support:", error);
-      alert(error.message || "문의 확인 처리 중 오류가 발생했습니다.");
-    }
-  };
-
-  const handleUnconfirm = async () => {
-    try {
-      const updatedSupport = await adminSupportApi.unconfirmSupport(supportId);
-      setSupport(updatedSupport);
-      refreshList();
-    } catch (error) {
-      console.error("Error unconfirming support:", error);
-      alert(error.message || "문의 확인 취소 중 오류가 발생했습니다.");
-    }
-  };
-
   const handleDelete = async () => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
       try {
@@ -113,6 +91,44 @@ const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  // 상태 결정 함수
+  const getStatus = (support) => {
+    if (!support) return 'UNCONFIRMED';
+
+    // developerResponse가 있고 responseContent가 "해결중"인 경우
+    if (support.developerResponse && support.developerResponse.responseContent === "해결중") {
+      return 'IN_PROGRESS';
+    }
+    // developerResponse가 있고 다른 응답 내용인 경우 (완료로 간주)
+    else if (support.developerResponse) {
+      return 'RESOLVED';
+    }
+    // 확인은 됐지만 개발자 응답이 없는 경우
+    else if (support.confirmed) {
+      return 'CONFIRMED';
+    }
+    // 아무것도 없는 경우
+    else {
+      return 'UNCONFIRMED';
+    }
+  };
+
+  // 상태에 따른 스타일 및 텍스트 반환 함수
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'UNCONFIRMED':
+        return { className: 'bg-gray-100 text-gray-600', text: '미확인' };
+      case 'CONFIRMED':
+        return { className: 'bg-green-100 text-green-800', text: '확인완료' };
+      case 'IN_PROGRESS':
+        return { className: 'bg-yellow-100 text-yellow-800', text: '해결중' };
+      case 'RESOLVED':
+        return { className: 'bg-blue-100 text-blue-800', text: '해결완료' };
+      default:
+        return { className: 'bg-gray-100 text-gray-600', text: '미확인' };
+    }
+  };
 
   // 파일 크기를 사람이 읽기 쉬운 형태로 변환하는 함수
   const formatFileSize = (sizeStr) => {
@@ -228,6 +244,9 @@ const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
     );
   }
 
+  const currentStatus = getStatus(support);
+  const statusStyle = getStatusStyle(currentStatus);
+
   return (
     <>
       <div className="fixed inset-0 flex items-start justify-center bg-black bg-opacity-50 z-50 overflow-y-auto">
@@ -236,20 +255,8 @@ const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold">관리자 문의 상세</h2>
-              <span className={`px-2 py-1 rounded-full text-xs ${
-                support.isConfirmed
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-600'
-              }`}>
-                {support.isConfirmed ? '확인완료' : '미확인'}
-              </span>
-              {/* 개발팀 답변 상태 아이콘 추가 */}
-              <span className={`px-2 py-1 rounded-full text-xs ${
-                support.developerResponse
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-gray-100 text-gray-600'
-              }`}>
-                {support.developerResponse ? '답변완료' : '대기중'}
+              <span className={`px-2 py-1 rounded-full text-xs ${statusStyle.className}`}>
+                {statusStyle.text}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -259,21 +266,6 @@ const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
               >
                 개발팀에게 전달
               </button>
-              {!support.isConfirmed ? (
-                <button
-                  onClick={handleConfirm}
-                  className="px-2 py-1 bg-gray-600 text-white text-xs rounded-lg hover:bg-gray-700 transition-colors duration-200"
-                >
-                  확인 처리하기
-                </button>
-              ) : (
-                <button
-                  onClick={handleUnconfirm}
-                  className="px-2 py-1 bg-gray-600 text-white text-xs rounded-lg hover:bg-gray-700 transition-colors duration-200"
-                >
-                  확인 취소하기
-                </button>
-              )}
               <button
                 onClick={onClose}
                 className="ml-4 text-gray-400 hover:text-gray-900 text-xl font-extrabold transition-colors duration-200"
@@ -352,13 +344,15 @@ const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
             )}
 
             {/* 개발팀 응답 영역 */}
-            {support.developerResponse && (
-              <div className="mt-4">
-                <label className="text-sm text-gray-600 font-bold">개발팀 답변</label>
-                <div className="w-full px-3 py-2 border rounded-lg bg-blue-50 min-h-[100px] whitespace-pre-wrap">
-                  {support.developerResponse.responseContent}
+            {support.developerResponse &&
+              support.developerResponse.responseContent !== '해결중' &&
+              support.developerResponse.responseContent !== '해결완료' && (
+                <div className="mt-4">
+                  <label className="text-sm text-gray-600 font-bold">개발팀 답변</label>
+                  <div className="w-full px-3 py-2 border rounded-lg bg-blue-50 min-h-[100px] whitespace-pre-wrap">
+                    {support.developerResponse.responseContent}
+                  </div>
                 </div>
-              </div>
             )}
           </div>
 
@@ -402,7 +396,7 @@ const AdminSupportDetail = ({ supportId, onClose, refreshList }) => {
       > 문의 ID: ${support.id}
       > 작성자: ${support.memberName}
       > 등록일시: ${support.regDate}
-      > 확인여부: ${support.isConfirmed ? '확인완료' : '미확인'}
+      > 상태: ${statusStyle.text}
       ${support.files && support.files.length > 0 ? `> 첨부파일: ${support.files.length}개` : ''}
 
       **문의내용:**
