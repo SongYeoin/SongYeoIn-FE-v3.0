@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Printer } from 'lucide-react';
 import AttendancePrintPage from './AttendancePrintPage';
-
 
 const PrintDialog = ({
   isOpen,
@@ -176,6 +175,35 @@ const PrintDialog = ({
       day.periods && day.periods.some(period => period.status)
     );
     return daysWithData.length;
+  };
+
+  // 학생의 출석 통계를 계산하는 함수
+  const calculateStudentStats = (student) => {
+    // 실제 출석 데이터가 있는 날짜 수 계산
+    const totalActualDays = calculateActualAttendanceDays(
+      student.dailyAttendance);
+
+    // 결석, 지각, 조퇴 횟수 계산
+    const absentCount = student.absentCount;
+    const lateCount = student.lateCount;
+    const earlyLeaveCount = student.earlyLeaveCount;
+
+    // 지각과 조퇴를 합쳐서 3번 이상일 경우 결석으로 처리
+    const latePlusEarlyLeave = lateCount + earlyLeaveCount;
+    const additionalAbsentDays = Math.floor(latePlusEarlyLeave / 3);
+
+    // 출석해야 할 총 일수에서 결석과 지각/조퇴로 인한 추가 결석을 뺀 값
+    const finalAttendanceDays = totalActualDays - absentCount
+      - additionalAbsentDays;
+
+    return {
+      totalActualDays,
+      absentCount,
+      lateCount,
+      earlyLeaveCount,
+      additionalAbsentDays,
+      finalAttendanceDays,
+    };
   };
 
   return (
@@ -374,7 +402,14 @@ const PrintDialog = ({
                             <td
                               className="border border-gray-800 p-2 text-center">{student.processedDays}</td>
                             <td
-                              className="border border-gray-800 p-2 text-center">{calculateActualAttendanceDays(student.dailyAttendance)}</td>
+                              className="border border-gray-800 p-2 text-center">
+                              {(() => {
+                                // 학생 통계 계산
+                                const stats = calculateStudentStats(student);
+                                // 실제 출석일수 (결석과 지각/조퇴로 인한 추가 결석을 제외한 최종 출석일)
+                                return stats.finalAttendanceDays;
+                              })()}
+                            </td>
                             <td
                               className="border border-gray-800 p-2 text-center">{student.absentCount}</td>
                             <td
