@@ -398,8 +398,8 @@ return (
                                 <input
                                   type="radio"
                                   name={`status-${index}`}
-                                  value="EARLY_EXIT"
-                                  checked={selectedStatus === 'EARLY_EXIT'}
+                                  value="EARLY_LEAVE"
+                                  checked={selectedStatus === 'EARLY_LEAVE'}
                                   onChange={(e) => setSelectedStatus(
                                     e.target.value)}
                                 />
