@@ -130,16 +130,6 @@ const AttendanceDetail = ({ attendance, onClose }) => {
     }
   };
 
-  /*const onPageChange = async (page) => {
-    try {
-      setIsLoading(true); // 로딩 상태 활성화
-      setCurrentPage(page);
-      await fetchAttendanceDetails(page); // 새로운 데이터 로드
-    } catch (error) {
-      console.error('페이지 로드 중 오류 발생:', error);
-      setError('페이지 로드 중 오류가 발생했습니다.');
-    }
-  };*/
 
 
   const formatTime = (time) => {
@@ -288,36 +278,62 @@ const AttendanceDetail = ({ attendance, onClose }) => {
 
        {/* 출석 상태 목록 */}
        <div className="mb-6 border border-gray-300 rounded-lg p-4">
-         <h3 className="text-sm text-gray-600 font-bold mb-4">출석 상태 목록</h3>
+         <div className="flex justify-between items-center mb-4">
+           <h3 className="text-sm text-gray-600 font-bold">출석 상태 목록</h3>
+         </div>
+
          {!isLoading && !error && attendanceDetails ? (
            attendanceDetails.attendances.content.length > 0 ? (
              <>
-               <table className="w-full mb-4">
+               <div className="overflow-x-auto">
+                 <table className="w-full mb-4 min-w-full table-auto">
                  <thead>
-                   <tr className="border-b">
-                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">교시</th>
-                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">시간</th>
-                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">상태</th>
-                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">입실 시간</th>
-                     <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">퇴실 시간</th>
-                   </tr>
+                 <tr className="border-b">
+                   <th
+                     className="text-sm text-gray-600 font-bold py-2 px-4 md:px-4 text-center">교시
+                   </th>
+                   <th
+                     className="text-sm text-gray-600 font-bold py-2 px-4 md:px-4 text-center">시간
+                   </th>
+                   <th
+                     className="text-sm text-gray-600 font-bold py-2 px-4 md:px-4 text-center">상태
+                   </th>
+                   <th
+                     className="text-sm text-gray-600 font-bold py-2 px-4 md:px-4 text-center">입실
+                     시간
+                   </th>
+                   <th
+                     className="text-sm text-gray-600 font-bold py-2 px-4 md:px-4 text-center">퇴실
+                     시간
+                   </th>
+                 </tr>
                  </thead>
                  <tbody>
-                   {attendanceDetails.attendances.content.map((attendance, index) => (
+                 {attendanceDetails.attendances.content.map(
+                   (attendance, index) => (
                      <tr key={index} className="border-b">
-                       <td className="py-2 px-4 text-center">{attendance.periodName}</td>
-                       <td className="py-2 px-4 text-center">{attendance.startTime} ~ {attendance.endTime}</td>
-                       <td className="py-2 px-4 text-center align-middle">
-                         <div className="flex justify-center items-center h-full">
+                       <td
+                         className="py-2 px-4 md:px-4 text-center">{attendance.periodName}</td>
+                       <td
+                         className="py-2 px-4 md:px-4 text-center">{attendance.startTime} ~ {attendance.endTime}</td>
+                       <td
+                         className="py-2 px-4 md:px-4 text-center align-middle">
+                         <div
+                           className="flex justify-center items-center h-full">
                            {renderStatusIcon(attendance.status)}
                          </div>
                        </td>
-                       <td className="py-2 px-4 text-center">{attendance.enterDateTime? formatDateTime(attendance.enterDateTime) : '-'}</td>
-                       <td className="py-2 px-4 text-center">{attendance.exitDateTime? formatDateTime(attendance.exitDateTime) : '-'}</td>
+                       <td
+                         className="py-2 px-4 md:px-4 text-center text-xs md:text-sm whitespace-nowrap">{attendance.enterDateTime
+                         ? formatDateTime(attendance.enterDateTime) : '-'}</td>
+                       <td
+                         className="py-2 px-4 md:px-4 text-center text-xs md:text-sm whitespace-nowrap">{attendance.exitDateTime
+                         ? formatDateTime(attendance.exitDateTime) : '-'}</td>
                      </tr>
                    ))}
                  </tbody>
                </table>
+               </div>
 
                <div className="flex justify-center items-center mt-4">
                  <nav className="flex items-center gap-2">
@@ -327,13 +343,16 @@ const AttendanceDetail = ({ attendance, onClose }) => {
                      onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
                      disabled={currentPage === 1}
                    >
-                     <svg width="6" height="10" fill="none" stroke="currentColor">
+                     <svg width="6" height="10" fill="none"
+                          stroke="currentColor">
                        <path d="M5 9L1 5L5 1" />
                      </svg>
                    </button>
 
                    {/* 페이지 번호 버튼들 */}
-                   {Array.from({ length: attendanceDetails.attendances.totalPages }, (_, i) => i + 1).map((page) => (
+                   {Array.from(
+                     { length: attendanceDetails.attendances.totalPages },
+                     (_, i) => i + 1).map((page) => (
                      <button
                        key={page}
                        className={`w-8 h-8 flex items-center justify-center rounded-md ${
@@ -350,10 +369,13 @@ const AttendanceDetail = ({ attendance, onClose }) => {
                    {/* 다음 페이지 버튼 */}
                    <button
                      className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 disabled:opacity-50"
-                     onClick={() => onPageChange(Math.min(currentPage + 1, attendanceDetails.attendances.totalPages))}
-                     disabled={currentPage === attendanceDetails.attendances.totalPages}
+                     onClick={() => onPageChange(Math.min(currentPage + 1,
+                       attendanceDetails.attendances.totalPages))}
+                     disabled={currentPage
+                       === attendanceDetails.attendances.totalPages}
                    >
-                     <svg width="6" height="10" fill="none" stroke="currentColor">
+                     <svg width="6" height="10" fill="none"
+                          stroke="currentColor">
                        <path d="M1 9L5 5L1 1" />
                      </svg>
                    </button>
