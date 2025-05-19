@@ -233,6 +233,52 @@ const AttendanceDetail = ({ attendance, onClose }) => {
     return `${year}.${month}.${day} ${ampm} ${formattedHours}:${minutes}`;
   };
 
+  // 일괄 삭제 버튼 클릭 핸들러
+  const handleBulkDelete = () => {
+    // 현재 페이지에 표시된 모든 출석 정보가 있는지 확인
+    if (!attendanceDetails || !attendanceDetails.attendances.content.length) {
+      alert('삭제할 출석 정보가 없습니다.');
+      return;
+    }
+
+    // 확인 대화상자 표시
+    if (window.confirm('해당 날짜의 모든 출석 정보를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+
+      const studentId = attendance.studentId;
+
+      axios.delete(`${process.env.REACT_APP_API_URL}/admin/attendance/bulk-all`,
+        {
+          params: {
+            date: attendanceDetails.memberInfo.date,
+            studentId: studentId,
+            courseId: attendance.courseId,
+          },
+        })
+      .then(async () => {
+        alert('해당 날짜의 모든 출석 정보가 삭제되었습니다.');
+        // await를 사용하여 Promise 완료를 기다림
+        await fetchAttendanceDetails(1);
+
+        // 빈 결과를 표시하기 위한 상태 업데이트 (서버에서 빈 결과가 오지 않을 경우)
+        if (attendanceDetails.attendances.content.length === 0) {
+          setAttendanceDetails({
+            ...attendanceDetails,
+            attendances: {
+              ...attendanceDetails.attendances,
+              content: [],
+              totalPages: 1,
+              currentPage: 1,
+            },
+          });
+        }
+      })
+      .catch(error => {
+        console.error('일괄 삭제 중 오류 발생:', error);
+        alert('일괄 삭제 중 오류가 발생했습니다.');
+      });
+    }
+  };
+
 return (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[9999] overflow-y-auto">
     <div className="bg-white w-full max-w-4xl p-6 rounded-2xl shadow-lg my-10"
@@ -322,28 +368,54 @@ return (
 
       {/* 출석 상태 목록 */}
       <div className="mb-6 border border-gray-300 rounded-lg p-4">
-        <h3 className="text-sm text-gray-600 font-bold mb-4">출석 상태 목록</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-sm text-gray-600 font-bold">출석 상태 목록</h3>
+
+          {/* 일괄 삭제 버튼 - 우측 끝에 위치 */}
+          <button
+            onClick={handleBulkDelete}
+            className="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out"
+          >
+            일괄 삭제
+          </button>
+        </div>
         {!isLoading && !error && attendanceDetails ? (
           attendanceDetails.attendances.content.length > 0 ? (
             <>
-              <table className="w-full mb-4">
+              <div className="overflow-x-auto">
+                <table className="w-full mb-4 min-w-full table-auto">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">교시</th>
-                    <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">시간</th>
-                    <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">상태</th>
-                    <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">입실 시간</th>
-                    <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">퇴실 시간</th>
-                    <th className="text-sm text-gray-600 font-bold py-2 px-4 text-center">관리</th>
-                  </tr>
+                <tr className="border-b">
+                  <th
+                    className="text-sm text-gray-600 font-bold py-2 md:px-4 text-center">교시
+                  </th>
+                  <th
+                    className="text-sm text-gray-600 font-bold py-2 md:px-4 text-center">시간
+                  </th>
+                  <th
+                    className="text-sm text-gray-600 font-bold py-2 md:px-4 text-center">상태
+                  </th>
+                  <th
+                    className="text-sm text-gray-600 font-bold py-2 md:px-4 text-center">입실
+                    시간
+                  </th>
+                  <th
+                    className="text-sm text-gray-600 font-bold py-2 md:px-4 text-center">퇴실
+                    시간
+                  </th>
+                  <th
+                    className="text-sm text-gray-600 font-bold py-2 md:px-4 text-center">관리
+                  </th>
+                </tr>
                 </thead>
                 <tbody>
-                  {attendanceDetails.attendances.content.map((attendance, index) => (
+                {attendanceDetails.attendances.content.map(
+                  (attendance, index) => (
                     <tr key={index} className="border-b">
                       <td
-                        className="py-2 px-4 text-center">{attendance.periodName}</td>
+                        className="py-2 md:px-4 text-center">{attendance.periodName}</td>
                       <td
-                        className="py-2 px-4 text-center">{attendance.startTime} ~ {attendance.endTime}</td>
+                        className="py-2 md:px-4 text-center">{attendance.startTime} ~ {attendance.endTime}</td>
                       <td className="py-2 px-4 text-center align-middle">
                         <div
                           className="flex justify-center items-center h-full">
@@ -351,12 +423,12 @@ return (
                         </div>
                       </td>
                       <td
-                        className="py-2 px-4 text-center">{attendance.enterDateTime
+                        className="py-2 md:px-4 text-center text-xs md:text-sm whitespace-nowrap">{attendance.enterDateTime
                         ? formatDateTime(attendance.enterDateTime) : '-'}</td>
                       <td
-                        className="py-2 px-4 text-center">{attendance.exitDateTime
+                        className="py-2 md:px-4 text-center text-xs md:text-sm whitespace-nowrap">{attendance.exitDateTime
                         ? formatDateTime(attendance.exitDateTime) : '-'}</td>
-                      <td className="py-2 px-4 text-center">
+                      <td className="py-2 md:px-4 text-center">
                         {editingIndex === index ? (
                           <div className="flex flex-col gap-2">
                             {/* 라디오 버튼 그룹을 수평으로 배치 */}
@@ -440,6 +512,7 @@ return (
                   ))}
                 </tbody>
               </table>
+              </div>
 
               <div className="flex justify-center items-center mt-4">
                 <nav className="flex items-center gap-2">
@@ -449,13 +522,16 @@ return (
                     onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
                     disabled={currentPage === 1}
                   >
-                    <svg width="6" height="10" fill="none" stroke="currentColor">
+                    <svg width="6" height="10" fill="none"
+                         stroke="currentColor">
                       <path d="M5 9L1 5L5 1" />
                     </svg>
                   </button>
 
                   {/* 페이지 번호 버튼들 - 현재 페이지는 진한 초록색으로 강조 */}
-                  {Array.from({ length: attendanceDetails.attendances.totalPages }, (_, i) => i + 1).map((page) => (
+                  {Array.from(
+                    { length: attendanceDetails.attendances.totalPages },
+                    (_, i) => i + 1).map((page) => (
                     <button
                       key={page}
                       className={`w-8 h-8 flex items-center justify-center rounded-lg ${
@@ -472,10 +548,13 @@ return (
                   {/* 다음 페이지 버튼 - 마지막 페이지면 비활성화 */}
                   <button
                     className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-50"
-                    onClick={() => onPageChange(Math.min(currentPage + 1, attendanceDetails.attendances.totalPages))}
-                    disabled={currentPage === attendanceDetails.attendances.totalPages}
+                    onClick={() => onPageChange(Math.min(currentPage + 1,
+                      attendanceDetails.attendances.totalPages))}
+                    disabled={currentPage
+                      === attendanceDetails.attendances.totalPages}
                   >
-                    <svg width="6" height="10" fill="none" stroke="currentColor">
+                    <svg width="6" height="10" fill="none"
+                         stroke="currentColor">
                       <path d="M1 9L5 5L1 1" />
                     </svg>
                   </button>
