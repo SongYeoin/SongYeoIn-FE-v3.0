@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'api/axios';
-import { isAfter, isBefore, isSameDay, parseISO } from 'date-fns';
+import { isAfter, isBefore, isSameDay, parseISO, addMonths } from 'date-fns';
 
 const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -54,10 +54,11 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
         const today = new Date();
         const startDate = parseISO(courseData.startDate);
         const endDate = parseISO(courseData.endDate);
+        const sixMonthsAfterEndDate = addMonths(endDate, 6);
 
         const isWithinPeriod =
           (isAfter(today, startDate) || isSameDay(today, startDate)) &&
-          (isBefore(today, endDate) || isSameDay(today, endDate));
+          (isBefore(today, sixMonthsAfterEndDate) || isSameDay(today, sixMonthsAfterEndDate));
 
         setIsWithinCoursePeriod(isWithinPeriod);
       })
