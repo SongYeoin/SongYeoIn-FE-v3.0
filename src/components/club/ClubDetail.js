@@ -629,20 +629,32 @@ const ClubDetail = ({ club, courseId, user, onClose, onUpdateSuccess }) => {
                     ))}
                   </div>
                 ) : (
-                  <input
-                    type="text"
-                    value={club.participants || ""}
-                    disabled
-                    className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-                  />
+                  <div className="w-full px-3 py-2 border rounded-lg bg-gray-100 min-h-[42px]">
+                    <div className="flex flex-wrap gap-x-1">
+                      {club.participants ?
+                        club.participants.split(',').map((participant, index, array) => (
+                          <span key={index} className="whitespace-nowrap">
+                            {participant.trim()}
+                            {index < array.length - 1 && ','}
+                          </span>
+                        )) : ""
+                      }
+                    </div>
+                  </div>
                 )
               ) : (
-                <input
-                  type="text"
-                  value={club.participants || ""}
-                  disabled
-                  className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-                />
+                <div className="w-full px-3 py-2 border rounded-lg bg-gray-100 min-h-[42px]">
+                  <div className="flex flex-wrap gap-x-1">
+                    {club.participants ?
+                      club.participants.split(',').map((participant, index, array) => (
+                        <span key={index} className="whitespace-nowrap">
+                          {participant.trim()}
+                          {index < array.length - 1 && ','}
+                        </span>
+                      )) : ""
+                    }
+                  </div>
+                </div>
               )}
             </div>
             <div>
