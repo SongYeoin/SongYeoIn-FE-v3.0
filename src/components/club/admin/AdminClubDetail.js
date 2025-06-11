@@ -319,13 +319,18 @@ return(
                 <div className="grid grid-cols-3 gap-4">
                   <div className="col-span-2">
                     <label className="text-sm text-gray-600 font-bold">참여자</label>
-                      <input
-                        type="text"
-                        value={club.participants}
-                        name="participants"
-                        disabled
-                        className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-                      />
+                      <div className="w-full px-3 py-2 border rounded-lg bg-gray-100 min-h-[42px]">
+                        <div className="flex flex-wrap gap-x-1">
+                          {club.participants ?
+                            club.participants.split(',').map((participant, index, array) => (
+                              <span key={index} className="whitespace-nowrap">
+                                {participant.trim()}
+                                {index < array.length - 1 && ','}
+                              </span>
+                            )) : ""
+                          }
+                        </div>
+                      </div>
                   </div>
                   <div>
                     <label className="text-sm text-gray-600 font-bold">총 인원</label>
